@@ -10,14 +10,32 @@ Documentation and polish will come.
 TODO
 
 ## Configuration
-TODO
 
-### SSL
-The http client appends the certificate `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt` if found. You
-can disable certificate validation with `KUBENURSE_INSECURE=true`.
+kubenurse is configured with environment variables:
 
-## Alive Endpoint
-The following json will be returned when accessing `http://0.0.0.0:8080/alive`:
+- `KUBENURSE_INGRESS_URL`: An URL to the kubenurse in order to check the ingress
+- `KUBENURSE_SERVICE_URL`: An URL to the kubenurse in order to check the kubernetes service
+- `KUBENURSE_INSECURE`: If "true", TLS connections will not validate the certificate
+- `KUBENURSE_NAMESPACE`: Namespace in which to look for the neighbour kubenurses
+- `KUBENURSE_NEIGHBOUR_FILTER`: A label selector to filter neighbour kubenurses
+
+Following variables are injected to the Pod by Kubernetes and should not be defined manually:
+
+- `KUBERNETES_SERVICE_HOST`: Host to communicate to the kube-apiserver
+- `KUBERNETES_SERVICE_PORT`: Port to communicate to the kube-apiserver
+
+The used http client appends the certificate `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt` if found.
+
+## http Endpoints
+
+The kubenurse listens http on port 8080 and exposes endpoints:
+
+- `/`: Redirects to `/alive`
+- `/alive`: Returns a pretty printed JSON with the check results, described below
+- `/alwayshappy`: Returns http-200 which is used for testing itself
+- `/metrics`: Exposes [prometheus](https://prometheus.io/) metrics
+
+The `/alive` endpoint retuns a JSON like this with status code 200 if everything is alright else 500:
 
 ```json
 {
@@ -25,32 +43,83 @@ The following json will be returned when accessing `http://0.0.0.0:8080/alive`:
   "api_server_dns": "ok",
   "me_ingress": "ok",
   "me_service": "ok",
-  "hostname": "example.com",
+  "hostname": "kubenurse-1234-x2bwx",
   "neighbourhood_state": "ok",
-  "neighbourhood" : [neighbours],
-  "headers": {http_request_headers}
+  "neighbourhood": [
+   {
+    "PodName": "kubenurse-1234-8fh2x",
+    "PodIP": "10.10.10.67",
+    "HostIP": "10.12.12.66",
+    "NodeName": "k8s-66.example.com",
+    "Phase": "Running"
+   },
+   {
+    "PodName": "kubenurse-1234-ffjbs",
+    "PodIP": "10.10.10.138",
+    "HostIP": "10.12.12.89",
+    "NodeName": "k8s-89.example.com",
+    "Phase": "Running"
+   }
+  ],
+  "headers": {
+   "Accept": [
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
+   ],
+   "Accept-Encoding": [
+    "gzip, deflate, br"
+   ],
+   ...
+  }
 }
 ```
 
-if everything is alright it returns status code 200, else an 500.
 
 ## Health Checks
-The checks are described in the follwing subsections
+Every five seconds and on every access of `/alive`, the checks described below are run.
 
-### api_server_direct
-Checks if the `/version` of the Kubernetes API Server is available through
-the direct link provided by the kubelet.
+### API Server Direct
+Checks the `/version` endpoint of the Kubernetes API Server through
+the direct link (`KUBERNETES_SERVICE_HOST`, `KUBERNETES_SERVICE_PORT`).
 
-### api_server_dns
-Checks if the `/version` of the Kubernetes API Server is available through
-the Cluster DNS URL `https://kubernetes.default.svc:PORT`.
+Metric type: `api_server_direct`
 
-### me_ingress
-Checks if itself is reachable at the `/alwayshappy` endpoint behind the ingress.
-The address is provided by the env var `KUBENURSE_INGRESS_URL` which
-could look like `https://kubenurse.example.com`
+### API Server DNS
+Checks the `/version` endpoint of the Kubernetes API Server through
+the Cluster DNS URL `https://kubernetes.default.svc:$KUBERNETES_SERVICE_PORT`.
 
-### me_service
-Checks if it isself reachable at the `/alwayshappy` endpoint over the kubernetes service.
-The address is provided by the env var `KUBENURSE_SERVICE_URL` which
-could look like `http://kubenurse.kube-system.default.svc:8080`
+Metric type: `api_server_dns`
+
+### Me Ingress
+Checks if the kubenurse is reachable at the `/alwayshappy` endpoint behind the ingress.
+This address is provided by the environment variable `KUBENURSE_INGRESS_URL` that
+could look like `https://kubenurse.example.com`.
+
+Metric type: `me_ingress`
+
+### Me Service
+Checks if the kubenurse is reachable at the `/alwayshappy` endpoint through the kubernetes service.
+The address is provided by the environment variable `KUBENURSE_SERVICE_URL` that
+could look like `http://kubenurse.mynamespace.default.svc:8080`.
+
+Metric type: `me_service`
+
+### Neighbourhood
+Checks if every neighbour kubenurse is reachable at the `/alwayshappy` endpoint.
+Neighbours are discovered by querying the kube-apiserver for every Pod in the
+`KUBENURSE_NAMESPACE` with label `KUBENURSE_NEIGHBOUR_FILTER`.
+The request is done directly to the Pod-IP and the metric types contains the prefix
+`path_` and the hostname of the kublet on which the neighbour kubenurse should run.
+
+Metric type: `path_$KUBLET_HOSTNAME`
+
+## Metrics
+All checks create exposed metrics, that can be used to monitor:
+
+- SDN network latencies and errors
+- kubelet-to-kubelet network latencies and errors
+- pod-to-apiserver communication
+- Ingress roundtrip latencies and errors
+- Service roundtrip latencies and errors (kube-proxy)
+- Major kube-apiserver issues
+- kube-dns (or CoreDNS) errors
+- External DNS resolution errors (ingress URL resolution)
