@@ -77,6 +77,9 @@ The `/alive` endpoint retuns a JSON like this with status code 200 if everything
 ## Health Checks
 Every five seconds and on every access of `/alive`, the checks described below are run.
 
+A little illustration of what communication occures, is here:
+![Communication](doc/Communication.png "Communication")
+
 ### API Server Direct
 Checks the `/version` endpoint of the Kubernetes API Server through
 the direct link (`KUBERNETES_SERVICE_HOST`, `KUBERNETES_SERVICE_PORT`).
@@ -86,6 +89,7 @@ Metric type: `api_server_direct`
 ### API Server DNS
 Checks the `/version` endpoint of the Kubernetes API Server through
 the Cluster DNS URL `https://kubernetes.default.svc:$KUBERNETES_SERVICE_PORT`.
+This also verifies a working `kube-dns` deployment.
 
 Metric type: `api_server_dns`
 
@@ -93,6 +97,7 @@ Metric type: `api_server_dns`
 Checks if the kubenurse is reachable at the `/alwayshappy` endpoint behind the ingress.
 This address is provided by the environment variable `KUBENURSE_INGRESS_URL` that
 could look like `https://kubenurse.example.com`.
+This also verifies a correct upstream DNS resolution.
 
 Metric type: `me_ingress`
 
@@ -100,6 +105,7 @@ Metric type: `me_ingress`
 Checks if the kubenurse is reachable at the `/alwayshappy` endpoint through the kubernetes service.
 The address is provided by the environment variable `KUBENURSE_SERVICE_URL` that
 could look like `http://kubenurse.mynamespace.default.svc:8080`.
+This also verifies a working `kube-proxy` setup.
 
 Metric type: `me_service`
 
@@ -123,3 +129,7 @@ All checks create exposed metrics, that can be used to monitor:
 - Major kube-apiserver issues
 - kube-dns (or CoreDNS) errors
 - External DNS resolution errors (ingress URL resolution)
+
+At `/metrics` you will find these:
+- `kubenurse_errors_total`: Kubenurse error counter partitioned by error type
+- `kubenurse_request_duration`: Kubenurse request duration partitioned by error type, summary over one minute

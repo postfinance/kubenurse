@@ -1,0 +1,47 @@
+digraph G {
+	subgraph clusterNode1 {
+		label = "kubelet-1"
+
+		kubeProxy1 [label="kube-proxy"]
+		kubeNurse1 [label="kubenurse-1"]
+		kubeNurse1 -> kubeProxy1
+	}
+
+	subgraph clusterNode2 {
+		label = "kubelet-2"
+
+		kubeProxy2 [label="kube-proxy"]
+		kubeNurse2 [label="kubenurse-2"]
+		kubeNurse2 -> kubeProxy2
+	}
+
+	// kubenurse to kubenurse
+	kubeNurse1 -> kubeNurse2
+	kubeNurse2 -> kubeNurse1
+
+	// DNS resolution
+	kubeDNS [shape="box", label="kube-dns"]
+	kubeNurse1 -> kubeDNS
+	kubeNurse2 -> kubeDNS
+	DNSUpstream [shape="box", label="upstream DNS"]
+	kubeDNS -> DNSUpstream
+
+	// kube-apiserver
+	kubeAPI [shape="box", label="kube-apiserver"]
+	kubeNurse1 -> kubeAPI
+	kubeNurse2 -> kubeAPI
+
+	// kube-proxies are loadbalancing to the SVC EPs
+	kubeProxy2 -> kubeNurse1 [color=grey,style=dashed]
+	kubeProxy2 -> kubeNurse2 [color=grey,style=dashed]
+	kubeProxy1 -> kubeNurse1 [color=grey,style=dashed]
+	kubeProxy1 -> kubeNurse2 [color=grey,style=dashed]
+
+	ingress [shape=box, label="kube-ingress"]
+
+	// ingresses usually skip the SVC and connect directly to the EP
+	ingress:n -> kubeNurse1 [color=grey,style=dashed]
+	ingress:n -> kubeNurse2 [color=grey,style=dashed]
+	kubeNurse1 -> ingress:e
+	kubeNurse2 -> ingress:w
+}
