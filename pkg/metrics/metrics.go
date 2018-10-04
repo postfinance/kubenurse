@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	// ErrorCounter provides the kubenurse_errors_total metric
 	ErrorCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "kubenurse_errors_total",
@@ -15,6 +16,7 @@ var (
 		[]string{"type"},
 	)
 
+	// DurationSummary provides the kubenurse_request_duration metric
 	DurationSummary = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Name:   "kubenurse_request_duration",

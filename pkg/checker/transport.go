@@ -5,8 +5,9 @@ import (
 	"net/http"
 )
 
+// doRequest does an http request only to get the http status code
 func (c *Checker) doRequest(url string) (string, error) {
-	resp, err := c.HttpClient.Get(url)
+	resp, err := c.HTTPClient.Get(url)
 	if err != nil {
 		return err.Error(), err
 	}

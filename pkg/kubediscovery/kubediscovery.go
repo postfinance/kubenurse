@@ -18,14 +18,17 @@ func getClientset() (*kubernetes.Clientset, error) {
 	return kubernetes.NewForConfig(config)
 }
 
+// Neighbour represents a kubenurse which should be reachable
 type Neighbour struct {
 	PodName  string
 	PodIP    string
 	HostIP   string
 	NodeName string
-	Phase    string
+	Phase    string // Pod Phase
 }
 
+// GetNeighbourhood returns a slice of neighbour kubenurses for the given namespace
+// and labelSelector
 func GetNeighbourhood(namespace, labelSelector string) ([]Neighbour, error) {
 	clientset, err := getClientset()
 	if err != nil {

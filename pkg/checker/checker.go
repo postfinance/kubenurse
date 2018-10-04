@@ -9,6 +9,7 @@ import (
 	"github.com/postfinance/kubenurse/pkg/metrics"
 )
 
+// Run runs an check and returns the result
 func (c *Checker) Run() (Result, bool) {
 	var haserr bool
 	var err error
@@ -37,37 +38,44 @@ func (c *Checker) Run() (Result, bool) {
 	} else {
 		res.NeighbourhoodState = "ok"
 
-		// Check all neighbours
+		// Check all neighbours if the neighbourhood was discovered
 		c.checkNeighbours(res.Neighbourhood)
 	}
 
 	return res, haserr
 }
 
+// RunScheduled runs the check run in the specified interval which can be used
+// to keep the metrics up-to-date
 func (c *Checker) RunScheduled(d time.Duration) {
 	for range time.Tick(d) {
 		c.Run()
 	}
 }
 
+// ApiServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link
 func (c *Checker) ApiServerDirect() (string, error) {
 	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
 	return c.doRequest(apiurl)
 }
 
+// ApiServerDNS checks the /version endpoint of the Kubernetes API Server through the Cluster DNS URL
 func (c *Checker) ApiServerDNS() (string, error) {
 	apiurl := fmt.Sprintf("https://kubernetes.default.svc:%s/version", c.KubernetesServicePort)
 	return c.doRequest(apiurl)
 }
 
+// MeIngress checks if the kubenurse is reachable at the /alwayshappy endpoint behind the ingress
 func (c *Checker) MeIngress() (string, error) {
-	return c.doRequest(c.KubenurseIngressUrl + "/alwayshappy")
+	return c.doRequest(c.KubenurseIngressURL + "/alwayshappy")
 }
 
+// MeService checks if the kubenurse is reachable at the /alwayshappy endpoint through the kubernetes service
 func (c *Checker) MeService() (string, error) {
-	return c.doRequest(c.KubenurseServiceUrl + "/alwayshappy")
+	return c.doRequest(c.KubenurseServiceURL + "/alwayshappy")
 }
 
+// checkNeighbours checks every provided neighbour at the /alwayshappy endpoint
 func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 	for _, neighbour := range nh {
 		check := func() (string, error) {
@@ -78,6 +86,7 @@ func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 	}
 }
 
+// measssure implements metric collections for the check
 func meassure(check Check, label string) (string, error) {
 	start := time.Now()
 
