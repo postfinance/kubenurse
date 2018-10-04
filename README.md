@@ -78,6 +78,7 @@ The `/alive` endpoint retuns a JSON like this with status code 200 if everything
 Every five seconds and on every access of `/alive`, the checks described below are run.
 
 A little illustration of what communication occures, is here:
+
 ![Communication](doc/Communication.png "Communication")
 
 ### API Server Direct
