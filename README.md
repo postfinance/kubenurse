@@ -78,6 +78,7 @@ The `/alive` endpoint retuns a JSON like this with status code 200 if everything
 Every five seconds and on every access of `/alive`, the checks described below are run.
 
 A little illustration of what communication occures, is here:
+
 ![Communication](doc/Communication.png "Communication")
 
 ### API Server Direct
@@ -114,9 +115,9 @@ Checks if every neighbour kubenurse is reachable at the `/alwayshappy` endpoint.
 Neighbours are discovered by querying the kube-apiserver for every Pod in the
 `KUBENURSE_NAMESPACE` with label `KUBENURSE_NEIGHBOUR_FILTER`.
 The request is done directly to the Pod-IP and the metric types contains the prefix
-`path_` and the hostname of the kublet on which the neighbour kubenurse should run.
+`path_` and the hostname of the kubelet on which the neighbour kubenurse should run.
 
-Metric type: `path_$KUBLET_HOSTNAME`
+Metric type: `path_$KUBELET_HOSTNAME`
 
 ## Metrics
 All checks create exposed metrics, that can be used to monitor:
