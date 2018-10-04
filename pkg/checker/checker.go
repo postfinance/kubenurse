@@ -28,7 +28,7 @@ func (c *Checker) Run() (Result, bool) {
 	res.MeService, err = meassure(c.MeService, "me_service")
 	haserr = haserr || (err != nil)
 
-	res.Neighbourhood, err = kubediscovery.GetNeighbourhood(c.KubeNamespace, c.NeighbourFilter)
+	res.Neighbourhood, err = kubediscovery.GetNeighbourhood(c.KubenurseNamespace, c.NeighbourFilter)
 	haserr = haserr || (err != nil)
 
 	// Neighbourhood special error treating

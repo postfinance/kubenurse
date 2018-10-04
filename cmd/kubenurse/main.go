@@ -41,11 +41,11 @@ func main() {
 	}
 
 	// Setup checker
-	chk.KubenurseIngressUrl = os.Getenv("KUBENURSE_SERVICE_URL")
+	chk.KubenurseIngressUrl = os.Getenv("KUBENURSE_INGRESS_URL")
 	chk.KubenurseServiceUrl = os.Getenv("KUBENURSE_SERVICE_URL")
 	chk.KubernetesServiceHost = os.Getenv("KUBERNETES_SERVICE_HOST")
 	chk.KubernetesServicePort = os.Getenv("KUBERNETES_SERVICE_PORT")
-	chk.KubeNamespace = os.Getenv("KUBE_NAMESPACE")
+	chk.KubenurseNamespace = os.Getenv("KUBENURSE_NAMESPACE")
 	chk.NeighbourFilter = os.Getenv("KUBENURSE_NEIGHBOUR_FILTER")
 	chk.HttpClient = client
 

@@ -16,8 +16,8 @@ type Checker struct {
 	KubernetesServicePort string
 
 	// Neighbourhood
-	KubeNamespace   string
-	NeighbourFilter string
+	KubenurseNamespace string
+	NeighbourFilter    string
 
 	// Http Client for https requests
 	HttpClient *http.Client
