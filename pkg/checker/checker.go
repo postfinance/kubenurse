@@ -17,16 +17,16 @@ func (c *Checker) Run() (Result, bool) {
 	// Run Checks
 	res := Result{}
 
-	res.APIServerDirect, err = meassure(c.ApiServerDirect, "api_server_direct")
+	res.APIServerDirect, err = measure(c.ApiServerDirect, "api_server_direct")
 	haserr = haserr || (err != nil)
 
-	res.APIServerDNS, err = meassure(c.ApiServerDNS, "api_server_dns")
+	res.APIServerDNS, err = measure(c.ApiServerDNS, "api_server_dns")
 	haserr = haserr || (err != nil)
 
-	res.MeIngress, err = meassure(c.MeIngress, "me_ingress")
+	res.MeIngress, err = measure(c.MeIngress, "me_ingress")
 	haserr = haserr || (err != nil)
 
-	res.MeService, err = meassure(c.MeService, "me_service")
+	res.MeService, err = measure(c.MeService, "me_service")
 	haserr = haserr || (err != nil)
 
 	res.Neighbourhood, err = kubediscovery.GetNeighbourhood(c.KubenurseNamespace, c.NeighbourFilter)
@@ -82,12 +82,12 @@ func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 			return c.doRequest("http://" + neighbour.PodIP + ":8080/alwayshappy")
 		}
 
-		meassure(check, "path_"+neighbour.NodeName)
+		measure(check, "path_"+neighbour.NodeName)
 	}
 }
 
-// measssure implements metric collections for the check
-func meassure(check Check, label string) (string, error) {
+// measure implements metric collections for the check
+func measure(check Check, label string) (string, error) {
 	start := time.Now()
 
 	// Execute check
