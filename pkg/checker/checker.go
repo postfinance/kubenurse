@@ -61,7 +61,7 @@ func (c *Checker) ApiServerDirect() (string, error) {
 
 // ApiServerDNS checks the /version endpoint of the Kubernetes API Server through the Cluster DNS URL
 func (c *Checker) ApiServerDNS() (string, error) {
-	apiurl := fmt.Sprintf("https://kubernetes.default.svc:%s/version", c.KubernetesServicePort)
+	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
 	return c.doRequest(apiurl)
 }
 
