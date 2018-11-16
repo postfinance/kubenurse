@@ -107,6 +107,8 @@ func aliveHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// GenerateRoundTripper returns a custom http.RoundTripper, including the k8s
+// CA. If env KUBENURSE_INSECURE is set to true, certificates are not validated.
 func GenerateRoundTripper() (http.RoundTripper, error) {
 	insecureEnv := os.Getenv("KUBENURSE_INSECURE")
 	insecure, _ := strconv.ParseBool(insecureEnv)
