@@ -7,7 +7,9 @@ This project was written in only a few hours without receiving a polish but work
 Documentation and polish will come.
 
 ## Deployment
-TODO
+You can get the Docker Image from [Docker Hub](https://hub.docker.com/r/postfinance/kubenurse/).
+The [examples](https://github.com/postfinance/kubenurse/tree/master/examples) directory
+contains yamls that deploy the kubenurse to the kube-system namespace.
 
 ## Configuration
 

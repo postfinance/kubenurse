@@ -1,0 +1,19 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: kubenurse
+  namespace: kube-system
+spec:
+  rules:
+  - host: kubenurse.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: kubenurse
+          servicePort: 8080
+  tls:
+  - hosts:
+    - kubenurse.example.com
