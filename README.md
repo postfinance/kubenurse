@@ -11,6 +11,13 @@ You can get the Docker Image from [Docker Hub](https://hub.docker.com/r/postfina
 The [examples](https://github.com/postfinance/kubenurse/tree/master/examples) directory
 contains yamls that deploy the kubenurse to the kube-system namespace.
 
+After everything is set up and Prometheus scrapes the kubenurses, you can build
+dashboards that show network latencies and errors or use the metrics for alarming.
+
+![Grafana ingress view](doc/grafana_ingress.png "Grafana ingress view")
+![Grafana path view](doc/grafana_path.png "Grafana path view")
+
+
 ## Configuration
 
 kubenurse is configured with environment variables:
