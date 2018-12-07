@@ -110,14 +110,18 @@ func aliveHandler(w http.ResponseWriter, r *http.Request) {
 // GenerateRoundTripper returns a custom http.RoundTripper, including the k8s
 // CA. If env KUBENURSE_INSECURE is set to true, certificates are not validated.
 func GenerateRoundTripper() (http.RoundTripper, error) {
+	// Parse environment variables
+	extraCA := os.Getenv("KUBENURSE_EXTRA_CA")
 	insecureEnv := os.Getenv("KUBENURSE_INSECURE")
 	insecure, _ := strconv.ParseBool(insecureEnv)
 
+	// Append default certpool
 	rootCAs, _ := x509.SystemCertPool()
 	if rootCAs == nil {
 		rootCAs = x509.NewCertPool()
 	}
 
+	// Append ServiceAccount cacert
 	caCert, err := ioutil.ReadFile(caFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not load certificate %s: %s", caFile, err)
@@ -127,6 +131,20 @@ func GenerateRoundTripper() (http.RoundTripper, error) {
 		return nil, errors.New("could not append ca cert to system certpool")
 	}
 
+	// Append extra CA, if set
+	if extraCA != "" {
+		caCert, err := ioutil.ReadFile(extraCA)
+
+		if err != nil {
+			return nil, fmt.Errorf("could not load certificate %s: %s", extraCA, err)
+		}
+
+		if ok := rootCAs.AppendCertsFromPEM(caCert); !ok {
+			return nil, errors.New("could not append extra ca cert to system certpool")
+		}
+	}
+
+	// Configure transport
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: insecure,
 		RootCAs:            rootCAs,

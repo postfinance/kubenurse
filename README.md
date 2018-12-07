@@ -25,6 +25,7 @@ kubenurse is configured with environment variables:
 - `KUBENURSE_INGRESS_URL`: An URL to the kubenurse in order to check the ingress
 - `KUBENURSE_SERVICE_URL`: An URL to the kubenurse in order to check the kubernetes service
 - `KUBENURSE_INSECURE`: If "true", TLS connections will not validate the certificate
+- `KUBENURSE_EXTRA_CA`: Additional CA cert path for TLS connections
 - `KUBENURSE_NAMESPACE`: Namespace in which to look for the neighbour kubenurses
 - `KUBENURSE_NEIGHBOUR_FILTER`: A label selector to filter neighbour kubenurses
 
