@@ -68,8 +68,11 @@ func main() {
 
 func aliveHandler(w http.ResponseWriter, r *http.Request) {
 	type Output struct {
-		Hostname string              `json:"hostname"`
-		Headers  map[string][]string `json:"headers"`
+		Hostname   string              `json:"hostname"`
+		Headers    map[string][]string `json:"headers"`
+		UserAgent  string              `json:"user_agent"`
+		RequestURI string              `json:"request_uri"`
+		RemoteAddr string              `json:"remote_addr"`
 
 		// checker.Result
 		APIServerDirect string `json:"api_server_direct"`
@@ -95,6 +98,9 @@ func aliveHandler(w http.ResponseWriter, r *http.Request) {
 		MeIngress:          res.MeIngress,
 		MeService:          res.MeService,
 		Headers:            r.Header,
+		UserAgent:          r.UserAgent(),
+		RequestURI:         r.RequestURI,
+		RemoteAddr:         r.RemoteAddr,
 		Neighbourhood:      res.Neighbourhood,
 		NeighbourhoodState: res.NeighbourhoodState,
 	}

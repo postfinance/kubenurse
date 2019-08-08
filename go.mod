@@ -1,34 +1,46 @@
 module github.com/postfinance/kubenurse
 
 require (
-	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 // indirect
-	github.com/gogo/protobuf v1.1.1 // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
-	github.com/golang/protobuf v1.2.0 // indirect
-	github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c // indirect
-	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
-	github.com/googleapis/gnostic v0.2.0 // indirect
-	github.com/gregjones/httpcache v0.0.0-20181110185634-c63ab54fda8f // indirect
-	github.com/json-iterator/go v1.1.5 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
+	cloud.google.com/go v0.43.0 // indirect
+	github.com/NYTimes/gziphandler v1.1.1 // indirect
+	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
+	github.com/elazarl/goproxy v0.0.0-20190711103511-473e67f1d7d2 // indirect
+	github.com/emicklei/go-restful v2.9.6+incompatible // indirect
+	github.com/evanphx/json-patch v4.5.0+incompatible // indirect
+	github.com/ghodss/yaml v1.0.0 // indirect
+	github.com/go-kit/kit v0.9.0 // indirect
+	github.com/go-openapi/spec v0.19.2 // indirect
+	github.com/go-openapi/swag v0.19.4 // indirect
+	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
+	github.com/google/go-cmp v0.3.1 // indirect
+	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
+	github.com/googleapis/gnostic v0.3.0 // indirect
+	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
+	github.com/hashicorp/golang-lru v0.5.3 // indirect
+	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/kr/pty v1.1.8 // indirect
+	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect
+	github.com/munnerz/goautoneg v0.0.0-20190414153302-2ae31c8b6b30 // indirect
+	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
-	github.com/prometheus/client_golang v0.9.1
-	github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910 // indirect
-	github.com/prometheus/common v0.0.0-20181116084131-1f2c4f3cd6db // indirect
-	github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d // indirect
-	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869 // indirect
-	golang.org/x/net v0.0.0-20181114220301-adae6a3d119a // indirect
-	golang.org/x/oauth2 v0.0.0-20181106182150-f42d05182288 // indirect
-	golang.org/x/sys v0.0.0-20181107165924-66b7b1311ac8 // indirect
-	golang.org/x/text v0.3.0 // indirect
-	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c // indirect
+	github.com/pkg/errors v0.8.1 // indirect
+	github.com/prometheus/client_golang v1.1.0
+	github.com/sirupsen/logrus v1.4.2 // indirect
+	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
+	golang.org/x/mobile v0.0.0-20190806162312-597adff16ade // indirect
+	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80 // indirect
+	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa // indirect
+	golang.org/x/tools v0.0.0-20190807223507-b346f7fd45de // indirect
+	google.golang.org/genproto v0.0.0-20190801165951-fa694d86fc64 // indirect
+	google.golang.org/grpc v1.22.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/yaml.v2 v2.2.1 // indirect
-	k8s.io/api v0.0.0-20181115043458-b799cb063522 // indirect
-	k8s.io/apimachinery v0.0.0-20181110190943-2a7c93004028
-	k8s.io/client-go v9.0.0+incompatible
-	k8s.io/klog v0.1.0 // indirect
-	sigs.k8s.io/yaml v1.1.0 // indirect
+	honnef.co/go/tools v0.0.1-2019.2.2 // indirect
+	k8s.io/api v0.0.0-20190806064354-8b51d7113622 // indirect
+	k8s.io/apimachinery v0.0.0-20190806215851-162a2dabc72f
+	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/gengo v0.0.0-20190327210449-e17681d19d3a // indirect
+	k8s.io/klog v0.4.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20190722073852-5e22f3d471e6 // indirect
+	k8s.io/utils v0.0.0-20190801114015-581e00157fb1 // indirect
+	sigs.k8s.io/structured-merge-diff v0.0.0-20190724202554-0c1d754dd648 // indirect
 )

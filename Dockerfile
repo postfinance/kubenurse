@@ -1,4 +1,4 @@
-FROM golang:1.11-alpine as builder
+FROM golang:1.12-alpine as builder
 RUN apk --no-cache add git
 
 ENV GO111MODULE=on
@@ -12,7 +12,7 @@ RUN go test ./...
 RUN go build -o /bin/kubenurse .
 
 # Build runtime
-FROM alpine:3.8 as runtime
+FROM alpine:latest as runtime
 MAINTAINER OpenSource PF <opensource@postfinance.ch>
 
 RUN apk --no-cache add ca-certificates
