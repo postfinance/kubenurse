@@ -19,9 +19,10 @@ var (
 	// DurationSummary provides the kubenurse_request_duration metric
 	DurationSummary = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
-			Name:   "kubenurse_request_duration",
-			Help:   "Kubenurse request duration partitioned by error type",
-			MaxAge: 1 * time.Minute,
+			Name:       "kubenurse_request_duration",
+			Help:       "Kubenurse request duration partitioned by error type",
+			MaxAge:     1 * time.Minute,
+			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		},
 		[]string{"type"},
 	)
