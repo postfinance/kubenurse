@@ -2,10 +2,6 @@
 kubenurse is a little service that monitors all network connections in a kubernetes
 cluster and exports the taken metrics as prometheus endpoint.
 
-## Project state
-This project was written in only a few hours without receiving a polish but worked well.
-Documentation and polish will come.
-
 ## Deployment
 You can get the Docker Image from [Docker Hub](https://hub.docker.com/r/postfinance/kubenurse/).
 The [examples](https://github.com/postfinance/kubenurse/tree/master/examples) directory
