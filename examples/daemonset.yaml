@@ -32,7 +32,7 @@ spec:
           value: kube-system
         - name: KUBENURSE_NEIGHBOUR_FILTER
           value: "app=kubenurse"
-        image: "postfinance/kubenurse:v1.0.0"
+        image: "postfinance/kubenurse:v1.1.2"
         ports:
         - containerPort: 8080
           protocol: TCP
