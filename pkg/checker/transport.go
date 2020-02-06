@@ -23,7 +23,7 @@ func (c *Checker) doRequest(url string) (string, error) {
 	client := c.HTTPClient
 	req, err := http.NewRequest("GET", url, nil)
 	// Only add the Bearer for API Server Requests
-	if strings.Contains(url, "/version") && token != nil {
+	if strings.HasSuffix(url, "/version") && token != nil {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	}
 
