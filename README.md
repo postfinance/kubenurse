@@ -82,6 +82,7 @@ The `/alive` endpoint retuns a JSON like this with status code 200 if everything
 
 ## Health Checks
 Every five seconds and on every access of `/alive`, the checks described below are run.
+Check results are cached for 3 seconds in order to prevent excessive network traffic.
 
 A little illustration of what communication occures, is here:
 

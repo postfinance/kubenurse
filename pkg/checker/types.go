@@ -2,6 +2,7 @@ package checker
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/postfinance/kubenurse/pkg/kubediscovery"
 )
@@ -21,7 +22,13 @@ type Checker struct {
 	NeighbourFilter    string
 
 	// Http Client for https requests
-	HTTPClient *http.Client
+	httpClient *http.Client
+
+	// cachedResult represents a cached check result
+	cachedResult *CachedResult
+
+	// cacheTTL defines the TTL of how long a cached result is valid
+	cacheTTL time.Duration
 }
 
 // Result contains the result of a performed check run
@@ -36,3 +43,9 @@ type Result struct {
 
 // Check is the signature used by all checks that the checker can execute
 type Check func() (string, error)
+
+// CachedResult represents a cached check result that is valid until the expiration.
+type CachedResult struct {
+	result     *Result
+	expiration time.Time
+}

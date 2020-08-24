@@ -3,16 +3,33 @@ package checker
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/postfinance/kubenurse/pkg/kubediscovery"
 	"github.com/postfinance/kubenurse/pkg/metrics"
 )
 
-// Run runs an check and returns the result
+// New configures the checker with a httpClient and a cache timeout for check
+// results. Other parameters of the Checker struct need to be configured seperately.
+func New(httpClient *http.Client, cacheTtl time.Duration) *Checker {
+	return &Checker{
+		httpClient: httpClient,
+		cacheTTL:   cacheTtl,
+	}
+}
+
+// Run runs an check and returns the result togeter with a boolean, if it wasn't
+// successfull. It respects the cache.
 func (c *Checker) Run() (Result, bool) {
 	var haserr bool
 	var err error
+
+	// Check if a result is cached and return it
+	cacheRes := c.retrieveResultFromCache()
+	if cacheRes != nil {
+		return *cacheRes, false
+	}
 
 	// Run Checks
 	res := Result{}
@@ -41,6 +58,9 @@ func (c *Checker) Run() (Result, bool) {
 		// Check all neighbours if the neighbourhood was discovered
 		c.checkNeighbours(res.Neighbourhood)
 	}
+
+	// Cache result
+	c.cacheResult(&res)
 
 	return res, haserr
 }

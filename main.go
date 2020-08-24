@@ -18,10 +18,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var (
-	chk = &checker.Checker{}
-)
-
 const (
 	caFile = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 	nurse  = "I'm ready to help you!"
@@ -41,16 +37,16 @@ func main() {
 	}
 
 	// Setup checker
+	chk := checker.New(client, 3*time.Second)
 	chk.KubenurseIngressURL = os.Getenv("KUBENURSE_INGRESS_URL")
 	chk.KubenurseServiceURL = os.Getenv("KUBENURSE_SERVICE_URL")
 	chk.KubernetesServiceHost = os.Getenv("KUBERNETES_SERVICE_HOST")
 	chk.KubernetesServicePort = os.Getenv("KUBERNETES_SERVICE_PORT")
 	chk.KubenurseNamespace = os.Getenv("KUBENURSE_NAMESPACE")
 	chk.NeighbourFilter = os.Getenv("KUBENURSE_NEIGHBOUR_FILTER")
-	chk.HTTPClient = client
 
 	// Setup http routes
-	http.HandleFunc("/alive", aliveHandler)
+	http.HandleFunc("/alive", aliveHandler(chk))
 	http.HandleFunc("/alwayshappy", func(http.ResponseWriter, *http.Request) {})
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/", http.RedirectHandler("/alive", http.StatusMovedPermanently))
@@ -66,51 +62,52 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func aliveHandler(w http.ResponseWriter, r *http.Request) {
-	type Output struct {
-		Hostname   string              `json:"hostname"`
-		Headers    map[string][]string `json:"headers"`
-		UserAgent  string              `json:"user_agent"`
-		RequestURI string              `json:"request_uri"`
-		RemoteAddr string              `json:"remote_addr"`
+func aliveHandler(chk *checker.Checker) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type Output struct {
+			Hostname   string              `json:"hostname"`
+			Headers    map[string][]string `json:"headers"`
+			UserAgent  string              `json:"user_agent"`
+			RequestURI string              `json:"request_uri"`
+			RemoteAddr string              `json:"remote_addr"`
 
-		// checker.Result
-		APIServerDirect string `json:"api_server_direct"`
-		APIServerDNS    string `json:"api_server_dns"`
-		MeIngress       string `json:"me_ingress"`
-		MeService       string `json:"me_service"`
+			// checker.Result
+			APIServerDirect string `json:"api_server_direct"`
+			APIServerDNS    string `json:"api_server_dns"`
+			MeIngress       string `json:"me_ingress"`
+			MeService       string `json:"me_service"`
 
-		// kubediscovery
-		NeighbourhoodState string                    `json:"neighbourhood_state"`
-		Neighbourhood      []kubediscovery.Neighbour `json:"neighbourhood"`
+			// kubediscovery
+			NeighbourhoodState string                    `json:"neighbourhood_state"`
+			Neighbourhood      []kubediscovery.Neighbour `json:"neighbourhood"`
+		}
+
+		// Run checks now
+		res, haserr := chk.Run()
+		if haserr {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		// Add additional data
+		out := Output{
+			APIServerDNS:       res.APIServerDNS,
+			APIServerDirect:    res.APIServerDirect,
+			MeIngress:          res.MeIngress,
+			MeService:          res.MeService,
+			Headers:            r.Header,
+			UserAgent:          r.UserAgent(),
+			RequestURI:         r.RequestURI,
+			RemoteAddr:         r.RemoteAddr,
+			Neighbourhood:      res.Neighbourhood,
+			NeighbourhoodState: res.NeighbourhoodState,
+		}
+		out.Hostname, _ = os.Hostname()
+
+		// Generate output output
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", " ")
+		enc.Encode(out)
 	}
-
-	// Run checks now
-	res, haserr := chk.Run()
-	if haserr {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	// Add additional data
-	out := Output{
-		APIServerDNS:       res.APIServerDNS,
-		APIServerDirect:    res.APIServerDirect,
-		MeIngress:          res.MeIngress,
-		MeService:          res.MeService,
-		Headers:            r.Header,
-		UserAgent:          r.UserAgent(),
-		RequestURI:         r.RequestURI,
-		RemoteAddr:         r.RemoteAddr,
-		Neighbourhood:      res.Neighbourhood,
-		NeighbourhoodState: res.NeighbourhoodState,
-	}
-	out.Hostname, _ = os.Hostname()
-
-	// Generate output output
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", " ")
-	enc.Encode(out)
-
 }
 
 // GenerateRoundTripper returns a custom http.RoundTripper, including the k8s

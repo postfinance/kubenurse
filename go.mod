@@ -1,5 +1,7 @@
 module github.com/postfinance/kubenurse
 
+go 1.14
+
 require (
 	cloud.google.com/go v0.43.0 // indirect
 	github.com/Azure/go-autorest v12.4.2+incompatible // indirect
@@ -26,7 +28,8 @@ require (
 	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect
 	github.com/munnerz/goautoneg v0.0.0-20190414153302-2ae31c8b6b30 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
-	github.com/pkg/errors v0.8.1 // indirect
+	github.com/otiai10/copy v1.1.1 // indirect
+	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.1.0
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
@@ -38,7 +41,7 @@ require (
 	google.golang.org/grpc v1.22.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	honnef.co/go/tools v0.0.1-2019.2.2 // indirect
-	k8s.io/api v0.0.0-20190808180749-077ce48e77da // indirect
+	k8s.io/api v0.0.0-20190808180749-077ce48e77da
 	k8s.io/apimachinery v0.0.0-20190809020650-423f5d784010
 	k8s.io/client-go v0.0.0-20190620085101-78d2af792bab
 	k8s.io/gengo v0.0.0-20190327210449-e17681d19d3a // indirect

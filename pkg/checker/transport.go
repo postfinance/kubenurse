@@ -20,14 +20,14 @@ func (c *Checker) doRequest(url string) (string, error) {
 		return "error", fmt.Errorf("could not load token %s: %s", tokenFile, err)
 	}
 
-	client := c.HTTPClient
 	req, err := http.NewRequest("GET", url, nil)
+
 	// Only add the Bearer for API Server Requests
 	if strings.HasSuffix(url, "/version") {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	}
 
-	resp, err := client.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err.Error(), err
 	}
