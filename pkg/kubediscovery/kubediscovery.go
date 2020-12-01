@@ -1,6 +1,8 @@
 package kubediscovery
 
 import (
+	"context"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/client-go/kubernetes"
@@ -36,7 +38,7 @@ func GetNeighbourhood(namespace, labelSelector string) ([]Neighbour, error) {
 	}
 
 	// Get all pods
-	pods, err := clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{
+	pods, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labelSelector,
 	})
 
