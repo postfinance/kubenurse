@@ -1,6 +1,8 @@
+// Package checker implements the checks the kubenurse performs.
 package checker
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,11 +14,17 @@ import (
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured seperately.
-func New(httpClient *http.Client, cacheTtl time.Duration) *Checker {
-	return &Checker{
-		httpClient: httpClient,
-		cacheTTL:   cacheTtl,
+func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration) (*Checker, error) {
+	discovery, err := kubediscovery.New(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("create k8s discovery client: %w", err)
 	}
+
+	return &Checker{
+		discovery:  discovery,
+		httpClient: httpClient,
+		cacheTTL:   cacheTTL,
+	}, nil
 }
 
 // Run runs an check and returns the result togeter with a boolean, if it wasn't
@@ -34,10 +42,10 @@ func (c *Checker) Run() (Result, bool) {
 	// Run Checks
 	res := Result{}
 
-	res.APIServerDirect, err = measure(c.ApiServerDirect, "api_server_direct")
+	res.APIServerDirect, err = measure(c.APIServerDirect, "api_server_direct")
 	haserr = haserr || (err != nil)
 
-	res.APIServerDNS, err = measure(c.ApiServerDNS, "api_server_dns")
+	res.APIServerDNS, err = measure(c.APIServerDNS, "api_server_dns")
 	haserr = haserr || (err != nil)
 
 	res.MeIngress, err = measure(c.MeIngress, "me_ingress")
@@ -46,7 +54,7 @@ func (c *Checker) Run() (Result, bool) {
 	res.MeService, err = measure(c.MeService, "me_service")
 	haserr = haserr || (err != nil)
 
-	res.Neighbourhood, err = kubediscovery.GetNeighbourhood(c.KubenurseNamespace, c.NeighbourFilter)
+	res.Neighbourhood, err = c.discovery.GetNeighbours(context.TODO(), c.KubenurseNamespace, c.NeighbourFilter)
 	haserr = haserr || (err != nil)
 
 	// Neighbourhood special error treating
@@ -66,21 +74,21 @@ func (c *Checker) Run() (Result, bool) {
 }
 
 // RunScheduled runs the check run in the specified interval which can be used
-// to keep the metrics up-to-date
+// to keep the metrics up-to-date.
 func (c *Checker) RunScheduled(d time.Duration) {
 	for range time.Tick(d) {
 		c.Run()
 	}
 }
 
-// ApiServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link
-func (c *Checker) ApiServerDirect() (string, error) {
+// APIServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link
+func (c *Checker) APIServerDirect() (string, error) {
 	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
 	return c.doRequest(apiurl)
 }
 
-// ApiServerDNS checks the /version endpoint of the Kubernetes API Server through the Cluster DNS URL
-func (c *Checker) ApiServerDNS() (string, error) {
+// APIServerDNS checks the /version endpoint of the Kubernetes API Server through the Cluster DNS URL
+func (c *Checker) APIServerDNS() (string, error) {
 	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
 	return c.doRequest(apiurl)
 }
@@ -95,14 +103,17 @@ func (c *Checker) MeService() (string, error) {
 	return c.doRequest(c.KubenurseServiceURL + "/alwayshappy")
 }
 
-// checkNeighbours checks every provided neighbour at the /alwayshappy endpoint
+// checkNeighbours checks the /alwayshappy endpoint from every discovered kubenurse neighbour. Neighbour pods on nodes
+// which are not schedulable are excluded from this check to avoid possible false errors.
 func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 	for _, neighbour := range nh {
-		check := func() (string, error) {
-			return c.doRequest("http://" + neighbour.PodIP + ":8080/alwayshappy")
-		}
+		if neighbour.NodeSchedulable {
+			check := func() (string, error) {
+				return c.doRequest("http://" + neighbour.PodIP + ":8080/alwayshappy")
+			}
 
-		measure(check, "path_"+neighbour.NodeName)
+			measure(check, "path_"+neighbour.NodeName)
+		}
 	}
 }
 

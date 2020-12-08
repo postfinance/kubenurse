@@ -21,6 +21,8 @@ type Checker struct {
 	KubenurseNamespace string
 	NeighbourFilter    string
 
+	discovery *kubediscovery.Client
+
 	// Http Client for https requests
 	httpClient *http.Client
 

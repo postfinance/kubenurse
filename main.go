@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -10,7 +11,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/postfinance/kubenurse/pkg/checker"
@@ -24,10 +27,39 @@ const (
 )
 
 func main() {
-	// Setup http transport
+	mux := http.NewServeMux()
+	server := http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		select {
+		case s := <-sig:
+			log.Printf("shutting down, received signal %s", s)
+
+			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer shutdownCancel()
+
+			if err := server.Shutdown(shutdownCtx); err != nil {
+				log.Fatalln(err)
+			}
+
+			cancel()
+		case <-ctx.Done():
+		}
+	}()
+
+	// setup http transport
 	transport, err := GenerateRoundTripper()
 	if err != nil {
 		log.Printf("using default transport: %s", err)
+
 		transport = http.DefaultTransport
 	}
 
@@ -36,8 +68,12 @@ func main() {
 		Transport: transport,
 	}
 
-	// Setup checker
-	chk := checker.New(client, 3*time.Second)
+	// setup checker
+	chk, err := checker.New(ctx, client, 3*time.Second)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	chk.KubenurseIngressURL = os.Getenv("KUBENURSE_INGRESS_URL")
 	chk.KubenurseServiceURL = os.Getenv("KUBENURSE_SERVICE_URL")
 	chk.KubernetesServiceHost = os.Getenv("KUBERNETES_SERVICE_HOST")
@@ -45,11 +81,11 @@ func main() {
 	chk.KubenurseNamespace = os.Getenv("KUBENURSE_NAMESPACE")
 	chk.NeighbourFilter = os.Getenv("KUBENURSE_NEIGHBOUR_FILTER")
 
-	// Setup http routes
-	http.HandleFunc("/alive", aliveHandler(chk))
-	http.HandleFunc("/alwayshappy", func(http.ResponseWriter, *http.Request) {})
-	http.Handle("/metrics", promhttp.Handler())
-	http.Handle("/", http.RedirectHandler("/alive", http.StatusMovedPermanently))
+	// setup http routes
+	mux.HandleFunc("/alive", aliveHandler(chk))
+	mux.HandleFunc("/alwayshappy", func(http.ResponseWriter, *http.Request) {})
+	mux.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/", http.RedirectHandler("/alive", http.StatusMovedPermanently))
 
 	fmt.Println(nurse) // most important line of this project
 
@@ -59,7 +95,15 @@ func main() {
 		log.Fatalln("checker exited")
 	}()
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			if err != http.ErrServerClosed {
+				log.Fatalln(err)
+			}
+		}
+	}()
+
+	<-ctx.Done()
 }
 
 func aliveHandler(chk *checker.Checker) func(w http.ResponseWriter, r *http.Request) {
