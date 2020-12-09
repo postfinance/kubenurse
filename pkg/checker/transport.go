@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	//nolint:gosec
 	tokenFile = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 )
 
@@ -20,7 +21,7 @@ func (c *Checker) doRequest(url string) (string, error) {
 		return "error", fmt.Errorf("could not load token %s: %s", tokenFile, err)
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, _ := http.NewRequest("GET", url, nil)
 
 	// Only add the Bearer for API Server Requests
 	if strings.HasSuffix(url, "/version") {
@@ -33,7 +34,7 @@ func (c *Checker) doRequest(url string) (string, error) {
 	}
 
 	// Body is non-nil if err is nil, so close it
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		return "ok", nil

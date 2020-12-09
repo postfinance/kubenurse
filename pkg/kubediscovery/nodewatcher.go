@@ -63,7 +63,7 @@ func (nc *nodeCache) delete(obj interface{}) {
 	nc.mu.Unlock()
 }
 
-func (nc *nodeCache) update(_ interface{}, obj interface{}) {
+func (nc *nodeCache) update(_, obj interface{}) {
 	node := obj.(*corev1.Node)
 
 	nc.mu.Lock()

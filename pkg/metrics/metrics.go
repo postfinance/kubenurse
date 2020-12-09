@@ -1,3 +1,4 @@
+// Package metrics sets-up the metrics which will be exported by kubenurse. TODO: rewrite this package.
 package metrics
 
 import (
@@ -6,6 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+//nolint:gochecknoglobals
 var (
 	// ErrorCounter provides the kubenurse_errors_total metric
 	ErrorCounter = prometheus.NewCounterVec(
@@ -28,6 +30,7 @@ var (
 	)
 )
 
+//nolint:gochecknoinits
 func init() {
 	prometheus.MustRegister(ErrorCounter)
 	prometheus.MustRegister(DurationSummary)

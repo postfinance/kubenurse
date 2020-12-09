@@ -61,10 +61,12 @@ func (c *Client) GetNeighbours(ctx context.Context, namespace, labelSelector str
 		return nil, fmt.Errorf("list pods: %w", err)
 	}
 
-	var neighbours []Neighbour
+	var neighbours = make([]Neighbour, len(pods.Items))
 
 	// process pods
-	for _, pod := range pods.Items {
+	for idx := range pods.Items {
+		pod := pods.Items[idx]
+
 		n := Neighbour{
 			PodName:         pod.Name,
 			PodIP:           pod.Status.PodIP,
@@ -73,7 +75,7 @@ func (c *Client) GetNeighbours(ctx context.Context, namespace, labelSelector str
 			NodeName:        pod.Spec.NodeName,
 			NodeSchedulable: c.nodeCache.isSchedulable(pod.Spec.NodeName),
 		}
-		neighbours = append(neighbours, n)
+		neighbours[idx] = n
 	}
 
 	return neighbours, nil
