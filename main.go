@@ -150,7 +150,7 @@ func aliveHandler(chk *checker.Checker) func(w http.ResponseWriter, r *http.Requ
 		// Generate output output
 		enc := json.NewEncoder(w)
 		enc.SetIndent("", " ")
-		enc.Encode(out)
+		_ = enc.Encode(out)
 	}
 }
 
@@ -180,6 +180,7 @@ func GenerateRoundTripper() (http.RoundTripper, error) {
 
 	// Append extra CA, if set
 	if extraCA != "" {
+		//nolint:gosec
 		caCert, err := ioutil.ReadFile(extraCA)
 
 		if err != nil {
@@ -193,7 +194,7 @@ func GenerateRoundTripper() (http.RoundTripper, error) {
 
 	// Configure transport
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: insecure,
+		InsecureSkipVerify: insecure, //nolint:gosec
 		RootCAs:            rootCAs,
 	}
 

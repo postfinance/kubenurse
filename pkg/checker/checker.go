@@ -13,7 +13,7 @@ import (
 )
 
 // New configures the checker with a httpClient and a cache timeout for check
-// results. Other parameters of the Checker struct need to be configured seperately.
+// results. Other parameters of the Checker struct need to be configured separately.
 func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration) (*Checker, error) {
 	discovery, err := kubediscovery.New(ctx)
 	if err != nil {
@@ -28,10 +28,12 @@ func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration) (
 }
 
 // Run runs an check and returns the result togeter with a boolean, if it wasn't
-// successfull. It respects the cache.
+// successful. It respects the cache.
 func (c *Checker) Run() (Result, bool) {
-	var haserr bool
-	var err error
+	var (
+		haserr bool
+		err    error
+	)
 
 	// Check if a result is cached and return it
 	cacheRes := c.retrieveResultFromCache()
@@ -107,12 +109,13 @@ func (c *Checker) MeService() (string, error) {
 // which are not schedulable are excluded from this check to avoid possible false errors.
 func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 	for _, neighbour := range nh {
+		neighbour := neighbour // pin
 		if neighbour.NodeSchedulable {
 			check := func() (string, error) {
 				return c.doRequest("http://" + neighbour.PodIP + ":8080/alwayshappy")
 			}
 
-			measure(check, "path_"+neighbour.NodeName)
+			_, _ = measure(check, "path_"+neighbour.NodeName)
 		}
 	}
 }
@@ -126,6 +129,7 @@ func measure(check Check, label string) (string, error) {
 
 	// Process metrics
 	metrics.DurationSummary.WithLabelValues(label).Observe(time.Since(start).Seconds())
+
 	if err != nil {
 		log.Printf("failed request for %s with %v", label, err)
 		metrics.ErrorCounter.WithLabelValues(label).Inc()
