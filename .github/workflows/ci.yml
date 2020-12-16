@@ -39,12 +39,12 @@ jobs:
       - name: Check state of pods
         run: |
           kubectl get pods -l app=kubenurse
-    - name: Show Kubernetes resources
-      run: kubectl get pods -o wide
-      if: ${{ always() }}
-    - name: Describe Pods on failure
-      run: kubectl describe pods
-      if: ${{ failure() }}
+      - name: Show Kubernetes resources
+        run: kubectl get pods -o wide
+        if: ${{ always() }}
+      - name: Describe Pods on failure
+        run: kubectl describe pods
+        if: ${{ failure() }}
 # TODO:
 # - Check metrics
 # - Really check state of pods (count, state, restart count)
