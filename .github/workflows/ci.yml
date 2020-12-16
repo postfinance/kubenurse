@@ -20,3 +20,25 @@ jobs:
         with:
           version: latest
           args: release --snapshot --rm-dist --skip-publish
+      - name: Setup kind
+        uses: engineerd/setup-kind@v0.5.0
+      - name: Show cluster info and switch to kube-system
+        run: |
+          kubectl cluster-info
+          echo "current-context:" $(kubectl config current-context)
+          kubectl config set-context --current --namespace kube-system
+      - name: Import image into kind
+        run: kind load docker-image postfinance/kubenurse:latest
+      - name: Deploy example setup
+        run: |
+          kubectl apply -R -f examples/
+      - name: Wait for pods
+        timeout-minutes: 1
+        run: |
+          kubectl wait pods -l app=kubenurse --for=condition=Ready
+      - name: Check state of pods
+        run: |
+          kubectl get pods -l app=kubenurse
+# TODO:
+# - Check metrics
+# - Really check state of pods (count, state, restart count)
