@@ -35,6 +35,7 @@ jobs:
       - name: Wait for pods
         timeout-minutes: 1
         run: |
+          sleep 15 # wait for the scheduler to create pods
           kubectl wait pods -l app=kubenurse --for=condition=Ready
       - name: Check state of pods
         run: |
@@ -42,8 +43,11 @@ jobs:
       - name: Show Kubernetes resources
         run: kubectl get pods -o wide
         if: ${{ always() }}
-      - name: Describe Pods on failure
-        run: kubectl describe pods
+      - name: Describe resources on failure
+        run: |
+          kubectl describe pods
+          kubectl describe daemonsets
+          kubectl get events
         if: ${{ failure() }}
 # TODO:
 # - Check metrics
