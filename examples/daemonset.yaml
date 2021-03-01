@@ -36,3 +36,10 @@ spec:
         ports:
         - containerPort: 8080
           protocol: TCP
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Equal
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+        operator: Equal
