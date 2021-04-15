@@ -20,6 +20,7 @@ type Checker struct {
 	// Neighbourhood
 	KubenurseNamespace string
 	NeighbourFilter    string
+	allowUnschedulable bool
 
 	discovery *kubediscovery.Client
 

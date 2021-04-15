@@ -24,6 +24,7 @@ kubenurse is configured with environment variables:
 - `KUBENURSE_EXTRA_CA`: Additional CA cert path for TLS connections
 - `KUBENURSE_NAMESPACE`: Namespace in which to look for the neighbour kubenurses
 - `KUBENURSE_NEIGHBOUR_FILTER`: A label selector to filter neighbour kubenurses
+- `KUBENURSE_ALLOW_UNSCHEDULABLE`: If this is `"true"`, path checks to neighbouring kubenurses are only made if they are running on schedulable nodes. This requires get/list/watch access to `api/v1 Node` resources
 
 Following variables are injected to the Pod by Kubernetes and should not be defined manually:
 
