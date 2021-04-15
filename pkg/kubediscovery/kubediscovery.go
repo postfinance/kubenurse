@@ -22,6 +22,7 @@ type Client struct {
 // or not.
 type NodeSchedulability string
 
+// Constants to define the NodeSchedulability of kubernetes Nodes
 const (
 	NodeSchedulabilityUnknown NodeSchedulability = "Unknown"
 	NodeSchedulable           NodeSchedulability = "Schedulable"
