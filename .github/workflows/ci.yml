@@ -29,10 +29,18 @@ jobs:
           kubectl cluster-info
           echo "current-context:" $(kubectl config current-context)
           kubectl config set-context --current --namespace kube-system
+      - name: Deploy ingress-nginx
+        timeout-minutes: 2
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+          kubectl wait --namespace ingress-nginx --for=condition=ready pod--selector=app.kubernetes.io/component=controller --timeout=90s
       - name: Import image into kind
         run: kind load docker-image postfinance/kubenurse:latest
       - name: Deploy example setup
         run: |
+          # Rewrite parameters for use with kind
+          sed -i 's/kubenurse.example.com/ingress-nginx-controller.ingress-nginx.svc.cluster.local/g' examples/*.yaml
+          # Apply example deployment
           kubectl apply -R -f examples/
       - name: Wait for pods
         timeout-minutes: 1
