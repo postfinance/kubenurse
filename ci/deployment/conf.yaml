@@ -12,3 +12,19 @@ spec:
           value: "true"
         - name: KUBENURSE_INGRESS_URL
           value: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kubenurse
+spec:
+  rules:
+  - host: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+    http:
+      paths:
+      - backend:
+          serviceName: kubenurse
+          servicePort: 8080
+  tls:
+  - hosts:
+    - ingress-nginx-controller.ingress-nginx.svc.cluster.local
