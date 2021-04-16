@@ -43,6 +43,8 @@ jobs:
         run: |
           kubectl get pods -l app=kubenurse
           kubectl logs -l app=kubenurse
+          kubectl get pods -l app=kubenurse -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' | (! grep -v 0) # Validate for 0 restarts
+          test $(kubectl get pods -l app=kubenurse | wc -l) -eq 4 # Test for 3 Pods + header
       - name: Show Kubernetes resources
         run: kubectl get pods -o wide
         if: ${{ always() }}
@@ -56,4 +58,3 @@ jobs:
         if: ${{ failure() }}
 # TODO:
 # - Check metrics and logs
-# - Really check state of pods (count, state, restart count)
