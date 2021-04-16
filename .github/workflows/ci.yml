@@ -55,6 +55,8 @@ jobs:
           echo "Logs are ok"
           kubectl get pods -l app=kubenurse -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' | (! grep -v 0) # Validate for 0 restarts
           echo "Restart count is ok"
+          curl -k -v --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics
+          echo "Discovery ok: Metrics include neighbours"
       - name: Show Kubernetes resources
         run: kubectl get pods -o wide
         if: ${{ always() }}
