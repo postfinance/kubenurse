@@ -39,10 +39,12 @@ jobs:
         run: |
           sleep 15 # wait for the scheduler to create pods
           kubectl wait pods -l app=kubenurse --for=condition=Ready
-      - name: Check state of pods
-        run: |
           kubectl get pods -l app=kubenurse
-          kubectl logs -l app=kubenurse
+      - name: Check state of pods
+        timeout-minutes: 2
+        run: |
+          sleep 60 # Wait to generate some checks etc.
+          test $(kubectl logs -l app=kubenurse | grep -v "I'm ready to help you" | wc -l) -eq 0 # Test that there are no unexpected log lines present
           kubectl get pods -l app=kubenurse -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' | (! grep -v 0) # Validate for 0 restarts
           test $(kubectl get pods -l app=kubenurse | wc -l) -eq 4 # Test for 3 Pods + header
       - name: Show Kubernetes resources
@@ -56,5 +58,4 @@ jobs:
           kubectl describe daemonsets -l app=kubenurse
           kubectl get events
         if: ${{ failure() }}
-# TODO:
-# - Check metrics and logs
+# TODO: Check metrics
