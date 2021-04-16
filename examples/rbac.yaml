@@ -10,7 +10,7 @@ roleRef:
   name: kubenurse
 subjects:
 - kind: ServiceAccount
-  name: nurse
+  name: kubenurse
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -39,7 +39,7 @@ roleRef:
   name: kubenurse
 subjects:
 - kind: ServiceAccount
-  name: nurse
+  name: kubenurse
   namespace: kube-system
 ---
 # This resource is not needed if KUBENURSE_ALLOW_UNSCHEDULABLE=true
