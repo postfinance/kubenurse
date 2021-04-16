@@ -48,6 +48,8 @@ jobs:
         if: ${{ always() }}
       - name: Describe resources on failure
         run: |
+          kubectl get pods -l app=kubenurse
+          kubectl logs -l app=kubenurse
           kubectl describe pods
           kubectl describe daemonsets
           kubectl get events
