@@ -68,8 +68,11 @@ func main() {
 		Transport: transport,
 	}
 
+	// If we want to consider kubenurses on unschedulable nodes
+	allowUnschedulable := os.Getenv("KUBENURSE_ALLOW_UNSCHEDULABLE") == "true"
+
 	// setup checker
-	chk, err := checker.New(ctx, client, 3*time.Second)
+	chk, err := checker.New(ctx, client, 3*time.Second, allowUnschedulable)
 	if err != nil {
 		log.Fatalln(err)
 	}

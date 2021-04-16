@@ -14,16 +14,17 @@ import (
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
-func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration) (*Checker, error) {
-	discovery, err := kubediscovery.New(ctx)
+func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration, allowUnschedulable bool) (*Checker, error) {
+	discovery, err := kubediscovery.New(ctx, allowUnschedulable)
 	if err != nil {
 		return nil, fmt.Errorf("create k8s discovery client: %w", err)
 	}
 
 	return &Checker{
-		discovery:  discovery,
-		httpClient: httpClient,
-		cacheTTL:   cacheTTL,
+		allowUnschedulable: allowUnschedulable,
+		discovery:          discovery,
+		httpClient:         httpClient,
+		cacheTTL:           cacheTTL,
 	}, nil
 }
 
@@ -110,7 +111,7 @@ func (c *Checker) MeService() (string, error) {
 func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 	for _, neighbour := range nh {
 		neighbour := neighbour // pin
-		if neighbour.NodeSchedulable {
+		if c.allowUnschedulable || neighbour.NodeSchedulable == kubediscovery.NodeSchedulable {
 			check := func() (string, error) {
 				return c.doRequest("http://" + neighbour.PodIP + ":8080/alwayshappy")
 			}

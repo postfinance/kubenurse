@@ -13,9 +13,21 @@ import (
 
 // Client provides the kubediscovery client methods.
 type Client struct {
-	k8s       kubernetes.Interface
-	nodeCache *nodeCache
+	k8s                kubernetes.Interface
+	nodeCache          *nodeCache
+	allowUnschedulable bool
 }
+
+// NodeSchedulability determines if the kubernetes node is in schedulable mode
+// or not.
+type NodeSchedulability string
+
+// Constants to define the NodeSchedulability of kubernetes Nodes
+const (
+	NodeSchedulabilityUnknown NodeSchedulability = "Unknown"
+	NodeSchedulable           NodeSchedulability = "Schedulable"
+	NodeUnschedulable         NodeSchedulability = "Unschedulable"
+)
 
 // Neighbour represents a kubenurse which should be reachable
 type Neighbour struct {
@@ -23,12 +35,14 @@ type Neighbour struct {
 	PodIP           string
 	HostIP          string
 	NodeName        string
-	NodeSchedulable bool
+	NodeSchedulable NodeSchedulability
 	Phase           string // Pod Phase
 }
 
 // New creates a new kubediscovery client. The context is used to stop the k8s watchers/informers.
-func New(ctx context.Context) (*Client, error) {
+// When allowUnschedulable is true, no node watcher is created and kubenurses
+// on unschedulable nodes are considered as neighbours.
+func New(ctx context.Context, allowUnschedulable bool) (*Client, error) {
 	// create in-cluster config
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -40,14 +54,20 @@ func New(ctx context.Context) (*Client, error) {
 		return nil, fmt.Errorf("creating clientset: %w", err)
 	}
 
-	nodeCache, err := watchNodes(ctx, cliset)
-	if err != nil {
-		return nil, fmt.Errorf("starting node watcher: %w", err)
+	var nc *nodeCache
+
+	// Watch nodes only if we consider kubenurses on unschedulable nodes
+	if allowUnschedulable {
+		nc, err = watchNodes(ctx, cliset)
+		if err != nil {
+			return nil, fmt.Errorf("starting node watcher: %w", err)
+		}
 	}
 
 	return &Client{
-		k8s:       cliset,
-		nodeCache: nodeCache,
+		k8s:                cliset,
+		nodeCache:          nc,
+		allowUnschedulable: allowUnschedulable,
 	}, nil
 }
 
@@ -67,13 +87,23 @@ func (c *Client) GetNeighbours(ctx context.Context, namespace, labelSelector str
 	for idx := range pods.Items {
 		pod := pods.Items[idx]
 
+		// If we allow unschedulable kubenurses, we set the schedulability
+		// to unknown in order not to have to set up a node watcher.
+		sched := NodeSchedulabilityUnknown
+		if !c.allowUnschedulable {
+			sched = NodeUnschedulable
+			if c.nodeCache.isSchedulable(pod.Spec.NodeName) {
+				sched = NodeSchedulable
+			}
+		}
+
 		n := Neighbour{
 			PodName:         pod.Name,
 			PodIP:           pod.Status.PodIP,
 			HostIP:          pod.Status.HostIP,
 			Phase:           string(pod.Status.Phase),
 			NodeName:        pod.Spec.NodeName,
-			NodeSchedulable: c.nodeCache.isSchedulable(pod.Spec.NodeName),
+			NodeSchedulable: sched,
 		}
 		neighbours[idx] = n
 	}
