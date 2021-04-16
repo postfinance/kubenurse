@@ -57,6 +57,10 @@ jobs:
           echo "Restart count is ok"
           curl -k -s --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics | grep "kubenurse_request_" > /dev/null
           echo "Metrics contain kubenurse specific data"
+          curl -k -s --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics | grep "kubenurse_request_" | grep 'type="path_' > /dev/null
+          echo "Metrics contains neighbours"
+          curl -k -s --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics | (! grep "kubenurse_errors_total")
+          echo "Metrics contains no errors"
           curl -k -s --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive | grep '"neighbourhood_state": "ok"' > /dev/null
           echo "Neighbourhood state ok"
           curl -k -s --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive | grep '"neighbourhood": \[' > /dev/null # If no others are discovered, this is null
@@ -77,4 +81,3 @@ jobs:
           kubectl get events
           curl -k --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive
         if: ${{ failure() }}
-# TODO: Check metrics
