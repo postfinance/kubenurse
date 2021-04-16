@@ -38,11 +38,7 @@ jobs:
         run: kind load docker-image postfinance/kubenurse:latest
       - name: Deploy example setup
         run: |
-          # Rewrite parameters for use with kind
-          sed -i 's/kubenurse.example.com/ingress-nginx-controller.ingress-nginx.svc.cluster.local/g' examples/*.yaml
-          sed -i 's/https/http/g' examples/daemonset.yaml
-          # Apply example deployment
-          kubectl apply -R -f examples/
+          kubectl apply -k ci/deployment/
       - name: Wait for pods
         timeout-minutes: 1
         run: |

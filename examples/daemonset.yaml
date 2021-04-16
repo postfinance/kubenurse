@@ -32,7 +32,7 @@ spec:
           value: kube-system
         - name: KUBENURSE_NEIGHBOUR_FILTER
           value: "app=kubenurse"
-        image: "postfinance/kubenurse:latest" # In a production setup, you want to change this to a version
+        image: "postfinance/kubenurse:v1.3.2"
         ports:
         - containerPort: 8080
           protocol: TCP
