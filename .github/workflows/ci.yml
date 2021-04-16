@@ -44,9 +44,12 @@ jobs:
         timeout-minutes: 2
         run: |
           sleep 60 # Wait to generate some checks etc.
-          test $(kubectl logs -l app=kubenurse | grep -v "I'm ready to help you" | wc -l) -eq 0 # Test that there are no unexpected log lines present
-          kubectl get pods -l app=kubenurse -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' | (! grep -v 0) # Validate for 0 restarts
           test $(kubectl get pods -l app=kubenurse | wc -l) -eq 4 # Test for 3 Pods + header
+          echo "Number of kubenurses is ok"
+          test $(kubectl logs -l app=kubenurse | grep -v "I'm ready to help you" | wc -l) -eq 0 # Test that there are no unexpected log lines present
+          echo "Logs are ok"
+          kubectl get pods -l app=kubenurse -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' | (! grep -v 0) # Validate for 0 restarts
+          echo "Restart count is ok"
       - name: Show Kubernetes resources
         run: kubectl get pods -o wide
         if: ${{ always() }}
