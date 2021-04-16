@@ -6,7 +6,7 @@ metadata:
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
+  kind: Role
   name: kubenurse
 subjects:
 - kind: ServiceAccount
