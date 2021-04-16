@@ -20,7 +20,7 @@ spec:
         prometheus.io/scheme: "http"
         prometheus.io/scrape: "true"
     spec:
-      serviceAccountName: nurse
+      serviceAccountName: kubenurse
       containers:
       - name: kubenurse
         env:
