@@ -40,6 +40,7 @@ jobs:
         run: |
           # Rewrite parameters for use with kind
           sed -i 's/kubenurse.example.com/ingress-nginx-controller.ingress-nginx.svc.cluster.local/g' examples/*.yaml
+          sed -i 's/https/http/g' examples/daemonset.yaml
           # Apply example deployment
           kubectl apply -R -f examples/
       - name: Wait for pods
