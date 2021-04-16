@@ -65,19 +65,15 @@ jobs:
           echo "Neighbourhood state ok"
           curl -k -s --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive | grep '"neighbourhood": \[' > /dev/null # If no others are discovered, this is null
           echo "Discovery ok: Status page includes neighbours"
-      - name: Show Kubernetes resources
-        run: |
-          curl -k --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive
-        if: ${{ always() }}
       - name: Show kubenurse status
-        run: kubectl get pods -o wide
+        run: |
+          curl -k -s --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive
         if: ${{ always() }}
       - name: Describe resources on failure
         run: |
-          kubectl get pods -l app=kubenurse
+          kubectl get pods -o wide
           kubectl logs -l app=kubenurse
           kubectl describe pods -l app=kubenurse
           kubectl describe daemonsets -l app=kubenurse
           kubectl get events
-          curl -k --resolve ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive
         if: ${{ failure() }}
