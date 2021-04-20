@@ -124,6 +124,8 @@ Neighbours are discovered by querying the kube-apiserver for every Pod in the
 `KUBENURSE_NAMESPACE` with label `KUBENURSE_NEIGHBOUR_FILTER`.
 The request is done directly to the Pod-IP and the metric types contains the prefix
 `path_` and the hostname of the kubelet on which the neighbour kubenurse should run.
+Only kubenurses on nodes that are schedulable are considered as neighbours,
+this can be changed by setting `KUBENURSE_ALLOW_UNSCHEDULABLE="true"`.
 
 Metric type: `path_$KUBELET_HOSTNAME`
 

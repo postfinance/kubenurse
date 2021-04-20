@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kubenurse
+spec:
+  template:
+    spec:
+      containers:
+      - name: kubenurse
+        env:
+        - name: KUBENURSE_INSECURE
+          value: "true"
+        - name: KUBENURSE_INGRESS_URL
+          value: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kubenurse
+spec:
+  rules:
+  - host: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+    http:
+      paths:
+      - backend:
+          serviceName: kubenurse
+          servicePort: 8080
+  tls:
+  - hosts:
+    - ingress-nginx-controller.ingress-nginx.svc.cluster.local

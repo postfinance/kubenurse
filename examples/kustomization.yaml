@@ -1,0 +1,6 @@
+resources:
+- daemonset.yaml
+- ingress.yaml
+- rbac.yaml
+- serviceaccount.yaml
+- service.yaml

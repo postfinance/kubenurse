@@ -20,7 +20,7 @@ spec:
         prometheus.io/scheme: "http"
         prometheus.io/scrape: "true"
     spec:
-      serviceAccountName: nurse
+      serviceAccountName: kubenurse
       containers:
       - name: kubenurse
         env:
@@ -32,7 +32,7 @@ spec:
           value: kube-system
         - name: KUBENURSE_NEIGHBOUR_FILTER
           value: "app=kubenurse"
-        image: "postfinance/kubenurse:v1.2.0"
+        image: "postfinance/kubenurse:v1.3.2"
         ports:
         - containerPort: 8080
           protocol: TCP
