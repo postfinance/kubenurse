@@ -56,8 +56,8 @@ func New(ctx context.Context, allowUnschedulable bool) (*Client, error) {
 
 	var nc *nodeCache
 
-	// Watch nodes only if we consider kubenurses on unschedulable nodes
-	if allowUnschedulable {
+	// Watch nodes only if we do not consider kubenurses on unschedulable nodes
+	if !allowUnschedulable {
 		nc, err = watchNodes(ctx, cliset)
 		if err != nil {
 			return nil, fmt.Errorf("starting node watcher: %w", err)
