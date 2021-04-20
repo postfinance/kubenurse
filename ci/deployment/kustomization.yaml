@@ -4,4 +4,4 @@ patchesStrategicMerge:
 - conf.yaml
 images:
 - name: postfinance/kubenurse
-  newTag: latest
+  newTag: latest-ci
