@@ -32,6 +32,11 @@ func main() {
 		Addr:    ":8080",
 		Handler: mux,
 	}
+	serverTLS := http.Server{
+		Addr:    ":8443",
+		Handler: mux,
+	}
+	useTLS := os.Getenv("KUBENURSE_USE_TLS") == "true"
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
@@ -48,6 +53,12 @@ func main() {
 
 			if err := server.Shutdown(shutdownCtx); err != nil {
 				log.Fatalln(err)
+			}
+
+			if useTLS {
+				if err := serverTLS.Shutdown(shutdownCtx); err != nil {
+					log.Fatalln(err)
+				}
 			}
 
 			cancel()
@@ -83,6 +94,7 @@ func main() {
 	chk.KubernetesServicePort = os.Getenv("KUBERNETES_SERVICE_PORT")
 	chk.KubenurseNamespace = os.Getenv("KUBENURSE_NAMESPACE")
 	chk.NeighbourFilter = os.Getenv("KUBENURSE_NEIGHBOUR_FILTER")
+	chk.UseTLS = useTLS
 
 	// setup http routes
 	mux.HandleFunc("/alive", aliveHandler(chk))
@@ -105,6 +117,16 @@ func main() {
 			}
 		}
 	}()
+
+	if useTLS {
+		go func() {
+			if err := serverTLS.ListenAndServeTLS(os.Getenv("KUBENURSE_CERT_FILE"), os.Getenv("KUBENURSE_CERT_KEY")); err != nil {
+				if err != http.ErrServerClosed {
+					log.Fatalln(err)
+				}
+			}
+		}()
+	}
 
 	<-ctx.Done()
 }

@@ -113,6 +113,10 @@ func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 		neighbour := neighbour // pin
 		if c.allowUnschedulable || neighbour.NodeSchedulable == kubediscovery.NodeSchedulable {
 			check := func() (string, error) {
+				if c.UseTLS {
+					return c.doRequest("https://" + neighbour.PodIP + ":8443/alwayshappy")
+				}
+
 				return c.doRequest("http://" + neighbour.PodIP + ":8080/alwayshappy")
 			}
 
