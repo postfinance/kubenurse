@@ -26,6 +26,7 @@ const (
 	nurse  = "I'm ready to help you!"
 )
 
+//nolint:funlen
 func main() {
 	mux := http.NewServeMux()
 	server := http.Server{
