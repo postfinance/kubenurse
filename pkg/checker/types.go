@@ -22,6 +22,9 @@ type Checker struct {
 	NeighbourFilter    string
 	allowUnschedulable bool
 
+	// TLS
+	UseTLS bool
+
 	discovery *kubediscovery.Client
 
 	// Http Client for https requests

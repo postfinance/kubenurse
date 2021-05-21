@@ -25,6 +25,9 @@ kubenurse is configured with environment variables:
 - `KUBENURSE_NAMESPACE`: Namespace in which to look for the neighbour kubenurses
 - `KUBENURSE_NEIGHBOUR_FILTER`: A label selector to filter neighbour kubenurses
 - `KUBENURSE_ALLOW_UNSCHEDULABLE`: If this is `"true"`, path checks to neighbouring kubenurses are only made if they are running on schedulable nodes. This requires get/list/watch access to `api/v1 Node` resources
+- `KUBENURSE_USE_TLS`: If this is `"true"`, enable TLS endpoint on port 8443
+- `KUBENURSE_CERT_FILE`: Certificate to use with TLS endpoint
+- `KUBENURSE_CERT_KEY`: Key to use with TLS endpoint
 
 Following variables are injected to the Pod by Kubernetes and should not be defined manually:
 
@@ -35,7 +38,7 @@ The used http client appends the certificate `/var/run/secrets/kubernetes.io/ser
 
 ## http Endpoints
 
-The kubenurse listens http on port 8080 and exposes endpoints:
+The kubenurse listens http on port 8080, optionally https on port 8443, and exposes endpoints:
 
 - `/`: Redirects to `/alive`
 - `/alive`: Returns a pretty printed JSON with the check results, described below
@@ -122,7 +125,7 @@ Metric type: `me_service`
 Checks if every neighbour kubenurse is reachable at the `/alwayshappy` endpoint.
 Neighbours are discovered by querying the kube-apiserver for every Pod in the
 `KUBENURSE_NAMESPACE` with label `KUBENURSE_NEIGHBOUR_FILTER`.
-The request is done directly to the Pod-IP and the metric types contains the prefix
+The request is done directly to the Pod-IP (port 8080, or 8443 if TLS is enabled) and the metric types contains the prefix
 `path_` and the hostname of the kubelet on which the neighbour kubenurse should run.
 Only kubenurses on nodes that are schedulable are considered as neighbours,
 this can be changed by setting `KUBENURSE_ALLOW_UNSCHEDULABLE="true"`.
