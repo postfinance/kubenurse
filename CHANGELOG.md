@@ -1,6 +1,11 @@
 ## 1.4.0 (2021-05-25)
 
 
+
+### New Features
+
+* **common**: Add option to use TLS for checks ([#19](https://github.com/postfinance/kubenurse/pull/19),[e1935c21](https://github.com/postfinance/kubenurse/commit/e1935c21))
+
 ### Bug Fixes
 
 * **examples**: Bump kubenurse version to v1.3.4 ([4e0a4c33](https://github.com/postfinance/kubenurse/commit/4e0a4c33))
