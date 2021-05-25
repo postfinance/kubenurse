@@ -1,3 +1,12 @@
+## 1.4.0 (2021-05-25)
+
+
+### Bug Fixes
+
+* **examples**: Bump kubenurse version to v1.3.4 ([4e0a4c33](https://github.com/postfinance/kubenurse/commit/4e0a4c33))
+
+
+
 ## 1.3.4 (2021-04-20)
 
 
