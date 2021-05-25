@@ -1,0 +1,23 @@
+sections:
+    - type: build
+      title: Build System
+      hidden: true
+    - type: docs
+      title: Documentation
+      hidden: true
+    - type: feat
+      title: New Features
+      hidden: false
+    - type: fix
+      title: Bug Fixes
+      hidden: false
+    - type: refactor
+      title: Code Refactoring
+      hidden: true
+    - type: test
+      title: Test
+      hidden: true
+    - type: chore
+      title: Tasks
+      hidden: true
+github_project_path: postfinance/kubenurse
