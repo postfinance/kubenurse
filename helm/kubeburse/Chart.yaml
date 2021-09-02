@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kubeburse
+description: A Helm chart for Kubernetes to deploy kubenurse
+version: 0.1.0
+appVersion: "1.4.0"
+icon: https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia-exp1.licdn.com%2Fdms%2Fimage%2FC510BAQF_z3JTgqxmdg%2Fcompany-logo_200_200%2F0%2F1519856254399%3Fe%3D2159024400%26v%3Dbeta%26t%3DHi5w0nBq6Y_fVR3acSnTXebGq4tyjJ2UFvuagaEO1Xc&imgrefurl=https%3A%2F%2Fnl.linkedin.com%2Fcompany%2Fpostfinance&tbnid=hMbvcBwLHExq8M&vet=12ahUKEwitmJ_BlNzyAhWWLOwKHdq3BaQQMygAegUIARDEAQ..i&docid=qzrA5TkYH4lMTM&w=200&h=200&q=postfinance&ved=2ahUKEwitmJ_BlNzyAhWWLOwKHdq3BaQQMygAegUIARDEAQ

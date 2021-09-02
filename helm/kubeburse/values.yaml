@@ -1,0 +1,23 @@
+daemonset:
+  image:
+    repository: postfinance/kubenurse
+    tag: v1.4.0
+  extraEnvs: []
+
+namespace: kube-system
+
+serviceAccount:
+  name: kubenurse
+
+service:
+  name: 8080-8080
+  port: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  url: dummy.kubenurse.com
+
+rbac:
+  allow_unschedulable:
+    enabled: true
