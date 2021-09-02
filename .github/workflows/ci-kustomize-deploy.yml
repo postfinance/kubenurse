@@ -1,0 +1,110 @@
+---
+name: ci-kustomize-deploy
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.32
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --snapshot --rm-dist --skip-publish
+      - name: Setup kind
+        uses: engineerd/setup-kind@v0.5.0
+        with:
+          config: "ci/kind-config.yaml"
+          version: "v0.11.1"
+      - name: Show cluster info and switch to kube-system
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+          echo "current-context:" $(kubectl config current-context)
+          kubectl config set-context --current --namespace kube-system
+      - name: Deploy ingress-nginx
+        timeout-minutes: 2
+        run: |
+          kubectl apply -f \
+            https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+      - name: Import image into kind
+        run: |
+          docker images
+          docker tag postfinance/kubenurse:latest \
+            postfinance/kubenurse:latest-ci
+          kind load docker-image postfinance/kubenurse:latest-ci
+      - name: Deploy example setup
+        run: |
+          kubectl apply -k ci/deployment/
+      - name: Wait for pods
+        timeout-minutes: 1
+        run: |
+          sleep 15 # wait for the scheduler to create pods
+          kubectl wait pods -l app=kubenurse --for=condition=Ready
+          kubectl get pods -l app=kubenurse
+      - name: Check state of pods
+        timeout-minutes: 2
+        run: |
+          sleep 60 # Wait to generate some checks etc.
+          test $(kubectl get pods -l app=kubenurse \
+            | wc -l) -eq 4 # Test for 3 Pods + header
+          echo "Number of kubenurses is ok"
+          test $(kubectl logs -l app=kubenurse \
+            | grep -v "I'm ready to help you" \
+            | wc -l) -eq 0 \
+            # Test that there are no unexpected log lines present
+          echo "Logs are ok"
+          kubectl get pods -l app=kubenurse \
+            -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' \
+            | (! grep -v 0) # Validate for 0 restarts
+          echo "Restart count is ok"
+          curl -k -s --resolve \
+            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
+            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
+            | grep "kubenurse_request_" > /dev/null
+          echo "Metrics contain kubenurse specific data"
+          curl -k -s --resolve \
+            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
+            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
+            | grep "kubenurse_request_" | grep 'type="path_' > /dev/null
+          echo "Metrics contains neighbours"
+          curl -k -s --resolve \
+            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
+            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
+            | (! grep "kubenurse_errors_total")
+          echo "Metrics contains no errors"
+          curl -k -s --resolve \
+            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
+            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive \
+            | grep '"neighbourhood_state": "ok"' > /dev/null
+          echo "Neighbourhood state ok"
+          curl -k -s --resolve \
+            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
+            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive \
+            | grep '"neighbourhood": \[' > /dev/null # If no others are discovered, this is null
+          echo "Discovery ok: Status page includes neighbours"
+      - name: Show kubenurse status
+        run: |
+          curl -k -s --resolve \
+            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
+            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive
+        if: ${{ always() }}
+      - name: Describe resources on failure
+        run: |
+          kubectl get pods -o wide
+          kubectl logs -l app=kubenurse
+          kubectl describe pods -l app=kubenurse
+          kubectl describe daemonsets -l app=kubenurse
+          kubectl get events
+        if: ${{ failure() }}

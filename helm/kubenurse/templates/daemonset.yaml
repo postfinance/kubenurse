@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: {{ include "name" . | quote }}
+{{ include "helm-labels" . | indent 4 }}
+  name: {{ include "name" . | quote }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "name" . | quote }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "name" . | quote }}
+{{ include "common-labels" . | indent 8 }}
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+        prometheus.io/scheme: "http"
+        prometheus.io/scrape: "true"
+    spec:
+      serviceAccountName: {{ include "name" . | quote }}
+      containers:
+      - name: {{ include "name" . | quote }}
+        env:
+        - name: KUBENURSE_INGRESS_URL
+          value: https://{{ .Values.ingress.url }}
+        - name: KUBENURSE_SERVICE_URL
+          value: "http://kubenurse.{{ .Values.namespace }}.svc.cluster.local:8080"
+        - name: KUBENURSE_INSECURE
+          value: "true"
+        - name: KUBENURSE_ALLOW_UNSCHEDULABLE
+          value: "false"
+        - name: KUBENURSE_NAMESPACE
+          value: {{ .Values.namespace }}
+        - name: KUBENURSE_NEIGHBOUR_FILTER
+          value: app={{ include "name" . }}
+          {{- if .Values.daemonset.extraEnvs }}
+            {{- toYaml .Values.daemonset.extraEnvs | indent 12 }}
+          {{- end }}
+        image: {{ include "image" . | quote }}
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Equal
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+        operator: Equal

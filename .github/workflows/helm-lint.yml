@@ -1,0 +1,12 @@
+---
+name: Yaml lint helm chart
+on: [push, pull_request]
+jobs:
+  lintAllTheThings:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Helm lint
+      shell: bash
+      run: |
+        helm lint ./helm/kubenurse/
