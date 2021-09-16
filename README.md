@@ -7,6 +7,28 @@ You can get the Docker Image from [Docker Hub](https://hub.docker.com/r/postfina
 The [examples](https://github.com/postfinance/kubenurse/tree/master/examples) directory
 contains yamls that deploy the kubenurse to the kube-system namespace.
 
+### Helm deployment
+
+You can also deploy kubenurse with helm, the chart can be found in ./helm/kubenurse.
+`helm upgrade [RELEASE_NAME] --install -f values.yaml ./`
+
+#### Configuration settings
+
+| Setting                          | Description                                                                                         | Default               |
+| ---------------------------------|---------------------------------------------------------------------------------------------------- | --------------------- |
+| daemonset.image.repository       | The repository name                                                                                 | postfinance/kubenurse |
+| daemonset.image.tag              | The tag/ version of the image                                                                       | v1.4.0                |
+| namespace                        | The namespace where kubenurse will be deployed                                                      | kube-system           |
+| serviceAccount.name              | The name of the service account which is used                                                       | kubenurse             |
+| service.name                     | The name of service which exposes the kubenurse application                                         | 8080-8080             |
+| service.port                     | The port number of the service                                                                      | 8080                  |
+| ingress.enabled                  | Enable/ Disable the ingress                                                                         | true                  |
+| ingress.className                | The classname of the ingress controller (e.g. the nginx ingress controller)                         | nginx                 |
+| ingress.url                      | The url of the ingress; e.g. kubenurse.westeurope.cloudapp.azure.com                                | dummy.kubenurse.com   |
+| rbac.allow_unschedulable.enabled | Configure a clusterrole and clusterrolebinding if env KUBENURSE_ALLOW_UNSCHEDULABLE is set to false | false                 |
+
+
+
 After everything is set up and Prometheus scrapes the kubenurses, you can build
 dashboards that show network latencies and errors or use the metrics for alarming.
 

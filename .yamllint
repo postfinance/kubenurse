@@ -1,0 +1,35 @@
+---
+extends: default
+
+yaml-files:
+  - '*.yaml'
+
+rules:
+  braces:
+    max-spaces-inside: 1
+    level: warning
+  brackets:
+    max-spaces-inside: 1
+    level: warning
+  colons:
+    max-spaces-after: -1
+    level: warning
+  commas:
+    max-spaces-after: -1
+    level: warning
+  empty-lines:
+    max: 3
+    level: warning
+  hyphens:
+    level: error
+  truthy: disable
+  comments: disable
+  comments-indentation: disable
+  indentation: disable
+  key-duplicates: enable
+  line-length:
+    max: 500
+    level: warning
+  new-lines:
+    type: unix
+
