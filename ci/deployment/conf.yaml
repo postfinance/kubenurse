@@ -14,19 +14,23 @@ spec:
         - name: KUBENURSE_INGRESS_URL
           value: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: kubenurse
-  namespace: kube-system
 spec:
+  ingressClassName: nginx
   rules:
   - host: ingress-nginx-controller.ingress-nginx.svc.cluster.local
     http:
       paths:
-      - backend:
-          serviceName: kubenurse
-          servicePort: 8080
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: kubenurse
+            port:
+              number: 8080
   tls:
   - hosts:
     - ingress-nginx-controller.ingress-nginx.svc.cluster.local
