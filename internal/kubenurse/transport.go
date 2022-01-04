@@ -13,8 +13,7 @@ const (
 	caFile = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 )
 
-// generateRoundTripper returns a custom http.RoundTripper, including the k8s
-// CA. If env KUBENURSE_INSECURE is set to true, certificates are not validated.
+// generateRoundTripper returns a custom http.RoundTripper, including the k8s CA.
 func (s *Server) generateRoundTripper() (http.RoundTripper, error) {
 	// Append default certpool
 	rootCAs, _ := x509.SystemCertPool()
