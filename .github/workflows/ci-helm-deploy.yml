@@ -15,6 +15,7 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.42
+          args: --timeout 5m
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
