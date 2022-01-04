@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/postfinance/kubenurse/pkg/kubediscovery"
+	"github.com/postfinance/kubenurse/internal/kubediscovery"
 )
 
 // Checker implements the kubenurse checker

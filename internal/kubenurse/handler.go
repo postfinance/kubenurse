@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/postfinance/kubenurse/pkg/kubediscovery"
+	"github.com/postfinance/kubenurse/internal/kubediscovery"
 )
 
 func (s *Server) readyHandler() func(w http.ResponseWriter, r *http.Request) {

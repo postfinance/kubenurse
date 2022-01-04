@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/postfinance/kubenurse/pkg/kubediscovery"
+	"github.com/postfinance/kubenurse/internal/kubediscovery"
 	"github.com/postfinance/kubenurse/pkg/metrics"
 )
 
