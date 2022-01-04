@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/postfinance/kubenurse/internal/kubediscovery"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Checker implements the kubenurse checker
@@ -26,6 +27,10 @@ type Checker struct {
 	UseTLS bool
 
 	discovery *kubediscovery.Client
+
+	// metrics
+	errorCounter    *prometheus.CounterVec
+	durationSummary *prometheus.SummaryVec
 
 	// Http Client for https requests
 	httpClient *http.Client

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/postfinance/kubenurse/internal/kubediscovery"
-	"github.com/postfinance/kubenurse/pkg/metrics"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (
@@ -24,11 +24,33 @@ func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration, a
 		return nil, fmt.Errorf("create k8s discovery client: %w", err)
 	}
 
+	errorCounter := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "kubenurse_errors_total",
+			Help: "Kubenurse error counter partitioned by error type",
+		},
+		[]string{"type"},
+	)
+
+	durationSummary := prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:       "kubenurse_request_duration",
+			Help:       "Kubenurse request duration partitioned by error type",
+			MaxAge:     1 * time.Minute,
+			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+		},
+		[]string{"type"},
+	)
+
+	prometheus.MustRegister(errorCounter, durationSummary)
+
 	return &Checker{
 		allowUnschedulable: allowUnschedulable,
 		discovery:          discovery,
 		httpClient:         httpClient,
 		cacheTTL:           cacheTTL,
+		errorCounter:       errorCounter,
+		durationSummary:    durationSummary,
 		stop:               make(chan struct{}),
 	}, nil
 }
@@ -50,16 +72,16 @@ func (c *Checker) Run() (Result, bool) {
 	// Run Checks
 	res := Result{}
 
-	res.APIServerDirect, err = measure(c.APIServerDirect, "api_server_direct")
+	res.APIServerDirect, err = c.measure(c.APIServerDirect, "api_server_direct")
 	haserr = haserr || (err != nil)
 
-	res.APIServerDNS, err = measure(c.APIServerDNS, "api_server_dns")
+	res.APIServerDNS, err = c.measure(c.APIServerDNS, "api_server_dns")
 	haserr = haserr || (err != nil)
 
-	res.MeIngress, err = measure(c.MeIngress, "me_ingress")
+	res.MeIngress, err = c.measure(c.MeIngress, "me_ingress")
 	haserr = haserr || (err != nil)
 
-	res.MeService, err = measure(c.MeService, "me_service")
+	res.MeService, err = c.measure(c.MeService, "me_service")
 	haserr = haserr || (err != nil)
 
 	res.Neighbourhood, err = c.discovery.GetNeighbours(context.TODO(), c.KubenurseNamespace, c.NeighbourFilter)
@@ -138,24 +160,24 @@ func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 				return c.doRequest("http://" + neighbour.PodIP + ":8080/alwayshappy")
 			}
 
-			_, _ = measure(check, "path_"+neighbour.NodeName)
+			_, _ = c.measure(check, "path_"+neighbour.NodeName)
 		}
 	}
 }
 
 // measure implements metric collections for the check
-func measure(check Check, label string) (string, error) {
+func (c *Checker) measure(check Check, label string) (string, error) {
 	start := time.Now()
 
 	// Execute check
 	res, err := check()
 
 	// Process metrics
-	metrics.DurationSummary.WithLabelValues(label).Observe(time.Since(start).Seconds())
+	c.durationSummary.WithLabelValues(label).Observe(time.Since(start).Seconds())
 
 	if err != nil {
 		log.Printf("failed request for %s with %v", label, err)
-		metrics.ErrorCounter.WithLabelValues(label).Inc()
+		c.errorCounter.WithLabelValues(label).Inc()
 	}
 
 	return res, err
