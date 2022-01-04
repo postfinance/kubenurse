@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
@@ -17,8 +16,6 @@ const (
 )
 
 func main() {
-	wg := new(sync.WaitGroup)
-
 	server, err := kubenurse.New()
 	if err != nil {
 		log.Printf("%s", err)
@@ -28,11 +25,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	wg.Add(1)
-
 	go func() {
-		defer wg.Done()
-
 		<-ctx.Done() // blocks until ctx is canceled
 
 		log.Println("shutting down, received signal to stop")
