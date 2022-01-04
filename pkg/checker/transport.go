@@ -3,8 +3,8 @@ package checker
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -16,12 +16,12 @@ const (
 // doRequest does an http request only to get the http status code
 func (c *Checker) doRequest(url string) (string, error) {
 	// Read Bearer Token file from ServiceAccount
-	token, err := ioutil.ReadFile(tokenFile)
+	token, err := os.ReadFile(tokenFile)
 	if err != nil {
 		return "error", fmt.Errorf("could not load token %s: %s", tokenFile, err)
 	}
 
-	req, _ := http.NewRequest("GET", url, nil)
+	req, _ := http.NewRequest("GET", url, http.NoBody)
 
 	// Only add the Bearer for API Server Requests
 	if strings.HasSuffix(url, "/version") {
