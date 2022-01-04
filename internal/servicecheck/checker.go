@@ -1,5 +1,5 @@
-// Package checker implements the checks the kubenurse performs.
-package checker
+// Package servicecheck implements the checks the kubenurse performs.
+package servicecheck
 
 import (
 	"context"

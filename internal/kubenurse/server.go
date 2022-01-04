@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/postfinance/kubenurse/pkg/checker"
+	"github.com/postfinance/kubenurse/internal/servicecheck"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -19,7 +19,7 @@ type Server struct {
 	http  http.Server
 	https http.Server
 
-	checker *checker.Checker
+	checker *servicecheck.Checker
 
 	// Configuration options
 	useTLS bool
@@ -81,7 +81,7 @@ func New() (*Server, error) {
 	}
 
 	// setup checker
-	chk, err := checker.New(context.TODO(), client, 3*time.Second, server.allowUnschedulable)
+	chk, err := servicecheck.New(context.TODO(), client, 3*time.Second, server.allowUnschedulable)
 	if err != nil {
 		return nil, err
 	}

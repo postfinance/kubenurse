@@ -1,4 +1,4 @@
-package checker
+package servicecheck
 
 import (
 	"net/http"
