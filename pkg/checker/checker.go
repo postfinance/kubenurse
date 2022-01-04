@@ -12,6 +12,10 @@ import (
 	"github.com/postfinance/kubenurse/pkg/metrics"
 )
 
+const (
+	okStr = "ok"
+)
+
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
 func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration, allowUnschedulable bool) (*Checker, error) {
@@ -25,6 +29,7 @@ func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration, a
 		discovery:          discovery,
 		httpClient:         httpClient,
 		cacheTTL:           cacheTTL,
+		stop:               make(chan struct{}),
 	}, nil
 }
 
@@ -64,7 +69,7 @@ func (c *Checker) Run() (Result, bool) {
 	if err != nil {
 		res.NeighbourhoodState = err.Error()
 	} else {
-		res.NeighbourhoodState = "ok"
+		res.NeighbourhoodState = okStr
 
 		// Check all neighbours if the neighbourhood was discovered
 		c.checkNeighbours(res.Neighbourhood)
@@ -76,12 +81,25 @@ func (c *Checker) Run() (Result, bool) {
 	return res, haserr
 }
 
-// RunScheduled runs the check run in the specified interval which can be used
-// to keep the metrics up-to-date.
+// RunScheduled runs the checks in the specified interval which can be used to keep the metrics up-to-date. This
+// function does not return until StopScheduled is called.
 func (c *Checker) RunScheduled(d time.Duration) {
-	for range time.Tick(d) {
-		c.Run()
+	ticker := time.NewTicker(d)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			c.Run()
+		case <-c.stop:
+			return
+		}
 	}
+}
+
+// StopScheduled is used to stop the scheduled run of checks.
+func (c *Checker) StopScheduled() {
+	close(c.stop)
 }
 
 // APIServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link

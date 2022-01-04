@@ -7,7 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals // TODO: rewrite
 var (
 	// ErrorCounter provides the kubenurse_errors_total metric
 	ErrorCounter = prometheus.NewCounterVec(
@@ -30,7 +30,7 @@ var (
 	)
 )
 
-//nolint:gochecknoinits
+//nolint:gochecknoinits // TODO: rewrite
 func init() {
 	prometheus.MustRegister(ErrorCounter)
 	prometheus.MustRegister(DurationSummary)

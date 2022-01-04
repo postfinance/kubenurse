@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	//nolint:gosec
+	//nolint:gosec // This is the well-known path to Kubernetes serviceaccount tokens.
 	tokenFile = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 )
 

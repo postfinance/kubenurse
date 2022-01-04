@@ -35,6 +35,9 @@ type Checker struct {
 
 	// cacheTTL defines the TTL of how long a cached result is valid
 	cacheTTL time.Duration
+
+	// stop is used to cancel RunScheduled
+	stop chan struct{}
 }
 
 // Result contains the result of a performed check run
