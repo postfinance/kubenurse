@@ -1,19 +1,20 @@
-# options for analysis running
+---
 run:
-  tests: true
-  timeout: 3m
-
-
-# all available settings of specific linters
+  tests: false
+  skip-dirs:
+    - .github
+    - build
+    - web
+    - .go
 linters-settings:
   dupl:
-    threshold: 150
+    threshold: 100
   funlen:
     lines: 100
     statements: 50
   goconst:
     min-len: 2
-    min-occurrences: 3
+    min-occurrences: 2
   gocritic:
     enabled-tags:
       - diagnostic
@@ -23,21 +24,27 @@ linters-settings:
       - style
     disabled-checks:
       - whyNoLint
+      - hugeParam
   gocyclo:
     min-complexity: 15
-  golint:
+  revive:
     min-confidence: 0.8
   govet:
     check-shadowing: true
-  maligned:
-    suggest-new: true
+  lll:
+    line-length: 140
   misspell:
     locale: UK
+  nolintlint:
+    allow-leading-space: false
+    require-explanation: true
+    allow-no-explanation:
+      - gocognit
+      - funlen
+      - gocyclo
 
 linters:
-  disable:
-    - gomnd
-    - lll
+  disable-all: true
   enable:
     - bodyclose
     - deadcode
@@ -46,28 +53,26 @@ linters:
     - dupl
     - errcheck
     - funlen
+    - nolintlint
     - gochecknoglobals
     - gochecknoinits
     - gocognit
     - goconst
     - gocritic
     - gocyclo
-    - godox
     - gofmt
     - goimports
-    - golint
+    - revive
     - goprintffuncname
     - gosec
     - gosimple
     - govet
     - ineffassign
-    - interfacer
-    - maligned
     - misspell
     - nakedret
     - prealloc
     - rowserrcheck
-    - scopelint # todo
+    - exportloopref
     - staticcheck
     - structcheck
     - stylecheck
@@ -78,12 +83,11 @@ linters:
     - varcheck
     - whitespace
     - wsl
-
-
 issues:
   exclude:
     # Very commonly not checked.
-    - 'Error return value of .(l.Sync|.*Close|.*Flush|os\.Remove(All)?|os\.(Un)?Setenv). is not checked'
+    - 'Error return value of .(l.Sync|.*Close|.*.Write|.*Flush|os\.Remove(All)?|os\.(Un)?Setenv). is not checked'
+    - 'G104:.*'
     - 'exported method (.*\.MarshalJSON|.*\.UnmarshalJSON) should have comment or be unexported'
     - 'shadow: declaration of "err" shadows declaration.*'
   max-same-issues: 0

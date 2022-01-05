@@ -1,5 +1,5 @@
-// Package checker implements the checks the kubenurse performs.
-package checker
+// Package servicecheck implements the checks the kubenurse performs.
+package servicecheck
 
 import (
 	"context"
@@ -8,28 +8,52 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/postfinance/kubenurse/pkg/kubediscovery"
-	"github.com/postfinance/kubenurse/pkg/metrics"
+	"github.com/postfinance/kubenurse/internal/kubediscovery"
+	"github.com/prometheus/client_golang/prometheus"
+)
+
+const (
+	okStr  = "ok"
+	errStr = "error"
 )
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
-func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration, allowUnschedulable bool) (*Checker, error) {
-	discovery, err := kubediscovery.New(ctx, allowUnschedulable)
-	if err != nil {
-		return nil, fmt.Errorf("create k8s discovery client: %w", err)
-	}
+func New(ctx context.Context, httpClient *http.Client, discovery *kubediscovery.Client,
+	promRegistry *prometheus.Registry, allowUnschedulable bool, cacheTTL time.Duration) (*Checker, error) {
+	errorCounter := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "kubenurse_errors_total",
+			Help: "Kubenurse error counter partitioned by error type",
+		},
+		[]string{"type"},
+	)
+
+	durationSummary := prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:       "kubenurse_request_duration",
+			Help:       "Kubenurse request duration partitioned by error type",
+			MaxAge:     1 * time.Minute,
+			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+		},
+		[]string{"type"},
+	)
+
+	promRegistry.MustRegister(errorCounter, durationSummary)
 
 	return &Checker{
 		allowUnschedulable: allowUnschedulable,
 		discovery:          discovery,
 		httpClient:         httpClient,
 		cacheTTL:           cacheTTL,
+		errorCounter:       errorCounter,
+		durationSummary:    durationSummary,
+		stop:               make(chan struct{}),
 	}, nil
 }
 
-// Run runs an check and returns the result togeter with a boolean, if it wasn't
-// successful. It respects the cache.
+// Run runs all servicechecks and returns the result togeter with a boolean which indicates success. The cache
+// is respected.
 func (c *Checker) Run() (Result, bool) {
 	var (
 		haserr bool
@@ -45,16 +69,16 @@ func (c *Checker) Run() (Result, bool) {
 	// Run Checks
 	res := Result{}
 
-	res.APIServerDirect, err = measure(c.APIServerDirect, "api_server_direct")
+	res.APIServerDirect, err = c.measure(c.APIServerDirect, "api_server_direct")
 	haserr = haserr || (err != nil)
 
-	res.APIServerDNS, err = measure(c.APIServerDNS, "api_server_dns")
+	res.APIServerDNS, err = c.measure(c.APIServerDNS, "api_server_dns")
 	haserr = haserr || (err != nil)
 
-	res.MeIngress, err = measure(c.MeIngress, "me_ingress")
+	res.MeIngress, err = c.measure(c.MeIngress, "me_ingress")
 	haserr = haserr || (err != nil)
 
-	res.MeService, err = measure(c.MeService, "me_service")
+	res.MeService, err = c.measure(c.MeService, "me_service")
 	haserr = haserr || (err != nil)
 
 	res.Neighbourhood, err = c.discovery.GetNeighbours(context.TODO(), c.KubenurseNamespace, c.NeighbourFilter)
@@ -64,7 +88,7 @@ func (c *Checker) Run() (Result, bool) {
 	if err != nil {
 		res.NeighbourhoodState = err.Error()
 	} else {
-		res.NeighbourhoodState = "ok"
+		res.NeighbourhoodState = okStr
 
 		// Check all neighbours if the neighbourhood was discovered
 		c.checkNeighbours(res.Neighbourhood)
@@ -76,12 +100,25 @@ func (c *Checker) Run() (Result, bool) {
 	return res, haserr
 }
 
-// RunScheduled runs the check run in the specified interval which can be used
-// to keep the metrics up-to-date.
+// RunScheduled runs the checks in the specified interval which can be used to keep the metrics up-to-date. This
+// function does not return until StopScheduled is called.
 func (c *Checker) RunScheduled(d time.Duration) {
-	for range time.Tick(d) {
-		c.Run()
+	ticker := time.NewTicker(d)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			c.Run()
+		case <-c.stop:
+			return
+		}
 	}
+}
+
+// StopScheduled is used to stop the scheduled run of checks.
+func (c *Checker) StopScheduled() {
+	close(c.stop)
 }
 
 // APIServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link
@@ -120,24 +157,24 @@ func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 				return c.doRequest("http://" + neighbour.PodIP + ":8080/alwayshappy")
 			}
 
-			_, _ = measure(check, "path_"+neighbour.NodeName)
+			_, _ = c.measure(check, "path_"+neighbour.NodeName)
 		}
 	}
 }
 
 // measure implements metric collections for the check
-func measure(check Check, label string) (string, error) {
+func (c *Checker) measure(check Check, label string) (string, error) {
 	start := time.Now()
 
 	// Execute check
 	res, err := check()
 
 	// Process metrics
-	metrics.DurationSummary.WithLabelValues(label).Observe(time.Since(start).Seconds())
+	c.durationSummary.WithLabelValues(label).Observe(time.Since(start).Seconds())
 
 	if err != nil {
 		log.Printf("failed request for %s with %v", label, err)
-		metrics.ErrorCounter.WithLabelValues(label).Inc()
+		c.errorCounter.WithLabelValues(label).Inc()
 	}
 
 	return res, err

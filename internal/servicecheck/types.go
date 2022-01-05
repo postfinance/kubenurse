@@ -1,10 +1,11 @@
-package checker
+package servicecheck
 
 import (
 	"net/http"
 	"time"
 
-	"github.com/postfinance/kubenurse/pkg/kubediscovery"
+	"github.com/postfinance/kubenurse/internal/kubediscovery"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Checker implements the kubenurse checker
@@ -27,6 +28,10 @@ type Checker struct {
 
 	discovery *kubediscovery.Client
 
+	// metrics
+	errorCounter    *prometheus.CounterVec
+	durationSummary *prometheus.SummaryVec
+
 	// Http Client for https requests
 	httpClient *http.Client
 
@@ -35,6 +40,9 @@ type Checker struct {
 
 	// cacheTTL defines the TTL of how long a cached result is valid
 	cacheTTL time.Duration
+
+	// stop is used to cancel RunScheduled
+	stop chan struct{}
 }
 
 // Result contains the result of a performed check run

@@ -1,27 +1,27 @@
-package checker
+package servicecheck
 
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 )
 
 const (
-	//nolint:gosec
+	//nolint:gosec // This is the well-known path to Kubernetes serviceaccount tokens.
 	tokenFile = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 )
 
 // doRequest does an http request only to get the http status code
 func (c *Checker) doRequest(url string) (string, error) {
 	// Read Bearer Token file from ServiceAccount
-	token, err := ioutil.ReadFile(tokenFile)
+	token, err := os.ReadFile(tokenFile)
 	if err != nil {
-		return "error", fmt.Errorf("could not load token %s: %s", tokenFile, err)
+		return errStr, fmt.Errorf("load kubernetes serviceaccount token from %s: %w", tokenFile, err)
 	}
 
-	req, _ := http.NewRequest("GET", url, nil)
+	req, _ := http.NewRequest("GET", url, http.NoBody)
 
 	// Only add the Bearer for API Server Requests
 	if strings.HasSuffix(url, "/version") {
@@ -37,7 +37,7 @@ func (c *Checker) doRequest(url string) (string, error) {
 	_ = resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		return "ok", nil
+		return okStr, nil
 	}
 
 	return resp.Status, errors.New(resp.Status)

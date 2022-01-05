@@ -1,3 +1,6 @@
+[![CI](https://github.com/postfinance/kubenurse/actions/workflows/release.yml/badge.svg)](https://github.com/postfinance/kubenurse/actions/workflows/release.yml)
+[![Coverage Status](https://coveralls.io/repos/github/postfinance/kubenurse/badge.svg?branch=master)](https://coveralls.io/github/postfinance/kubenurse?branch=master)
+
 # Kubenurse
 kubenurse is a little service that monitors all network connections in a kubernetes
 cluster and exports the taken metrics as prometheus endpoint.
