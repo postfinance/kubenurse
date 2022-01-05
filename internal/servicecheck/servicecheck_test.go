@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/postfinance/kubenurse/internal/kubediscovery"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,7 +41,7 @@ func TestCombined(t *testing.T) {
 	discovery, err := kubediscovery.New(context.Background(), fakeClient, false)
 	r.NoError(err)
 
-	checker, err := New(context.Background(), http.DefaultClient, discovery, false, 3*time.Second)
+	checker, err := New(context.Background(), http.DefaultClient, discovery, prometheus.NewRegistry(), false, 3*time.Second)
 	r.NoError(err)
 	r.NotNil(checker)
 

@@ -12,6 +12,8 @@ import (
 
 	"github.com/postfinance/kubenurse/internal/kubediscovery"
 	"github.com/postfinance/kubenurse/internal/servicecheck"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/client-go/kubernetes"
 )
@@ -69,6 +71,12 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 		ready: true,
 	}
 
+	promRegistry := prometheus.NewRegistry()
+	promRegistry.MustRegister(
+		collectors.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+	)
+
 	// setup http transport
 	transport, err := server.generateRoundTripper()
 	if err != nil {
@@ -88,7 +96,7 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 	}
 
 	// setup checker
-	chk, err := servicecheck.New(ctx, httpClient, discovery, server.allowUnschedulable, 3*time.Second)
+	chk, err := servicecheck.New(ctx, httpClient, discovery, promRegistry, server.allowUnschedulable, 3*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +115,7 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 	mux.HandleFunc("/ready", server.readyHandler())
 	mux.HandleFunc("/alive", server.aliveHandler())
 	mux.HandleFunc("/alwayshappy", func(http.ResponseWriter, *http.Request) {})
-	mux.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/metrics", promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{}))
 	mux.Handle("/", http.RedirectHandler("/alive", http.StatusMovedPermanently))
 
 	return server, nil
