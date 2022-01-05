@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/postfinance/kubenurse/internal/kubediscovery"
+	"github.com/postfinance/kubenurse/internal/servicecheck"
 )
 
 func (s *Server) readyHandler() func(w http.ResponseWriter, r *http.Request) {
@@ -31,10 +32,7 @@ func (s *Server) aliveHandler() func(w http.ResponseWriter, r *http.Request) {
 			RemoteAddr string              `json:"remote_addr"`
 
 			// checker.Result
-			APIServerDirect string `json:"api_server_direct"`
-			APIServerDNS    string `json:"api_server_dns"`
-			MeIngress       string `json:"me_ingress"`
-			MeService       string `json:"me_service"`
+			servicecheck.Result
 
 			// kubediscovery
 			NeighbourhoodState string                    `json:"neighbourhood_state"`
@@ -49,10 +47,7 @@ func (s *Server) aliveHandler() func(w http.ResponseWriter, r *http.Request) {
 
 		// Add additional data
 		out := Output{
-			APIServerDNS:       res.APIServerDNS,
-			APIServerDirect:    res.APIServerDirect,
-			MeIngress:          res.MeIngress,
-			MeService:          res.MeService,
+			Result:             res,
 			Headers:            r.Header,
 			UserAgent:          r.UserAgent(),
 			RequestURI:         r.RequestURI,
