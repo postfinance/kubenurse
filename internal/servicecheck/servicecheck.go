@@ -13,17 +13,14 @@ import (
 )
 
 const (
-	okStr = "ok"
+	okStr  = "ok"
+	errStr = "error"
 )
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
-func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration, allowUnschedulable bool) (*Checker, error) {
-	discovery, err := kubediscovery.New(ctx, allowUnschedulable)
-	if err != nil {
-		return nil, fmt.Errorf("create k8s discovery client: %w", err)
-	}
-
+func New(ctx context.Context, httpClient *http.Client, discovery *kubediscovery.Client,
+	allowUnschedulable bool, cacheTTL time.Duration) (*Checker, error) {
 	errorCounter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "kubenurse_errors_total",
@@ -55,8 +52,8 @@ func New(ctx context.Context, httpClient *http.Client, cacheTTL time.Duration, a
 	}, nil
 }
 
-// Run runs an check and returns the result togeter with a boolean, if it wasn't
-// successful. It respects the cache.
+// Run runs all servicechecks and returns the result togeter with a boolean which indicates success. The cache
+// is respected.
 func (c *Checker) Run() (Result, bool) {
 	var (
 		haserr bool

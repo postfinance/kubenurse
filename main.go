@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/postfinance/kubenurse/internal/kubenurse"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 const (
@@ -16,14 +18,27 @@ const (
 )
 
 func main() {
-	server, err := kubenurse.New()
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	// create in-cluster config
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		log.Printf("creating in-cluster configuration: %s", err)
+		return
+	}
+
+	cliset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Printf("creating clientset: %s", err)
+		return
+	}
+
+	server, err := kubenurse.New(ctx, cliset)
 	if err != nil {
 		log.Printf("%s", err)
 		return
 	}
-
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
 
 	go func() {
 		<-ctx.Done() // blocks until ctx is canceled

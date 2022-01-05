@@ -10,8 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/postfinance/kubenurse/internal/kubediscovery"
 	"github.com/postfinance/kubenurse/internal/servicecheck"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"k8s.io/client-go/kubernetes"
 )
 
 // Server is used to build the kubenurse http/https server(s).
@@ -44,7 +46,7 @@ type Server struct {
 // * KUBENURSE_NEIGHBOUR_FILTER
 // * KUBENURSE_EXTRA_CA
 // * KUBENURSE_INSECURE
-func New() (*Server, error) {
+func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 	mux := http.NewServeMux()
 
 	server := &Server{
@@ -75,13 +77,18 @@ func New() (*Server, error) {
 		transport = http.DefaultTransport
 	}
 
-	client := &http.Client{
+	httpClient := &http.Client{
 		Timeout:   5 * time.Second,
 		Transport: transport,
 	}
 
+	discovery, err := kubediscovery.New(ctx, k8s, server.allowUnschedulable)
+	if err != nil {
+		return nil, fmt.Errorf("create k8s discovery client: %w", err)
+	}
+
 	// setup checker
-	chk, err := servicecheck.New(context.TODO(), client, 3*time.Second, server.allowUnschedulable)
+	chk, err := servicecheck.New(ctx, httpClient, discovery, server.allowUnschedulable, 3*time.Second)
 	if err != nil {
 		return nil, err
 	}

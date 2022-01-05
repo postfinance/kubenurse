@@ -8,7 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
 // Client provides the kubediscovery client methods.
@@ -42,19 +41,11 @@ type Neighbour struct {
 // New creates a new kubediscovery client. The context is used to stop the k8s watchers/informers.
 // When allowUnschedulable is true, no node watcher is created and kubenurses
 // on unschedulable nodes are considered as neighbours.
-func New(ctx context.Context, allowUnschedulable bool) (*Client, error) {
-	// create in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, fmt.Errorf("creating in-cluster configuration: %w", err)
-	}
-
-	cliset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, fmt.Errorf("creating clientset: %w", err)
-	}
-
-	var nc *nodeCache
+func New(ctx context.Context, cliset kubernetes.Interface, allowUnschedulable bool) (*Client, error) {
+	var (
+		nc  *nodeCache
+		err error
+	)
 
 	// Watch nodes only if we do not consider kubenurses on unschedulable nodes
 	if !allowUnschedulable {

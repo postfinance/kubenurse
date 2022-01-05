@@ -18,7 +18,7 @@ func (c *Checker) doRequest(url string) (string, error) {
 	// Read Bearer Token file from ServiceAccount
 	token, err := os.ReadFile(tokenFile)
 	if err != nil {
-		return "error", fmt.Errorf("could not load token %s: %s", tokenFile, err)
+		return errStr, fmt.Errorf("load kubernetes serviceaccount token from %s: %w", tokenFile, err)
 	}
 
 	req, _ := http.NewRequest("GET", url, http.NoBody)
@@ -37,7 +37,7 @@ func (c *Checker) doRequest(url string) (string, error) {
 	_ = resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		return "ok", nil
+		return okStr, nil
 	}
 
 	return resp.Status, errors.New(resp.Status)
