@@ -9,7 +9,7 @@ cluster. Kubenurse measures request durations, records errors and exports those 
 ## Deployment
 You can get the Docker image from [Docker Hub](https://hub.docker.com/r/postfinance/kubenurse/).
 The [examples](https://github.com/postfinance/kubenurse/tree/master/examples) directory
-contains YAMLs which can be used to deploy the kubenurse to the kube-system namespace of your cluster.
+contains manifests which can be used to deploy kubenurse to the kube-system namespace of your cluster.
 
 ### Helm deployment
 
