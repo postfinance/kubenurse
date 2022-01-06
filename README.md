@@ -4,7 +4,7 @@
 
 # Kubenurse
 kubenurse is a little service that monitors all network connections in a Kubernetes
-cluster. Kubenurse measures request durations, records errors and exports the taken metrics in Prometheus format.
+cluster. Kubenurse measures request durations, records errors and exports those metrics in Prometheus format.
 
 ## Deployment
 You can get the Docker image from [Docker Hub](https://hub.docker.com/r/postfinance/kubenurse/).
