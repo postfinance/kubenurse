@@ -4,7 +4,6 @@ package kubenurse
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -29,8 +28,6 @@ type Server struct {
 	useTLS bool
 	// If we want to consider kubenurses on unschedulable nodes
 	allowUnschedulable bool
-	extraCA            string
-	insecure           bool
 
 	// Mutex to protect ready flag
 	mu    *sync.Mutex
@@ -39,15 +36,13 @@ type Server struct {
 
 // New creates a new kubenurse server. The server can be configured with the following environment variables:
 // * KUBENURSE_USE_TLS
-// * KUBENURSE_ALLOW_UNSCHEDULABL
+// * KUBENURSE_ALLOW_UNSCHEDULABLE
 // * KUBENURSE_INGRESS_URL
 // * KUBENURSE_SERVICE_URL
 // * KUBERNETES_SERVICE_HOST
 // * KUBERNETES_SERVICE_PORT
 // * KUBENURSE_NAMESPACE
 // * KUBENURSE_NEIGHBOUR_FILTER
-// * KUBENURSE_EXTRA_CA
-// * KUBENURSE_INSECURE
 func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 	mux := http.NewServeMux()
 
@@ -64,8 +59,6 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 		//nolint:goconst // No need to make "true" a constant in my opinion, readability is better like this.
 		useTLS:             os.Getenv("KUBENURSE_USE_TLS") == "true",
 		allowUnschedulable: os.Getenv("KUBENURSE_ALLOW_UNSCHEDULABLE") == "true",
-		extraCA:            os.Getenv("KUBENURSE_EXTRA_CA"),
-		insecure:           os.Getenv("KUBENURSE_INSECURE") == "true",
 
 		mu:    new(sync.Mutex),
 		ready: true,
@@ -77,26 +70,13 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
 	)
 
-	// setup http transport
-	transport, err := server.generateRoundTripper()
-	if err != nil {
-		log.Printf("using default transport: %s", err)
-
-		transport = http.DefaultTransport
-	}
-
-	httpClient := &http.Client{
-		Timeout:   5 * time.Second,
-		Transport: transport,
-	}
-
 	discovery, err := kubediscovery.New(ctx, k8s, server.allowUnschedulable)
 	if err != nil {
 		return nil, fmt.Errorf("create k8s discovery client: %w", err)
 	}
 
 	// setup checker
-	chk, err := servicecheck.New(ctx, httpClient, discovery, promRegistry, server.allowUnschedulable, 3*time.Second)
+	chk, err := servicecheck.New(ctx, discovery, promRegistry, server.allowUnschedulable, 3*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +114,6 @@ func (s *Server) Run() error {
 		defer wg.Done()
 
 		s.checker.RunScheduled(5 * time.Second)
-		log.Printf("checker exited")
 	}()
 
 	wg.Add(1)

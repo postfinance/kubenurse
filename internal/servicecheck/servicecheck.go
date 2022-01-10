@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/postfinance/kubenurse/internal/kubediscovery"
@@ -13,25 +14,28 @@ import (
 )
 
 const (
-	okStr  = "ok"
-	errStr = "error"
+	okStr            = "ok"
+	errStr           = "error"
+	metricsNamespace = "kubenurse"
 )
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
-func New(ctx context.Context, httpClient *http.Client, discovery *kubediscovery.Client,
-	promRegistry *prometheus.Registry, allowUnschedulable bool, cacheTTL time.Duration) (*Checker, error) {
+func New(ctx context.Context, discovery *kubediscovery.Client, promRegistry *prometheus.Registry,
+	allowUnschedulable bool, cacheTTL time.Duration) (*Checker, error) {
 	errorCounter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "kubenurse_errors_total",
-			Help: "Kubenurse error counter partitioned by error type",
+			Namespace: metricsNamespace,
+			Name:      "errors_total",
+			Help:      "Kubenurse error counter partitioned by error type",
 		},
 		[]string{"type"},
 	)
 
 	durationSummary := prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
-			Name:       "kubenurse_request_duration",
+			Namespace:  metricsNamespace,
+			Name:       "request_duration",
 			Help:       "Kubenurse request duration partitioned by error type",
 			MaxAge:     1 * time.Minute,
 			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
@@ -40,6 +44,19 @@ func New(ctx context.Context, httpClient *http.Client, discovery *kubediscovery.
 	)
 
 	promRegistry.MustRegister(errorCounter, durationSummary)
+
+	// setup http transport
+	transport, err := generateRoundTripper(os.Getenv("KUBENURSE_EXTRA_CA"), os.Getenv("KUBENURSE_INSECURE") == "true")
+	if err != nil {
+		log.Printf("using default transport: %s", err)
+
+		transport = http.DefaultTransport
+	}
+
+	httpClient := &http.Client{
+		Timeout:   5 * time.Second,
+		Transport: withRequestTracing(promRegistry, transport),
+	}
 
 	return &Checker{
 		allowUnschedulable: allowUnschedulable,
