@@ -2,7 +2,6 @@ package servicecheck
 
 import (
 	"context"
-	"net/http"
 	"testing"
 	"time"
 
@@ -41,7 +40,7 @@ func TestCombined(t *testing.T) {
 	discovery, err := kubediscovery.New(context.Background(), fakeClient, false)
 	r.NoError(err)
 
-	checker, err := New(context.Background(), http.DefaultClient, discovery, prometheus.NewRegistry(), false, 3*time.Second)
+	checker, err := New(context.Background(), discovery, prometheus.NewRegistry(), false, 3*time.Second)
 	r.NoError(err)
 	r.NotNil(checker)
 
