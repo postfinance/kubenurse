@@ -48,12 +48,18 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 
 	server := &Server{
 		http: http.Server{
-			Addr:    ":8080",
-			Handler: mux,
+			Addr:              ":8080",
+			Handler:           mux,
+			ReadHeaderTimeout: 5 * time.Second,
+			WriteTimeout:      10 * time.Second,
+			IdleTimeout:       120 * time.Second,
 		},
 		https: http.Server{
-			Addr:    ":8443",
-			Handler: mux,
+			Addr:              ":8443",
+			Handler:           mux,
+			ReadHeaderTimeout: 5 * time.Second,
+			WriteTimeout:      10 * time.Second,
+			IdleTimeout:       120 * time.Second,
 		},
 
 		//nolint:goconst // No need to make "true" a constant in my opinion, readability is better like this.
