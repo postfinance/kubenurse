@@ -1,6 +1,6 @@
 ---
 apiVersion: v2
-name: kubeburse
+name: kubenurse
 description: A Helm chart for Kubernetes to deploy kubenurse
 version: 0.1.0
 appVersion: "1.4.0"
