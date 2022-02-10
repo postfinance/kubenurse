@@ -29,7 +29,7 @@ spec:
         - name: KUBENURSE_INGRESS_URL
           value: https://{{ .Values.ingress.url }}
         - name: KUBENURSE_SERVICE_URL
-          value: "http://kubenurse.{{ .Values.namespace }}.svc.cluster.local:8080"
+          value: "http://kubenurse.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.service.port }}"
         - name: KUBENURSE_INSECURE
           value: "true"
         - name: KUBENURSE_ALLOW_UNSCHEDULABLE
