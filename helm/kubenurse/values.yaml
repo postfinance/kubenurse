@@ -1,7 +1,7 @@
 daemonset:
   image:
     repository: postfinance/kubenurse
-    tag: v1.4.0
+    tag: v1.5.1
   extraEnvs: []
 
 namespace: kube-system
