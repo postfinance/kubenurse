@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ include "name" . | quote }}
+{{ include "common-labels" . | indent 4 }}
+  name: {{ include "name" . | quote }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+  - name: {{ .Values.service.name }}
+    port: {{ .Values.service.port }}
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: {{ include "name" . | quote }}

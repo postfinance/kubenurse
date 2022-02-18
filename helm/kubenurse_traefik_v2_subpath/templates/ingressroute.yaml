@@ -1,0 +1,98 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: kubenurse-ingressroute
+  namespace: {{ .Values.namespace }}
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+  - match: Host(`{{ .Values.ingress.url }}`) && PathPrefix(`/{{ .Values.ingress.path }}`)
+    kind: Rule
+    services:
+    - name: {{ include "name" . | quote }}
+      port: {{ .Values.service.port }}
+    middlewares:
+    - name: kubenurse-stripprefix
+      namespace: {{ .Values.namespace }}
+  - match: Host(`{{ .Values.ingress.url }}`) && PathPrefix(`/{{ .Values.ingress.path }}/alive`)
+    kind: Rule
+    services:
+    - name: {{ include "name" . | quote }}
+      port: {{ .Values.service.port }}
+    middlewares:
+    - name: strip-add-alive
+      namespace: {{ .Values.namespace }}
+  - match: Host(`{{ .Values.ingress.url }}`) && PathPrefix(`/{{ .Values.ingress.path }}/alwayshappy`)
+    kind: Rule
+    services:
+    - name: {{ include "name" . | quote }}
+      port: {{ .Values.service.port }}
+    middlewares:
+    - name: strip-add-alwayshappy
+      namespace: {{ .Values.namespace }}
+    # this rules exists because this is where 301 redirect forwards the request
+    #  so it needs to be rerouted to the service exlicitly.
+  - match: Host(`{{ .Values.ingress.url }}`) && PathPrefix(`/alive`)
+    kind: Rule
+    services:
+    - name: {{ include "name" . | quote }}
+      port: {{ .Values.service.port }}
+---
+# Chain: strip /kubenurse first, then add /alive
+#  before forwarding
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-add-alive
+  namespace: {{ .Values.namespace }}
+spec:
+  chain:
+    middlewares:
+    - name: kubenurse-stripprefix
+    - name: kubenurse-addprefix-alive
+---
+# Chain: strip /kubenurse first, then add /alwayshappy
+#  before forwarding
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-add-alwayshappy
+  namespace: {{ .Values.namespace }}
+spec:
+  chain:
+    middlewares:
+    - name: kubenurse-stripprefix
+    - name: kubenurse-addprefix-alwayshappy
+---
+# Strip /kubenurse prefix before forwarding
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: kubenurse-stripprefix
+  namespace: {{ .Values.namespace }}
+spec:
+  stripPrefix:
+    prefixes:
+      - /{{ .Values.ingress.url }}
+---
+# Add /alive prefix before forwarding
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: kubenurse-addprefix-alive
+  namespace: {{ .Values.namespace }}
+spec:
+  addPrefix:
+    prefix: /alive
+---
+# Add /alwayshappy prefix before forwarding
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: kubenurse-addprefix-alwayshappy
+  namespace: {{ .Values.namespace }}
+spec:
+  addPrefix:
+    prefix: /alwayshappy
