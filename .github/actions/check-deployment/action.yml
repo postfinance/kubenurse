@@ -10,7 +10,7 @@ runs:
   using: "composite"
   steps:
   - name: Check state of pods
-    timeout-minutes: 2
+    shell: bash
     run: |
       sleep 60 # Wait to generate some checks etc.
       test $(kubectl -n kube-system get pods -l app=kubenurse \
@@ -51,12 +51,14 @@ runs:
         | grep '"neighbourhood": \[' > /dev/null # If no others are discovered, this is null
       echo "Discovery ok: Status page includes neighbours"
   - name: Show kubenurse status
+    shell: bash
     run: |
       curl -k -s --resolve \
         ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
         https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive
     if: ${{ always() }}
   - name: Describe resources on failure
+    shell: bash
     run: |
       kubectl -n kube-system get pods -o wide
       kubectl -n kube-system logs -l app=kubenurse
