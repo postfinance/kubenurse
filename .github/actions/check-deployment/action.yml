@@ -9,47 +9,59 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Check state of pods
+  - name: Check number of kubenurses
     shell: bash
     run: |
       sleep 60 # Wait to generate some checks etc.
-      test $(kubectl -n kube-system get pods -l app=kubenurse \
+      test $(kubectl -n ${{ inputs.namespace }} get pods -l app=kubenurse \
         | wc -l) -eq 4 # Test for 3 Pods + header
-      echo "Number of kubenurses is ok"
-      test $(kubectl -n kube-system logs -l app=kubenurse \
+  - name: Check for unexpected log lines
+    shell: bash
+    run: |
+      test $(kubectl -n ${{ inputs.namespace }} logs -l app=kubenurse \
         | grep -v "I'm ready to help you" \
         | wc -l) -eq 0 \
-        # Test that there are no unexpected log lines present
-      echo "Logs are ok"
-      kubectl -n kube-system get pods -l app=kubenurse \
+  - name: Check if the kubenurse had any restarts
+    shell: bash
+    run: |
+      kubectl -n ${{ inputs.namespace }} get pods -l app=kubenurse \
         -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' \
         | (! grep -v 0) # Validate for 0 restarts
-      echo "Restart count is ok"
+  - name: Check that metrics contain kubenurse specific data
+    shell: bash
+    run: |
       curl -k -s --resolve \
         ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
         https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
         | grep "kubenurse_request_" > /dev/null
-      echo "Metrics contain kubenurse specific data"
+  - name: Check that metrics contain neighbours
+    shell: bash
+    run: |
       curl -k -s --resolve \
         ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
         https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
         | grep "kubenurse_request_" | grep 'type="path_' > /dev/null
-      echo "Metrics contains neighbours"
+  - name: Check that metrics contain no errors
+    shell: bash
+    run: |
       curl -k -s --resolve \
         ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
         https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
         | (! grep "kubenurse_errors_total")
-      echo "Metrics contains no errors"
+  - name: Check the neighbourhood state
+    shell: bash
+    run: |
       curl -k -s --resolve \
         ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
         https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive \
         | grep '"neighbourhood_state": "ok"' > /dev/null
-      echo "Neighbourhood state ok"
+  - name: Check that discovery is ok and status page includes neighbours
+    shell: bash
+    run: |
       curl -k -s --resolve \
         ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
         https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive \
         | grep '"neighbourhood": \[' > /dev/null # If no others are discovered, this is null
-      echo "Discovery ok: Status page includes neighbours"
   - name: Show kubenurse status
     shell: bash
     run: |
@@ -60,9 +72,9 @@ runs:
   - name: Describe resources on failure
     shell: bash
     run: |
-      kubectl -n kube-system get pods -o wide
-      kubectl -n kube-system logs -l app=kubenurse
-      kubectl -n kube-system describe pods -l app=kubenurse
-      kubectl -n kube-system describe daemonsets -l app=kubenurse
-      kubectl -n kube-system get events
+      kubectl -n ${{ inputs.namespace }} get pods -o wide
+      kubectl -n ${{ inputs.namespace }} logs -l app=kubenurse
+      kubectl -n ${{ inputs.namespace }} describe pods -l app=kubenurse
+      kubectl -n ${{ inputs.namespace }} describe daemonsets -l app=kubenurse
+      kubectl -n ${{ inputs.namespace }} get events
     if: ${{ failure() }}
