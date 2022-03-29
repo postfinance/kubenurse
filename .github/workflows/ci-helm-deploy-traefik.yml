@@ -56,7 +56,7 @@ jobs:
           kubectl -n kube-system wait pods -l app=kubenurse --for=condition=Ready
           kubectl -n kube-system get pods -l app=kubenurse
       - name: Check deployment
-        uses: ./.github/actions/wf-check-deployment
+        uses: ./.github/actions/check-deployment
         with:
           namespace: kube-system
 #      - name: Check state of pods
