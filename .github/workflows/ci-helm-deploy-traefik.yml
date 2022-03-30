@@ -1,8 +1,13 @@
 ---
-name: deploy with kustomize
+# TODO: This job is still in development and is therefor only run on ci-traefik
+name: deploy with helm and traefik
 on:
   push:
+    branches:
+    - ci-traefik
   pull_request:
+    branches:
+    - ci-traefik
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,13 +35,12 @@ jobs:
           kubectl get nodes
           echo "current-context:" $(kubectl config current-context)
           kubectl config set-context --current --namespace kube-system
-      - name: Deploy ingress-nginx
+      - name: Deploy traefik
         timeout-minutes: 2
         run: |
-          kubectl apply -f \
-            https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
-          kubectl wait --namespace ingress-nginx \
-            --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+          helm repo add traefik https://helm.traefik.io/traefik
+          helm repo update
+          helm install --namespace=kube-system -f ./ci/traefik-config.yaml traefik traefik/traefik
       - name: Import image into kind
         run: |
           docker images
@@ -45,13 +49,17 @@ jobs:
           kind load docker-image postfinance/kubenurse:latest-ci
       - name: Deploy example setup
         run: |
-          kubectl apply -k ci/deployment/
+          helm upgrade kubenurse \
+            --install helm/kubenurse/ \
+            -f helm/kubenurse/values.yaml \
+            --set ingress.url=ingress-nginx-controller.ingress-nginx.svc.cluster.local,daemonset.image.tag=latest-ci \
+            --wait
       - name: Wait for pods
         timeout-minutes: 2
         run: |
           sleep 15 # wait for the scheduler to create pods
-          kubectl wait pods -l app=kubenurse --for=condition=Ready
-          kubectl get pods -l app=kubenurse
+          kubectl -n kube-system wait pods -l app=kubenurse --for=condition=Ready
+          kubectl -n kube-system get pods -l app=kubenurse
           sleep 60 # Wait to generate some checks etc.
       - name: Check deployment
         uses: ./.github/actions/check-deployment
