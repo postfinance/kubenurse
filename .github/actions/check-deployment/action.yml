@@ -5,73 +5,76 @@ inputs:
     description: Namespace where the kubenurse is deployed
     required: true
     type: string
+  svc-domain:
+    description: Ingress domain on which the kubenurse is running
+    required: true
+    type: string
 
 runs:
   using: "composite"
   steps:
-  - name: Check number of kubenurses
-    shell: bash
+  - shell: bash
     run: |
-      sleep 60 # Wait to generate some checks etc.
+      echo "Check number of kubenurses"
       test $(kubectl -n ${{ inputs.namespace }} get pods -l app=kubenurse \
         | wc -l) -eq 4 # Test for 3 Pods + header
-  - name: Check for unexpected log lines
-    shell: bash
+  - shell: bash
     run: |
+      echo "Check for unexpected log lines"
       test $(kubectl -n ${{ inputs.namespace }} logs -l app=kubenurse \
         | grep -v "I'm ready to help you" \
         | wc -l) -eq 0 \
-  - name: Check if the kubenurse had any restarts
-    shell: bash
+  - shell: bash
     run: |
+      echo "Check if the kubenurse had any restarts"
       kubectl -n ${{ inputs.namespace }} get pods -l app=kubenurse \
         -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' \
         | (! grep -v 0) # Validate for 0 restarts
-  - name: Check that metrics contain kubenurse specific data
-    shell: bash
+  - shell: bash
     run: |
+      echo "Check that metrics contain kubenurse specific data"
       curl -k -s --resolve \
-        ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-        https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
+        ${{ inputs.svc-domain }}:443:127.0.0.1 \
+        https://${{ inputs.svc-domain }}:443/metrics \
         | grep "kubenurse_request_" > /dev/null
-  - name: Check that metrics contain neighbours
-    shell: bash
+  - shell: bash
     run: |
+      echo "Check that metrics contain neighbours"
       curl -k -s --resolve \
-        ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-        https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
+        ${{ inputs.svc-domain }}:443:127.0.0.1 \
+        https://${{ inputs.svc-domain }}:443/metrics \
         | grep "kubenurse_request_" | grep 'type="path_' > /dev/null
-  - name: Check that metrics contain no errors
-    shell: bash
+  - shell: bash
     run: |
+      echo "Check that metrics contain no errors"
       curl -k -s --resolve \
-        ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-        https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
+        ${{ inputs.svc-domain }}:443:127.0.0.1 \
+        https://${{ inputs.svc-domain }}:443/metrics \
         | (! grep "kubenurse_errors_total")
-  - name: Check the neighbourhood state
-    shell: bash
+  - shell: bash
     run: |
+      echo "Check the neighbourhood state"
       curl -k -s --resolve \
-        ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-        https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive \
+        ${{ inputs.svc-domain }}:443:127.0.0.1 \
+        https://${{ inputs.svc-domain }}:443/alive \
         | grep '"neighbourhood_state": "ok"' > /dev/null
-  - name: Check that discovery is ok and status page includes neighbours
-    shell: bash
+  - shell: bash
     run: |
+      echo "Check that discovery is ok and status page includes neighbours"
       curl -k -s --resolve \
-        ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-        https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive \
+        ${{ inputs.svc-domain }}:443:127.0.0.1 \
+        https://${{ inputs.svc-domain }}:443/alive \
         | grep '"neighbourhood": \[' > /dev/null # If no others are discovered, this is null
-  - name: Show kubenurse status
-    shell: bash
+  - shell: bash
     run: |
+      echo "Show kubenurse status"
       curl -k -s --resolve \
-        ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-        https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive
+        ${{ inputs.svc-domain }}:443:127.0.0.1 \
+        https://${{ inputs.svc-domain }}:443/alive
     if: ${{ always() }}
-  - name: Describe resources on failure
-    shell: bash
+  - shell: bash
     run: |
+      echo "Describe resources on failure"
       kubectl -n ${{ inputs.namespace }} get pods -o wide
       kubectl -n ${{ inputs.namespace }} logs -l app=kubenurse
       kubectl -n ${{ inputs.namespace }} describe pods -l app=kubenurse

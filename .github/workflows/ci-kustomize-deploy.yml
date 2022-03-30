@@ -52,58 +52,9 @@ jobs:
           sleep 15 # wait for the scheduler to create pods
           kubectl wait pods -l app=kubenurse --for=condition=Ready
           kubectl get pods -l app=kubenurse
-      - name: Check state of pods
-        timeout-minutes: 2
-        run: |
           sleep 60 # Wait to generate some checks etc.
-          test $(kubectl get pods -l app=kubenurse \
-            | wc -l) -eq 4 # Test for 3 Pods + header
-          echo "Number of kubenurses is ok"
-          test $(kubectl logs -l app=kubenurse \
-            | grep -v "I'm ready to help you" \
-            | wc -l) -eq 0 \
-            # Test that there are no unexpected log lines present
-          echo "Logs are ok"
-          kubectl get pods -l app=kubenurse \
-            -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' \
-            | (! grep -v 0) # Validate for 0 restarts
-          echo "Restart count is ok"
-          curl -k -s --resolve \
-            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
-            | grep "kubenurse_request_" > /dev/null
-          echo "Metrics contain kubenurse specific data"
-          curl -k -s --resolve \
-            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
-            | grep "kubenurse_request_" | grep 'type="path_' > /dev/null
-          echo "Metrics contains neighbours"
-          curl -k -s --resolve \
-            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/metrics \
-            | (! grep "kubenurse_errors_total")
-          echo "Metrics contains no errors"
-          curl -k -s --resolve \
-            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive \
-            | grep '"neighbourhood_state": "ok"' > /dev/null
-          echo "Neighbourhood state ok"
-          curl -k -s --resolve \
-            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive \
-            | grep '"neighbourhood": \[' > /dev/null # If no others are discovered, this is null
-          echo "Discovery ok: Status page includes neighbours"
-      - name: Show kubenurse status
-        run: |
-          curl -k -s --resolve \
-            ingress-nginx-controller.ingress-nginx.svc.cluster.local:443:127.0.0.1 \
-            https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443/alive
-        if: ${{ always() }}
-      - name: Describe resources on failure
-        run: |
-          kubectl get pods -o wide
-          kubectl logs -l app=kubenurse
-          kubectl describe pods -l app=kubenurse
-          kubectl describe daemonsets -l app=kubenurse
-          kubectl get events
-        if: ${{ failure() }}
+      - name: Check deployment
+        uses: ./.github/actions/check-deployment
+        with:
+          namespace: kube-system
+          svc-domain: ingress-nginx-controller.ingress-nginx.svc.cluster.local

@@ -56,7 +56,9 @@ jobs:
           sleep 15 # wait for the scheduler to create pods
           kubectl -n kube-system wait pods -l app=kubenurse --for=condition=Ready
           kubectl -n kube-system get pods -l app=kubenurse
+          sleep 60 # Wait to generate some checks etc.
       - name: Check deployment
         uses: ./.github/actions/check-deployment
         with:
           namespace: kube-system
+          svc-domain: ingress-nginx-controller.ingress-nginx.svc.cluster.local
