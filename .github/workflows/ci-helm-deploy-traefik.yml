@@ -35,7 +35,7 @@ jobs:
         run: |
           helm repo add traefik https://helm.traefik.io/traefik
           helm repo update
-          helm install --namespace=kube-system  traefik traefik/traefik
+          helm install --namespace=kube-system -f ./ci/traefik-config.yaml traefik traefik/traefik
       - name: Import image into kind
         run: |
           docker images

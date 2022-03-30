@@ -1,0 +1,30 @@
+# Run traefik on the same ports as ingress-nginx
+ports:
+  websecure:
+    hostPort: 443
+  web:
+    hostPort: 80
+
+# Needed for low ports
+securityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+  capabilities:
+    drop: []
+
+logs:
+  general:
+    level: DEBUG
+  access:
+    enabled: true
+
+# Disable statistics collection and new version checking
+globalArguments: []
+
+# Run on control plane because of kind port mapping
+nodeSelector:
+  kubernetes.io/hostname: kind-control-plane
+tolerations:
+- effect: NoSchedule
+  key: node-role.kubernetes.io/master
+  operator: Exists
