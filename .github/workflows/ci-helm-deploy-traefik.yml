@@ -1,8 +1,13 @@
 ---
+# TODO: This job is still in development and is therefor only run on ci-traefik
 name: deploy with helm and traefik
 on:
   push:
+    branches:
+    - ci-traefik
   pull_request:
+    branches:
+    - ci-traefik
 jobs:
   build:
     runs-on: ubuntu-latest

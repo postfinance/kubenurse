@@ -1,5 +1,5 @@
 ---
-name: deploy with helm
+name: deploy with helm and ingress-nginx
 on:
   push:
   pull_request:
