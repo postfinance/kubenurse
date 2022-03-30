@@ -51,7 +51,7 @@ jobs:
             --set ingress.url=ingress-nginx-controller.ingress-nginx.svc.cluster.local,daemonset.image.tag=latest-ci \
             --wait
       - name: Wait for pods
-        timeout-minutes: 1
+        timeout-minutes: 2
         run: |
           sleep 15 # wait for the scheduler to create pods
           kubectl -n kube-system wait pods -l app=kubenurse --for=condition=Ready

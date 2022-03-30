@@ -47,7 +47,7 @@ jobs:
         run: |
           kubectl apply -k ci/deployment/
       - name: Wait for pods
-        timeout-minutes: 1
+        timeout-minutes: 2
         run: |
           sleep 15 # wait for the scheduler to create pods
           kubectl wait pods -l app=kubenurse --for=condition=Ready
