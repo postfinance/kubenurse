@@ -33,6 +33,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | serviceAccount.name              | The name of the service account which is used                                                       | kubenurse             |
 | service.name                     | The name of service which exposes the kubenurse application                                         | 8080-8080             |
 | service.port                     | The port number of the service                                                                      | 8080                  |
+| service.labels | Additional labels to be added to the Service | 
 | ingress.enabled                  | Enable/ Disable the ingress                                                                         | true                  |
 | ingress.className                | The classname of the ingress controller (e.g. the nginx ingress controller)                         | nginx                 |
 | ingress.url                      | The url of the ingress; e.g. kubenurse.westeurope.cloudapp.azure.com                                | dummy.kubenurse.com   |
