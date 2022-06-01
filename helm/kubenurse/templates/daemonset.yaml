@@ -22,9 +22,17 @@ spec:
         prometheus.io/scheme: "http"
         prometheus.io/scrape: "true"
     spec:
+      securityContext:
+      {{- if .Values.daemonset.podSecurityContext -}}
+      {{ toYaml .Values.daemonset.podSecurityContext | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "name" . | quote }}
       containers:
       - name: {{ include "name" . | quote }}
+        securityContext:
+          {{- if .Values.daemonset.containerSecurityContext -}}
+          {{ toYaml .Values.daemonset.containerSecurityContext | nindent 10 }}
+          {{- end }}
         env:
         - name: KUBENURSE_INGRESS_URL
           value: https://{{ .Values.ingress.url }}

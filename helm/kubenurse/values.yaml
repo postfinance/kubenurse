@@ -3,6 +3,8 @@ daemonset:
     repository: postfinance/kubenurse
     tag: v1.5.1
   extraEnvs: []
+  podSecurityContext: {}
+  containerSecurityContext: {}
 
 serviceMonitor: 
   enabled: false
