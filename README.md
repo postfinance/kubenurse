@@ -27,6 +27,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | daemonset.podAnnotations         | Additional Annotations to be added to the pods of the daemonset | []
 | daemonset.securityContext        | The security context of the daemonset | {}
 | daemonset.containerSecurityContext| The Security context of the containers within the pods of the daemonset | {}
+| daemonset.tolerations | The Tolerations of the daemonset |   <code>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/master</br>&nbsp; operator: Equal </br>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/control-plane</br>&nbsp; operator: Equal</code>
 | namespace                        | The namespace where kubenurse will be deployed                                                      | kube-system           |
 | serviceMonitor.enabled | Adds a ServiceMonitor for use with [Prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) | false
 | serviceMonitor.labels | Additional Labels to be added to the ServiceMonitor | {}

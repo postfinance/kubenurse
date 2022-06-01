@@ -69,9 +69,6 @@ spec:
           successThreshold: 1
           timeoutSeconds: 1
       tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-        operator: Equal
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/control-plane
-        operator: Equal
+      {{- if .Values.daemonset.tolerations }}
+      {{- toYaml .Values.daemonset.tolerations | nindent 6 }}
+      {{- end }}
