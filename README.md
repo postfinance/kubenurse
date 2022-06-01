@@ -23,14 +23,14 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | ---------------------------------|---------------------------------------------------------------------------------------------------- | --------------------- |
 | daemonset.image.repository       | The repository name                                                                                 | postfinance/kubenurse |
 | daemonset.image.tag              | The tag/ version of the image                                                                       | v1.4.0                |
-| daemonset.podLabels              | Additional Labels to be added to the pods of the ademonset | []
-| daemonset.podAnnotations         | Additional Annotations to be added to the pods of the daemonset | []
+| daemonset.podLabels              | Additional labels to be added to the pods of the daemonset | []
+| daemonset.podAnnotations         | Additional annotations to be added to the pods of the daemonset | []
 | daemonset.podSecurityContext        | The security context of the daemonset | {}
-| daemonset.containerSecurityContext| The Security context of the containers within the pods of the daemonset | {}
-| daemonset.tolerations | The Tolerations of the daemonset |   <code>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/master</br>&nbsp; operator: Equal </br>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/control-plane</br>&nbsp; operator: Equal</code>
+| daemonset.containerSecurityContext| The security context of the containers within the pods of the daemonset | {}
+| daemonset.tolerations | The tolerations of the daemonset |   <code>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/master</br>&nbsp; operator: Equal </br>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/control-plane</br>&nbsp; operator: Equal</code>
 | namespace                        | The namespace where kubenurse will be deployed                                                      | kube-system           |
 | serviceMonitor.enabled | Adds a ServiceMonitor for use with [Prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) | false
-| serviceMonitor.labels | Additional Labels to be added to the ServiceMonitor | {}
+| serviceMonitor.labels | Additional labels to be added to the ServiceMonitor | {}
 | serviceAccount.name              | The name of the service account which is used                                                       | kubenurse             |
 | service.name                     | The name of service which exposes the kubenurse application                                         | 8080-8080             |
 | service.port                     | The port number of the service                                                                      | 8080                  |
