@@ -24,6 +24,8 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | daemonset.image.repository       | The repository name                                                                                 | postfinance/kubenurse |
 | daemonset.image.tag              | The tag/ version of the image                                                                       | v1.4.0                |
 | namespace                        | The namespace where kubenurse will be deployed                                                      | kube-system           |
+| serviceMonitor.enabled | Adds a ServiceMonitor for use with [Prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) | false
+| serviceMonitor.labels | Additional Labels to be added to the ServiceMonitor | {}
 | serviceAccount.name              | The name of the service account which is used                                                       | kubenurse             |
 | service.name                     | The name of service which exposes the kubenurse application                                         | 8080-8080             |
 | service.port                     | The port number of the service                                                                      | 8080                  |

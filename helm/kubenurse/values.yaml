@@ -4,6 +4,10 @@ daemonset:
     tag: v1.5.1
   extraEnvs: []
 
+serviceMonitor: 
+  enabled: false
+  labels: {}
+
 namespace: kube-system
 
 serviceAccount:
