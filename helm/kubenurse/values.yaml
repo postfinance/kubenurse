@@ -3,6 +3,21 @@ daemonset:
     repository: postfinance/kubenurse
     tag: v1.5.1
   extraEnvs: []
+  podLabels: {}
+  podAnnotations: {}
+  podSecurityContext: {}
+  containerSecurityContext: {}
+  tolerations: 
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Equal
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/control-plane
+    operator: Equal
+
+serviceMonitor: 
+  enabled: false
+  labels: {}
 
 namespace: kube-system
 
@@ -12,6 +27,7 @@ serviceAccount:
 service:
   name: 8080-8080
   port: 8080
+  labels: {}
 
 ingress:
   enabled: true

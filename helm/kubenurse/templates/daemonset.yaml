@@ -14,6 +14,9 @@ spec:
   template:
     metadata:
       labels:
+        {{- if .Values.daemonset.podLabels }}
+        {{- toYaml .Values.daemonset.podLabels | nindent 8 }}
+        {{- end }}
         app: {{ include "name" . | quote }}
 {{ include "common-labels" . | indent 8 }}
       annotations:
@@ -21,10 +24,21 @@ spec:
         prometheus.io/port: "8080"
         prometheus.io/scheme: "http"
         prometheus.io/scrape: "true"
+        {{- if .Values.daemonset.podAnnotations }}
+        {{- toYaml .Values.daemonset.podAnnotations | nindent 8 }}
+        {{- end }}
     spec:
+      securityContext:
+      {{- if .Values.daemonset.podSecurityContext -}}
+      {{ toYaml .Values.daemonset.podSecurityContext | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "name" . | quote }}
       containers:
       - name: {{ include "name" . | quote }}
+        securityContext:
+          {{- if .Values.daemonset.containerSecurityContext -}}
+          {{ toYaml .Values.daemonset.containerSecurityContext | nindent 10 }}
+          {{- end }}
         env:
         - name: KUBENURSE_INGRESS_URL
           value: https://{{ .Values.ingress.url }}
@@ -55,9 +69,6 @@ spec:
           successThreshold: 1
           timeoutSeconds: 1
       tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-        operator: Equal
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/control-plane
-        operator: Equal
+      {{- if .Values.daemonset.tolerations }}
+      {{- toYaml .Values.daemonset.tolerations | nindent 6 }}
+      {{- end }}
