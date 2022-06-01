@@ -23,6 +23,8 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | ---------------------------------|---------------------------------------------------------------------------------------------------- | --------------------- |
 | daemonset.image.repository       | The repository name                                                                                 | postfinance/kubenurse |
 | daemonset.image.tag              | The tag/ version of the image                                                                       | v1.4.0                |
+| daemonset.podLabels              | Additional Labels to be added to the pods of the ademonset | []
+| daemonset.podAnnotations         | Additional Annotations to be added to the pods of the daemonset | []
 | daemonset.securityContext        | The security context of the daemonset | {}
 | daemonset.containerSecurityContext| The Security context of the containers within the pods of the daemonset | {}
 | namespace                        | The namespace where kubenurse will be deployed                                                      | kube-system           |
