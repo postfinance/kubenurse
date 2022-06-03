@@ -32,7 +32,7 @@ service:
 ingress:
   enabled: true
   className: nginx
-  url: dummy.kubenurse.com
+  url: dummy-kubenurse.example.com
 
 rbac:
   allow_unschedulable:
