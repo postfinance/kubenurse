@@ -42,7 +42,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 
 
 After everything is set up and Prometheus scrapes the kubenurses, you can build
-dashboards that show network latencies and errors or use the metrics for alarming.
+dashboards [as this example](./doc/grafana-kubenurse.json) that show network latencies and errors or use the metrics for alarming.
 
 ![Grafana ingress view](doc/grafana_ingress.png "Grafana ingress view")
 ![Grafana path view](doc/grafana_path.png "Grafana path view")
