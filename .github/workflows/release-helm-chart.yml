@@ -2,6 +2,7 @@ name: Release Helm Charts
 on:
   push:
     branches:
+      - master
       - main
 jobs:
   release:
