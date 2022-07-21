@@ -13,9 +13,8 @@ contains manifests which can be used to deploy kubenurse to the kube-system name
 
 ### Helm deployment
 
-You can also deploy kubenurse with Helm, the Chart can be found in the [helm/kubenurse](https://github.com/postfinance/kubenurse/tree/master/helm/kubenurse)
-directory.  
-The following command can be used to install kubenurse with Helm: `helm upgrade [RELEASE_NAME] --install -f values.yaml ./helm/kubenurse/`
+You can also deploy kubenurse with Helm, the Chart can be found in repository `https://postfinance.github.io/kubenurse/` or directory `./helm/kubenurse/`.
+The following command can be used to install kubenurse with Helm: `helm upgrade [RELEASE_NAME] --install --repo https://postfinance.github.io/kubenurse/ kubenurse`.
 
 #### Configuration settings
 
