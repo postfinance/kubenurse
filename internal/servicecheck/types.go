@@ -1,6 +1,7 @@
 package servicecheck
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -63,8 +64,8 @@ type Result struct {
 	Neighbourhood      []kubediscovery.Neighbour `json:"neighbourhood"`
 }
 
-// Check is the signature used by all checks that the checker can execute
-type Check func() (string, error)
+// Check is the signature used by all checks that the checker can execute.
+type Check func(ctx context.Context) (string, error)
 
 // CachedResult represents a cached check result that is valid until the expiration.
 type CachedResult struct {

@@ -1,83 +1,89 @@
 package servicecheck
 
 import (
+	"crypto/tls"
+	"log"
 	"net/http"
+	"net/http/httptrace"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func withRequestTracing(registry *prometheus.Registry, transport http.RoundTripper) http.RoundTripper {
-	counter := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
-			Name:      "httpclient_requests_total",
-			Help:      "A counter for requests from the kubenurse http client.",
-		},
-		[]string{"code", "method"},
-	)
+// TODO:
+// - RoundTripperCounter and RoundTripper duration useful? Was never officially documented and I don't see anything usable with it
 
-	latencyVec := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
-			Name:      "httpclient_trace_request_duration_seconds",
-			Help:      "Latency histogram for requests from the kubenurse http client. Time in seconds since the start of the http request.",
-			Buckets:   []float64{.0005, .005, .01, .025, .05, .1, .25, .5, 1},
-		},
-		[]string{"event"},
-	)
+// unique type for context.Context to avoid collisions.
+type kubenurseContextKey struct{}
 
-	// histVec has no labels, making it a zero-dimensional ObserverVec.
-	histVec := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
-			Name:      "httpclient_request_duration_seconds",
-			Help:      "A latency histogram of request latencies from the kubenurse http client.",
-			Buckets:   prometheus.DefBuckets,
-		},
-		[]string{},
-	)
+//http.RoundTripper
+// TODO: Easier method to get a round tripper?
+type RoundTripperFunc func(req *http.Request) (*http.Response, error)
 
-	// Register all of the metrics in the standard registry.
-	registry.MustRegister(counter, latencyVec, histVec)
+//
+func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
+	return rt(r)
+}
 
-	// Define functions for the available httptrace.ClientTrace hook
-	// functions that we want to instrument.
-	trace := &promhttp.InstrumentTrace{
-		DNSStart: func(t float64) {
-			latencyVec.WithLabelValues("dns_start").Observe(t)
-		},
-		DNSDone: func(t float64) {
-			latencyVec.WithLabelValues("dns_done").Observe(t)
-		},
-		ConnectStart: func(t float64) {
-			latencyVec.WithLabelValues("connect_start").Observe(t)
-		},
-		ConnectDone: func(t float64) {
-			latencyVec.WithLabelValues("connect_done").Observe(t)
-		},
-		TLSHandshakeStart: func(t float64) {
-			latencyVec.WithLabelValues("tls_handshake_start").Observe(t)
-		},
-		TLSHandshakeDone: func(t float64) {
-			latencyVec.WithLabelValues("tls_handshake_done").Observe(t)
-		},
-		WroteRequest: func(t float64) {
-			latencyVec.WithLabelValues("wrote_request").Observe(t)
-		},
-		GotFirstResponseByte: func(t float64) {
-			latencyVec.WithLabelValues("got_first_resp_byte").Observe(t)
-		},
+// Ensure RoundTripperFunc is a http.RoundTripper
+var _ http.RoundTripper = (*RoundTripperFunc)(nil)
+
+// TODO: Description
+// This collects traces and logs errors. As promhttp.InstrumentRoundTripperTrace doesn't process
+// errors, this is custom made and inspired by prometheus/client_golang's promhttp
+func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, latencyVec *prometheus.HistogramVec) http.RoundTripper {
+	collectMetric := func(traceType string, start time.Time, r *http.Request, err error) {
+		td := time.Since(start).Seconds()
+		kubenurseCheckLabel := r.Context().Value(kubenurseContextKey{}).(string)
+
+		// If we got an error inside a trace, log it and do not collect metrics
+		if err != nil {
+			log.Printf("httptrace: failed %s for %s with %v", traceType, kubenurseCheckLabel, err)
+			return
+		}
+
+		latencyVec.WithLabelValues(traceType, kubenurseCheckLabel).Observe(td)
 	}
 
-	// Wrap the default RoundTripper with middleware.
-	roundTripper := promhttp.InstrumentRoundTripperCounter(counter,
-		promhttp.InstrumentRoundTripperTrace(trace,
-			promhttp.InstrumentRoundTripperDuration(histVec,
-				transport,
-			),
-		),
-	)
+	// Return a http.RoundTripper for tracing requests
+	return RoundTripperFunc(func(r *http.Request) (*http.Response, error) {
+		// Capture request time
+		start := time.Now()
 
-	return roundTripper
+		// Add tracing hooks
+		trace := &httptrace.ClientTrace{
+			GotConn: func(info httptrace.GotConnInfo) {
+				collectMetric("got_conn", start, r, nil)
+			},
+			DNSStart: func(info httptrace.DNSStartInfo) {
+				collectMetric("dns_start", start, r, nil)
+			},
+			DNSDone: func(info httptrace.DNSDoneInfo) {
+				collectMetric("dns_done", start, r, info.Err)
+			},
+			ConnectStart: func(_, _ string) {
+				collectMetric("connect_start", start, r, nil)
+			},
+			ConnectDone: func(_, _ string, err error) {
+				collectMetric("connect_done", start, r, err)
+			},
+			TLSHandshakeStart: func() {
+				collectMetric("tls_handshake_start", start, r, nil)
+			},
+			TLSHandshakeDone: func(_ tls.ConnectionState, err error) {
+				collectMetric("tls_handshake_done", start, r, nil)
+			},
+			WroteRequest: func(info httptrace.WroteRequestInfo) {
+				collectMetric("wrote_request", start, r, info.Err)
+			},
+			GotFirstResponseByte: func() {
+				collectMetric("got_first_resp_byte", start, r, nil)
+			},
+		}
+
+		// Do request with tracing enabled
+		r = r.WithContext(httptrace.WithClientTrace(r.Context(), trace))
+
+		return next.RoundTrip(r)
+	})
 }
