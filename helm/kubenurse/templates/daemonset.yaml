@@ -52,8 +52,8 @@ spec:
           value: {{ .Values.namespace }}
         - name: KUBENURSE_NEIGHBOUR_FILTER
           value: app={{ include "name" . }}
-          {{- if .Values.daemonset.extraEnvs }}
-            {{- toYaml .Values.daemonset.extraEnvs | indent 12 }}
+          {{- if .Values.daemonset.extraEnvs -}}
+          {{- toYaml .Values.daemonset.extraEnvs | nindent 8 }}
           {{- end }}
         image: {{ include "image" . | quote }}
         ports:
