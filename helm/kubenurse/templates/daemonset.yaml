@@ -52,8 +52,8 @@ spec:
           value: {{ .Values.namespace }}
         - name: KUBENURSE_NEIGHBOUR_FILTER
           value: app={{ include "name" . }}
-          {{- if .Values.daemonset.extraEnvs }}
-            {{- toYaml .Values.daemonset.extraEnvs | indent 12 }}
+          {{- if .Values.daemonset.extraEnvs -}}
+          {{- toYaml .Values.daemonset.extraEnvs | nindent 8 }}
           {{- end }}
         image: {{ include "image" . | quote }}
         ports:
@@ -68,6 +68,10 @@ spec:
           periodSeconds: 3
           successThreshold: 1
           timeoutSeconds: 1
+        volumeMounts:
+        {{- if .Values.daemonset.volumeMounts -}}
+        {{- toYaml .Values.daemonset.volumeMounts | nindent 8 }}
+        {{- end }}
       tolerations:
       {{- if .Values.daemonset.tolerations }}
       {{- toYaml .Values.daemonset.tolerations | nindent 6 }}
@@ -75,4 +79,8 @@ spec:
       dnsConfig:
       {{- if .Values.daemonset.dnsConfig }}
       {{- toYaml .Values.daemonset.dnsConfig | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- if .Values.daemonset.volumes -}}
+      {{- toYaml .Values.daemonset.volumes | nindent 6 }}
       {{- end }}
