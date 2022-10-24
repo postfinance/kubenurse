@@ -72,3 +72,7 @@ spec:
       {{- if .Values.daemonset.tolerations }}
       {{- toYaml .Values.daemonset.tolerations | nindent 6 }}
       {{- end }}
+      dnsConfig:
+      {{- if .Values.daemonset.dnsConfig }}
+      {{- toYaml .Values.daemonset.dnsConfig | nindent 8 }}
+      {{- end }}
