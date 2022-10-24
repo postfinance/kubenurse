@@ -27,6 +27,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | daemonset.podSecurityContext        | The security context of the daemonset | {}
 | daemonset.containerSecurityContext| The security context of the containers within the pods of the daemonset | {}
 | daemonset.tolerations | The tolerations of the daemonset |   <code>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/master</br>&nbsp; operator: Equal </br>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/control-plane</br>&nbsp; operator: Equal</code>
+| daemonset.dnsConfig              | Specifies the DNS parameters of the pods in the daemonset                                           | {}                          |         
 | daemonset.volumeMounts           | Additional volumeMounts to be added to the pods of the daemonset                                    | []                          |
 | daemonset.volumes                | Additional volumes to be added to the daemonset                                                     | []                          |
 | namespace                        | The namespace where kubenurse will be deployed                                                      | kube-system                 |
