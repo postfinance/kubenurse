@@ -43,6 +43,11 @@ type Server struct {
 // * KUBERNETES_SERVICE_PORT
 // * KUBENURSE_NAMESPACE
 // * KUBENURSE_NEIGHBOUR_FILTER
+// * KUBENURSE_CHECK_API_SERVER_DIRECT
+// * KUBENURSE_CHECK_API_SERVER_DNS
+// * KUBENURSE_CHECK_ME_INGRESS
+// * KUBENURSE_CHECK_ME_SERVICE
+// * KUBENURSE_CHECK_NEIGHBOURHOOD
 func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 	mux := http.NewServeMux()
 
@@ -93,6 +98,14 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 	chk.KubernetesServicePort = os.Getenv("KUBERNETES_SERVICE_PORT")
 	chk.KubenurseNamespace = os.Getenv("KUBENURSE_NAMESPACE")
 	chk.NeighbourFilter = os.Getenv("KUBENURSE_NEIGHBOUR_FILTER")
+
+	//nolint:goconst // No need to make "false" a constant in my opinion, readability is better like this.
+	chk.SkipCheckAPIServerDirect = os.Getenv("KUBENURSE_CHECK_API_SERVER_DIRECT") == "false"
+	chk.SkipCheckAPIServerDNS = os.Getenv("KUBENURSE_CHECK_API_SERVER_DNS") == "false"
+	chk.SkipCheckMeIngress = os.Getenv("KUBENURSE_CHECK_ME_INGRESS") == "false"
+	chk.SkipCheckMeService = os.Getenv("KUBENURSE_CHECK_ME_SERVICE") == "false"
+	chk.SkipCheckNeighbourhood = os.Getenv("KUBENURSE_CHECK_NEIGHBOURHOOD") == "false"
+
 	chk.UseTLS = server.useTLS
 
 	server.checker = chk

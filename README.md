@@ -61,6 +61,11 @@ kubenurse is configured with environment variables:
 - `KUBENURSE_NAMESPACE`: Namespace in which to look for the neighbour kubenurses
 - `KUBENURSE_NEIGHBOUR_FILTER`: A Kubernetes label selector (eg. `app=kubenurse`) to filter neighbour kubenurses
 - `KUBENURSE_ALLOW_UNSCHEDULABLE`: If this is `"true"`, path checks to neighbouring kubenurses are made even if they are running on unschedulable nodes.
+- `KUBENURSE_CHECK_API_SERVER_DIRECT`: If this is `"true"` kubenurse will perform the check [API Server Direct](###API Server Direct). default is "true"
+- `KUBENURSE_CHECK_API_SERVER_DNS`: If this is `"true"`, kubenurse will perform the check [API Server DNS](###API Server DNS). default is "true"
+- `KUBENURSE_CHECK_ME_INGRESS`: If this is `"true"`, kubenurse will perform the check [Me Ingress](###Me Ingress). default is "true"
+- `KUBENURSE_CHECK_ME_SERVICE`: If this is `"true"`, kubenurse will perform the check [Me Service](###Me Service). default is "true"
+- `KUBENURSE_CHECK_NEIGHBOURHOOD`: If this is `"true"`, kubenurse will perform the check [Neighbourhood](###Neighbourhood). default is "true"
 - `KUBENURSE_USE_TLS`: If this is `"true"`, enable TLS endpoint on port 8443
 - `KUBENURSE_CERT_FILE`: Certificate to use with TLS endpoint
 - `KUBENURSE_CERT_KEY`: Key to use with TLS endpoint

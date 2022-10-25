@@ -1,4 +1,5 @@
 ---
+# This resource is not needed if KUBENURSE_CHECK_ME_SERVICE=false
 apiVersion: v1
 kind: Service
 metadata:
