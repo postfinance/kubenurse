@@ -9,7 +9,7 @@ metadata:
     app: {{ include "name" . | quote }}
 {{ include "common-labels" . | indent 4 }}
   name: {{ include "name" . | quote }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "namespace" . }}
 spec:
   ports:
   - name: {{ .Values.service.name }}

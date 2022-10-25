@@ -5,7 +5,7 @@ metadata:
   labels:
 {{ include "common-labels" . | indent 4 }}
   name: {{ include "name" . | quote }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "namespace" . }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:

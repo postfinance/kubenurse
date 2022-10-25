@@ -16,3 +16,7 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | quote }}
 {{ define "image" -}}
 {{ printf "%s:%s" .Values.daemonset.image.repository .Values.daemonset.image.tag }}
 {{- end }}
+
+{{- define "namespace" -}}
+{{- default .Release.Namespace .Values.namespace | quote -}}
+{{- end -}}
