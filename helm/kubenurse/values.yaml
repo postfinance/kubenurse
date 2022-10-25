@@ -22,6 +22,8 @@ serviceMonitor:
   enabled: false
   labels: {}
 
+insecure: true
+
 namespace: kube-system
 
 serviceAccount:
