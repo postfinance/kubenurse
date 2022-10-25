@@ -39,7 +39,8 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | service.labels | Additional labels to be added to the Service | 
 | ingress.enabled                  | Enable/ Disable the ingress                                                                         | true                        |
 | ingress.className                | The classname of the ingress controller (e.g. the nginx ingress controller)                         | nginx                       |
-| ingress.url                      | The url of the ingress; e.g. kubenurse.westeurope.cloudapp.example.com                              | dummy-kubenurse.example.com |
+| ingress.url                      | The url of the ingress; e.g. kubenurse.westeurope.cloudapp.example.com                              | dummy-kubenurse.example.com | 
+| insecure                         | Control whether the http client verifies the ingress certificate (by default no verification)       | true                        |
 | rbac.allow_unschedulable.enabled | Configure a clusterrole and clusterrolebinding if env KUBENURSE_ALLOW_UNSCHEDULABLE is set to false | false                       |
 
 

@@ -45,7 +45,7 @@ spec:
         - name: KUBENURSE_SERVICE_URL
           value: "http://kubenurse.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.service.port }}"
         - name: KUBENURSE_INSECURE
-          value: "true"
+          value: {{ .Values.insecure  | quote }}
         - name: KUBENURSE_ALLOW_UNSCHEDULABLE
           value: "false"
         - name: KUBENURSE_NAMESPACE
