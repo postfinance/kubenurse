@@ -150,6 +150,7 @@ func (c *Checker) APIServerDirect() (string, error) {
 	}
 
 	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
+
 	return c.doRequest(apiurl)
 }
 
@@ -160,6 +161,7 @@ func (c *Checker) APIServerDNS() (string, error) {
 	}
 
 	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
+
 	return c.doRequest(apiurl)
 }
 
