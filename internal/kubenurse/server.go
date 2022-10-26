@@ -17,6 +17,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+const defaultCheckInterval = 5 * time.Second
+
 // Server is used to build the kubenurse http/https server(s).
 type Server struct {
 	http  http.Server
@@ -25,7 +27,8 @@ type Server struct {
 	checker *servicecheck.Checker
 
 	// Configuration options
-	useTLS bool
+	useTLS        bool
+	checkInterval time.Duration
 	// If we want to consider kubenurses on unschedulable nodes
 	allowUnschedulable bool
 
@@ -48,8 +51,20 @@ type Server struct {
 // * KUBENURSE_CHECK_ME_INGRESS
 // * KUBENURSE_CHECK_ME_SERVICE
 // * KUBENURSE_CHECK_NEIGHBOURHOOD
+// * KUBENURSE_CHECK_INTERVAL
 func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 	mux := http.NewServeMux()
+
+	checkInterval := defaultCheckInterval
+
+	if v, ok := os.LookupEnv("KUBENURSE_CHECK_INTERVAL"); ok {
+		var err error
+		checkInterval, err = time.ParseDuration(v)
+
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	server := &Server{
 		http: http.Server{
@@ -70,9 +85,9 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 		//nolint:goconst // No need to make "true" a constant in my opinion, readability is better like this.
 		useTLS:             os.Getenv("KUBENURSE_USE_TLS") == "true",
 		allowUnschedulable: os.Getenv("KUBENURSE_ALLOW_UNSCHEDULABLE") == "true",
-
-		mu:    new(sync.Mutex),
-		ready: true,
+		checkInterval:      checkInterval,
+		mu:                 new(sync.Mutex),
+		ready:              true,
 	}
 
 	promRegistry := prometheus.NewRegistry()
@@ -132,7 +147,7 @@ func (s *Server) Run() error {
 	go func() {
 		defer wg.Done()
 
-		s.checker.RunScheduled(5 * time.Second)
+		s.checker.RunScheduled(s.checkInterval)
 	}()
 
 	wg.Add(1)
