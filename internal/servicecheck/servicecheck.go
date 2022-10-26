@@ -148,6 +148,7 @@ func (c *Checker) APIServerDirect() (string, error) {
 	if c.SkipCheckAPIServerDirect {
 		return skippedStr, nil
 	}
+
 	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
 	return c.doRequest(apiurl)
 }
@@ -157,6 +158,7 @@ func (c *Checker) APIServerDNS() (string, error) {
 	if c.SkipCheckAPIServerDNS {
 		return skippedStr, nil
 	}
+
 	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
 	return c.doRequest(apiurl)
 }
@@ -166,6 +168,7 @@ func (c *Checker) MeIngress() (string, error) {
 	if c.SkipCheckMeIngress {
 		return skippedStr, nil
 	}
+
 	return c.doRequest(c.KubenurseIngressURL + "/alwayshappy")
 }
 
@@ -174,6 +177,7 @@ func (c *Checker) MeService() (string, error) {
 	if c.SkipCheckMeService {
 		return skippedStr, nil
 	}
+
 	return c.doRequest(c.KubenurseServiceURL + "/alwayshappy")
 }
 
