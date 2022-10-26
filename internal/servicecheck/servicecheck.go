@@ -16,6 +16,7 @@ import (
 const (
 	okStr            = "ok"
 	errStr           = "error"
+	skippedStr       = "skipped"
 	metricsNamespace = "kubenurse"
 )
 
@@ -98,17 +99,21 @@ func (c *Checker) Run() (Result, bool) {
 	res.MeService, err = c.measure(c.MeService, "me_service")
 	haserr = haserr || (err != nil)
 
-	res.Neighbourhood, err = c.discovery.GetNeighbours(context.TODO(), c.KubenurseNamespace, c.NeighbourFilter)
-	haserr = haserr || (err != nil)
-
-	// Neighbourhood special error treating
-	if err != nil {
-		res.NeighbourhoodState = err.Error()
+	if c.SkipCheckNeighbourhood {
+		res.NeighbourhoodState = skippedStr
 	} else {
-		res.NeighbourhoodState = okStr
+		res.Neighbourhood, err = c.discovery.GetNeighbours(context.TODO(), c.KubenurseNamespace, c.NeighbourFilter)
+		haserr = haserr || (err != nil)
 
-		// Check all neighbours if the neighbourhood was discovered
-		c.checkNeighbours(res.Neighbourhood)
+		// Neighbourhood special error treating
+		if err != nil {
+			res.NeighbourhoodState = err.Error()
+		} else {
+			res.NeighbourhoodState = okStr
+
+			// Check all neighbours if the neighbourhood was discovered
+			c.checkNeighbours(res.Neighbourhood)
+		}
 	}
 
 	// Cache result
@@ -140,23 +145,41 @@ func (c *Checker) StopScheduled() {
 
 // APIServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link
 func (c *Checker) APIServerDirect() (string, error) {
+	if c.SkipCheckAPIServerDirect {
+		return skippedStr, nil
+	}
+
 	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
+
 	return c.doRequest(apiurl)
 }
 
 // APIServerDNS checks the /version endpoint of the Kubernetes API Server through the Cluster DNS URL
 func (c *Checker) APIServerDNS() (string, error) {
+	if c.SkipCheckAPIServerDNS {
+		return skippedStr, nil
+	}
+
 	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
+
 	return c.doRequest(apiurl)
 }
 
 // MeIngress checks if the kubenurse is reachable at the /alwayshappy endpoint behind the ingress
 func (c *Checker) MeIngress() (string, error) {
+	if c.SkipCheckMeIngress {
+		return skippedStr, nil
+	}
+
 	return c.doRequest(c.KubenurseIngressURL + "/alwayshappy")
 }
 
 // MeService checks if the kubenurse is reachable at the /alwayshappy endpoint through the kubernetes service
 func (c *Checker) MeService() (string, error) {
+	if c.SkipCheckMeService {
+		return skippedStr, nil
+	}
+
 	return c.doRequest(c.KubenurseServiceURL + "/alwayshappy")
 }
 

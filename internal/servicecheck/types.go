@@ -13,15 +13,20 @@ type Checker struct {
 	// Ingress and service config
 	KubenurseIngressURL string
 	KubenurseServiceURL string
+	SkipCheckMeIngress  bool
+	SkipCheckMeService  bool
 
 	// Kubernetes API
-	KubernetesServiceHost string
-	KubernetesServicePort string
+	KubernetesServiceHost    string
+	KubernetesServicePort    string
+	SkipCheckAPIServerDirect bool
+	SkipCheckAPIServerDNS    bool
 
 	// Neighbourhood
-	KubenurseNamespace string
-	NeighbourFilter    string
-	allowUnschedulable bool
+	KubenurseNamespace     string
+	NeighbourFilter        string
+	allowUnschedulable     bool
+	SkipCheckNeighbourhood bool
 
 	// TLS
 	UseTLS bool

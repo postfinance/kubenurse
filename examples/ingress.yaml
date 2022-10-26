@@ -1,3 +1,4 @@
+# This resource is not needed if KUBENURSE_CHECK_ME_INGRESS=false
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
