@@ -3,5 +3,5 @@ apiVersion: v2
 name: kubenurse
 description: A Helm chart for Kubernetes to deploy kubenurse
 version: 0.2.2
-appVersion: "1.6.0"
+appVersion: "1.7.0"
 icon: https://avatars.githubusercontent.com/u/34368733

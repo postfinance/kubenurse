@@ -50,8 +50,8 @@ jobs:
         timeout-minutes: 2
         run: |
           sleep 15 # wait for the scheduler to create pods
-          kubectl wait pods -l app=kubenurse --for=condition=Ready
-          kubectl get pods -l app=kubenurse
+          kubectl wait pods -l app.kubernetes.io/name=kubenurse --for=condition=Ready
+          kubectl get pods -l  app.kubernetes.io/name=kubenurse
           sleep 60 # Wait to generate some checks etc.
       - name: Check deployment
         uses: ./.github/actions/check-deployment
