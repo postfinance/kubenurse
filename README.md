@@ -189,4 +189,4 @@ All performed checks expose metrics which can be used to monitor/alert:
 
 At `/metrics` you will find these:
 - `kubenurse_errors_total`: Kubenurse error counter partitioned by error type
-- `kubenurse_request_duration`: Kubenurse request duration partitioned by error type, summary over one minute
+- `kubenurse_request_duration`: a histogram for Kubenurse request duration partitioned by error type

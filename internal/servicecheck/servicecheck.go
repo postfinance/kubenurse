@@ -33,18 +33,17 @@ func New(ctx context.Context, discovery *kubediscovery.Client, promRegistry *pro
 		[]string{"type"},
 	)
 
-	durationSummary := prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
-			Namespace:  metricsNamespace,
-			Name:       "request_duration",
-			Help:       "Kubenurse request duration partitioned by error type",
-			MaxAge:     1 * time.Minute,
-			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+	durationHistogram := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "request_duration",
+			Help:      "Kubenurse request duration partitioned by target path",
+			Buckets:   prometheus.DefBuckets,
 		},
 		[]string{"type"},
 	)
 
-	promRegistry.MustRegister(errorCounter, durationSummary)
+	promRegistry.MustRegister(errorCounter, durationHistogram)
 
 	// setup http transport
 	transport, err := generateRoundTripper(os.Getenv("KUBENURSE_EXTRA_CA"), os.Getenv("KUBENURSE_INSECURE") == "true")
@@ -65,7 +64,7 @@ func New(ctx context.Context, discovery *kubediscovery.Client, promRegistry *pro
 		httpClient:         httpClient,
 		cacheTTL:           cacheTTL,
 		errorCounter:       errorCounter,
-		durationSummary:    durationSummary,
+		durationHistogram:  durationHistogram,
 		stop:               make(chan struct{}),
 	}, nil
 }
@@ -210,7 +209,7 @@ func (c *Checker) measure(check Check, label string) (string, error) {
 	res, err := check()
 
 	// Process metrics
-	c.durationSummary.WithLabelValues(label).Observe(time.Since(start).Seconds())
+	c.durationHistogram.WithLabelValues(label).Observe(time.Since(start).Seconds())
 
 	if err != nil {
 		log.Printf("failed request for %s with %v", label, err)
