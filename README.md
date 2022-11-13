@@ -18,31 +18,51 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 
 #### Configuration settings
 
-| Setting                          | Description                                                                                         | Default               |
-| ---------------------------------|---------------------------------------------------------------------------------------------------- | --------------------- |
-| daemonset.image.repository       | The repository name                                                                                 | postfinance/kubenurse |
-| daemonset.image.tag              | The tag/ version of the image                                                                       | v1.4.0                |
-| daemonset.podLabels              | Additional labels to be added to the pods of the daemonset | []
-| daemonset.podAnnotations         | Additional annotations to be added to the pods of the daemonset | []
-| daemonset.podSecurityContext        | The security context of the daemonset | {}
-| daemonset.containerSecurityContext| The security context of the containers within the pods of the daemonset | {}
-| daemonset.tolerations | The tolerations of the daemonset |   <code>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/master</br>&nbsp; operator: Equal </br>- effect: NoSchedule </br>&nbsp; key: node-role.kubernetes.io/control-plane</br>&nbsp; operator: Equal</code>
-| daemonset.dnsConfig              | Specifies the DNS parameters of the pods in the daemonset                                           | {}                          |         
-| daemonset.volumeMounts           | Additional volumeMounts to be added to the pods of the daemonset                                    | []                          |
-| daemonset.volumes                | Additional volumes to be added to the daemonset                                                     | []                          |
-| namespace                        | The namespace where kubenurse will be deployed                                                      | kube-system                 |
-| serviceMonitor.enabled | Adds a ServiceMonitor for use with [Prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) | false
-| serviceMonitor.labels | Additional labels to be added to the ServiceMonitor | {}
-| serviceAccount.name              | The name of the service account which is used                                                       | kubenurse                   |
-| service.name                     | The name of service which exposes the kubenurse application                                         | 8080-8080                   |
-| service.port                     | The port number of the service                                                                      | 8080                        |
-| service.labels | Additional labels to be added to the Service | 
-| ingress.enabled                  | Enable/ Disable the ingress                                                                         | true                        |
-| ingress.className                | The classname of the ingress controller (e.g. the nginx ingress controller)                         | nginx                       |
-| ingress.url                      | The url of the ingress; e.g. kubenurse.westeurope.cloudapp.example.com                              | dummy-kubenurse.example.com | 
-| insecure                         | Control whether the http client verifies the ingress certificate (by default no verification)       | true                        |
-| rbac.allow_unschedulable.enabled | Configure a clusterrole and clusterrolebinding if env KUBENURSE_ALLOW_UNSCHEDULABLE is set to false | false                       |
+| Setting                            | Description                                                                                                          | Default                       |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| daemonset.image.repository         | The repository name                                                                                                  | `postfinance/kubenurse`       |
+| daemonset.image.tag                | The tag/ version of the image                                                                                        | `v1.4.0`                      |
+| daemonset.podLabels                | Additional labels to be added to the pods of the daemonset                                                           | `[]`                          |
+| daemonset.podAnnotations           | Additional annotations to be added to the pods of the daemonset                                                      | `[]`                          |
+| daemonset.podSecurityContext       | The security context of the daemonset                                                                                | `{}`                          |
+| daemonset.containerSecurityContext | The security context of the containers within the pods of the daemonset                                              | `{}`                          |
+| daemonset.tolerations              | The tolerations of the daemonset                                                                                     | See Default tolerations below |
+| daemonset.dnsConfig                | Specifies the DNS parameters of the pods in the daemonset                                                            | `{}`                          |
+| daemonset.volumeMounts             | Additional volumeMounts to be added to the pods of the daemonset                                                     | `[]`                          |
+| daemonset.volumes                  | Additional volumes to be added to the daemonset                                                                      | `[]`                          |
+| serviceMonitor.enabled             | Adds a ServiceMonitor for use with [Prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) | `false`                       |
+| serviceMonitor.labels              | Additional labels to be added to the ServiceMonitor                                                                  | `{}`                          |
+| serviceAccount.name                | The name of the service account which is used                                                                        | `Release.Name`                |
+| service.name                       | The name of service which exposes the kubenurse application                                                          | `8080-8080`                   |
+| service.port                       | The port number of the service                                                                                       | `8080`                        |
+| service.labels                     | Additional labels to be added to the Service                                                                         |                               |
+| ingress.enabled                    | Enable/ Disable the ingress                                                                                          | `true`                        |
+| ingress.className                  | The classname of the ingress controller (e.g. the nginx ingress controller)                                          | `nginx`                       |
+| ingress.url                        | The url of the ingress; e.g. kubenurse.westeurope.cloudapp.example.com                                               | `dummy-kubenurse.example.com` |
+| insecure                           | Set `KUBENURSE_INSECURE` environment variable                                                                        | `true`                        |
+| allow_unschedulable                | Sets `KUBENURSE_ALLOW_UNSCHEDULABLE` environment variable                                                            | `false`                       |
+| neighbour_filter                   | Sets `KUBENURSE_NEIGHBOUR_FILTER` environment variable                                                               | `app=kubenurse`               |
+| extra_ca                           | Sets `KUBENURSE_EXTRA_CA` environment variable                                                                       |                               |
+| check_api_server_direct            | Sets `KUBENURSE_CHECK_API_SERVER_DIRECT` environment variable                                                        | `true`                        |
+| check_api_server_dns               | Sets `KUBENURSE_CHECK_API_SERVER_DNS` environment variable                                                           | `true`                        |
+| check_me_ingress                   | Sets `KUBENURSE_CHECK_ME_INGRESS` environment variable                                                               | `true`                        |
+| check_me_service                   | Sets `KUBENURSE_CHECK_ME_SERVICE` environment variable                                                               | `true`                        |
+| check_neighbourhood                | Sets `KUBENURSE_CHECK_NEIGHBOURHOOD` environment variable                                                            | `true`                        |
+| check_interval                     | Sets `KUBENURSE_CHECK_INTERVAL` environment variable                                                                 | `5s`                          |
+| use_tls                            | Sets `KUBENURSE_USE_TLS` environment variable                                                                        | `false`                       |
+| cert_file                          | Sets `KUBENURSE_CERT_FILE` environment variable                                                                      |                               |
+| cert_key                           | Sets `KUBENURSE_CERT_KEY` environment variable                                                                       |                               |
 
+Default tolerations:
+
+```yaml
+- effect: NoSchedule
+  key: node-role.kubernetes.io/master
+  operator: Equal
+- effect: NoSchedule
+  key: node-role.kubernetes.io/control-plane
+  operator: Equal
+```
 
 After everything is set up and Prometheus scrapes the kubenurses, you can build
 dashboards [as this example](./doc/grafana-kubenurse.json) that show network latencies and errors or use the metrics for alarming.

@@ -3,9 +3,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   labels:
-{{ include "common-labels" . | indent 4 }}
-  name: {{ include "name" . | quote }}
-  namespace: {{ include "namespace" . }}
+    {{- include "kubenurse.labels" . | nindent 4 }}
+  name: {{ include "kubenurse.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
@@ -14,7 +14,7 @@ spec:
       paths:
       - backend:
           service:
-            name: {{ include "name" . | quote }}
+            name: {{ include "kubenurse.fullname" . }}
             port:
               number: {{ .Values.service.port }}
         path: /

@@ -3,17 +3,17 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    app: kubenurse
+    app.kubernetes.io/name: kubenurse
   name: kubenurse
   namespace: kube-system
 spec:
   selector:
     matchLabels:
-      app: kubenurse
+      app.kubernetes.io/name: kubenurse
   template:
     metadata:
       labels:
-        app: kubenurse
+        app.kubernetes.io/name: kubenurse
       annotations:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "8080"
@@ -31,7 +31,7 @@ spec:
         - name: KUBENURSE_NAMESPACE
           value: kube-system
         - name: KUBENURSE_NEIGHBOUR_FILTER
-          value: "app=kubenurse"
+          value: "app.kubernetes.io/name=kubenurse"
         image: "postfinance/kubenurse:v1.5.1"
         ports:
         - containerPort: 8080

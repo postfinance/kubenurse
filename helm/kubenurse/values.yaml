@@ -1,7 +1,7 @@
 daemonset:
   image:
     repository: postfinance/kubenurse
-    tag: v1.6.0
+    tag: v1.7.0
   extraEnvs: []
   podLabels: {}
   podAnnotations: {}
@@ -22,12 +22,46 @@ serviceMonitor:
   enabled: false
   labels: {}
 
+# environment variables
+#
+# KUBENURSE_INSECURE
 insecure: true
+# KUBENURSE_SERVICE_URL
+service_url: ""
+# KUBENURSE_ALLOW_UNSCHEDULABLE
+allow_unschedulable: false
+# KUBENURSE_NEIGHBOUR_FILTER 
+neighbour_filter: app.kubernetes.io/name=kubenurse
+# KUBENURSE_EXTRA_CA
+extra_ca: ""
+# KUBENURSE_CHECK_API_SERVER_DIRECT
+check_api_server_direct: true
+# KUBENURSE_CHECK_API_SERVER_DNS
+check_api_server_dns: true
+# KUBENURSE_CHECK_ME_INGRESS
+check_api_me_ingress: true
+# KUBENURSE_CHECK_ME_SERVICE
+check_api_me_service: true
+# KUBENURSE_CHECK_NEIGHBOURHOOD
+check_neighbourhood: true
+# KUBENURSE_CHECK_INTERVAL
+check_interval: 5s
+# KUBENURSE_USE_TLS
+use_tls: false
+# KUBENURSE_CERT_FILE
+cert_file: ""
+# KUBENURSE_CERT_KEY
+cert_key: ""
 
-namespace: kube-system
+nameOverride: ""
+fullnameOverride: ""
 
 serviceAccount:
-  name: kubenurse
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
 
 service:
   name: 8080-8080
@@ -37,8 +71,5 @@ service:
 ingress:
   enabled: true
   className: nginx
+  # KUBENURSE_INGRESS_URL
   url: dummy-kubenurse.example.com
-
-rbac:
-  allow_unschedulable:
-    enabled: true

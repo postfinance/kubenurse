@@ -2,18 +2,21 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "name" . | quote }}
-  namespace: {{ include "namespace" . }}
+  name: {{ include "kubenurse.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
+    {{- include "kubenurse.labels" . | nindent 4 }}
+    {{- if .Values.serviceMonitor.labels }}
     {{- toYaml .Values.serviceMonitor.labels | nindent 4}}
+    {{- end }}
 spec:
   endpoints:
   - port: {{ .Values.service.name }}
     interval: 60s
   namespaceSelector:
     matchNames:
-    - {{ .Values.namespace }}
+    - {{ .Release.Namespace }}
   selector:
     matchLabels:
-{{ include "common-labels" . | indent 6 }}
+    {{- include "kubenurse.selectorLabels" . | nindent 6 }}
 {{- end -}}

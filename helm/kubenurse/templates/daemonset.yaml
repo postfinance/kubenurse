@@ -1,24 +1,23 @@
+{{- $fullName := include "kubenurse.fullname" . -}}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    app: {{ include "name" . | quote }}
-{{ include "helm-labels" . | indent 4 }}
-  name: {{ include "name" . | quote }}
-  namespace: {{ include "namespace" . }}
+    {{- include "kubenurse.labels" . | nindent 4 }}
+  name: {{ include "kubenurse.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: {{ include "name" . | quote }}
+      {{- include "kubenurse.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
+        {{- include "kubenurse.selectorLabels" . | nindent 8 }}
         {{- if .Values.daemonset.podLabels }}
         {{- toYaml .Values.daemonset.podLabels | nindent 8 }}
         {{- end }}
-        app: {{ include "name" . | quote }}
-{{ include "common-labels" . | indent 8 }}
       annotations:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "8080"
@@ -32,9 +31,9 @@ spec:
       {{- if .Values.daemonset.podSecurityContext -}}
       {{ toYaml .Values.daemonset.podSecurityContext | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "name" . | quote }}
+      serviceAccountName: {{ include "kubenurse.serviceAccountName" . }}
       containers:
-      - name: {{ include "name" . | quote }}
+      - name: {{ include "kubenurse.name" . | quote }}
         securityContext:
           {{- if .Values.daemonset.containerSecurityContext -}}
           {{ toYaml .Values.daemonset.containerSecurityContext | nindent 10 }}
@@ -43,15 +42,41 @@ spec:
         - name: KUBENURSE_INGRESS_URL
           value: https://{{ .Values.ingress.url }}
         - name: KUBENURSE_SERVICE_URL
-          value: "http://kubenurse.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.service.port }}"
+          value: {{ default (printf "http://%s.%s.svc.cluster.local:%.f" $fullName .Release.Namespace .Values.service.port) .Values.service_url }}
         - name: KUBENURSE_INSECURE
           value: {{ .Values.insecure  | quote }}
         - name: KUBENURSE_ALLOW_UNSCHEDULABLE
-          value: "false"
+          value: {{ .Values.allow_unschedulable  | quote }}
         - name: KUBENURSE_NAMESPACE
-          value: {{ .Values.namespace }}
+          value: {{ .Release.Namespace }}
         - name: KUBENURSE_NEIGHBOUR_FILTER
-          value: app={{ include "name" . }}
+          value: {{ .Values.neighbour_filter }}
+          {{- if .Values.extra_ca }}
+        - name: KUBENURSE_EXTRA_CA
+          value: {{ .Values.extra_ca }}
+          {{- end }}
+        - name: KUBENURSE_CHECK_API_SERVER_DIRECT
+          value: {{ .Values.check_api_server_direct | quote }}
+        - name: KUBENURSE_CHECK_API_SERVER_DNS
+          value: {{ .Values.check_api_server_dns | quote }}
+        - name: KUBENURSE_CHECK_ME_INGRESS
+          value: {{ .Values.check_api_me_ingress | quote }}
+        - name: KUBENURSE_CHECK_ME_SERVICE
+          value: {{ .Values.check_api_me_service | quote }}
+        - name: KUBENURSE_CHECK_NEIGHBOURHOOD
+          value: {{ .Values.check_neighbourhood | quote }}
+        - name: KUBENURSE_CHECK_INTERVAL
+          value: {{ .Values.check_interval }}
+        - name: KUBENURSE_USE_TLS
+          value: {{ .Values.use_tls | quote }}
+          {{- if .Values.cert_file }}
+        - name: KUBENURSE_CERT_FILE
+          value: {{ .Values.cert_file }}
+          {{- end }}
+          {{- if .Values.cert_key }}
+        - name: KUBENURSE_CERT_KEY
+          value: {{ .Values.cert_key }}
+          {{- end }}
           {{- if .Values.daemonset.extraEnvs -}}
           {{- toYaml .Values.daemonset.extraEnvs | nindent 8 }}
           {{- end }}

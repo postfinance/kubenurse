@@ -16,18 +16,18 @@ runs:
   - shell: bash
     run: |
       echo "Check number of kubenurses"
-      test $(kubectl -n ${{ inputs.namespace }} get pods -l app=kubenurse \
+      test $(kubectl -n ${{ inputs.namespace }} get pods -l app.kubernetes.io/name=kubenurse \
         | wc -l) -eq 4 # Test for 3 Pods + header
   - shell: bash
     run: |
       echo "Check for unexpected log lines"
-      test $(kubectl -n ${{ inputs.namespace }} logs -l app=kubenurse \
+      test $(kubectl -n ${{ inputs.namespace }} logs -l app.kubernetes.io/name=kubenurse \
         | grep -v "I'm ready to help you" \
         | wc -l) -eq 0 \
   - shell: bash
     run: |
       echo "Check if the kubenurse had any restarts"
-      kubectl -n ${{ inputs.namespace }} get pods -l app=kubenurse \
+      kubectl -n ${{ inputs.namespace }} get pods -l app.kubernetes.io/name=kubenurse \
         -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' \
         | (! grep -v 0) # Validate for 0 restarts
   - shell: bash
@@ -76,8 +76,8 @@ runs:
     run: |
       echo "Describe resources on failure"
       kubectl -n ${{ inputs.namespace }} get pods -o wide
-      kubectl -n ${{ inputs.namespace }} logs -l app=kubenurse
-      kubectl -n ${{ inputs.namespace }} describe pods -l app=kubenurse
-      kubectl -n ${{ inputs.namespace }} describe daemonsets -l app=kubenurse
+      kubectl -n ${{ inputs.namespace }} logs -l app.kubernetes.io/name=kubenurse
+      kubectl -n ${{ inputs.namespace }} describe pods -l app.kubernetes.io/name=kubenurse
+      kubectl -n ${{ inputs.namespace }} describe daemonsets -l app.kubernetes.io/name=kubenurse
       kubectl -n ${{ inputs.namespace }} get events
     if: ${{ failure() }}

@@ -2,22 +2,22 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "name" . | quote }}
-  namespace: {{ include "namespace" . }}
+  name: {{ include "kubenurse.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ include "name" . | quote }}
+  name: {{ include "kubenurse.fullname" . }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "name" . | quote }}
-  namespace: {{ include "namespace" . }}
+  name: {{ include "kubenurse.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "name" . | quote }}
-  namespace: {{ include "namespace" . }}
+  name: {{ include "kubenurse.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
   - ""
@@ -27,25 +27,25 @@ rules:
   - get
   - list
   - watch
-{{- if .Values.rbac.allow_unschedulable.enabled }}
+{{- if not .Values.allow_unschedulable }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "name" . | quote }}
+  name: {{ include "kubenurse.fullname" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "name" . | quote }}
+  name: {{ include "kubenurse.fullname" . }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "name" . | quote }}
-  namespace: {{ include "namespace" . }}
+  name: {{ include "kubenurse.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "name" . | quote }}
+  name: {{ include "kubenurse.fullname" . }}
 rules:
 - apiGroups:
   - ""
