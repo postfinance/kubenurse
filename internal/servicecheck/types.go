@@ -34,8 +34,8 @@ type Checker struct {
 	discovery *kubediscovery.Client
 
 	// metrics
-	errorCounter    *prometheus.CounterVec
-	durationSummary *prometheus.SummaryVec
+	errorCounter      *prometheus.CounterVec
+	durationHistogram *prometheus.HistogramVec
 
 	// Http Client for https requests
 	httpClient *http.Client
