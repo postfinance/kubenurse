@@ -38,6 +38,11 @@ spec:
           {{- if .Values.daemonset.containerSecurityContext -}}
           {{ toYaml .Values.daemonset.containerSecurityContext | nindent 10 }}
           {{- end }}
+        resources:
+          {{- if .Values.daemonset.containerResources -}}
+          {{ toYaml .Values.daemonset.containerResources | nindent 10 }}
+          {{- end }}
+        imagePullPolicy: {{ .Values.daemonset.containerImagePullPolicy }}
         env:
         - name: KUBENURSE_INGRESS_URL
           value: https://{{ .Values.ingress.url }}
@@ -93,6 +98,20 @@ spec:
           periodSeconds: 3
           successThreshold: 1
           timeoutSeconds: 1
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+            scheme: HTTP
+          failureThreshold: 6
+          periodSeconds: 10
+        startupProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+            scheme: HTTP
+          failureThreshold: 60
+          periodSeconds: 2
         volumeMounts:
         {{- if .Values.daemonset.volumeMounts -}}
         {{- toYaml .Values.daemonset.volumeMounts | nindent 8 }}

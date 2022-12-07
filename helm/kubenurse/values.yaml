@@ -7,6 +7,8 @@ daemonset:
   podAnnotations: {}
   podSecurityContext: {}
   containerSecurityContext: {}
+  containerResources: {}
+  containerImagePullPolicy: IfNotPresent
   tolerations: 
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
