@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -101,8 +103,31 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 		return nil, fmt.Errorf("create k8s discovery client: %w", err)
 	}
 
+	var histogramBuckets []float64
+
+	if bucketsString := os.Getenv("KUBENURSE_HISTOGRAM_BUCKETS"); bucketsString != "" {
+		var buckets []float64
+
+		for _, bucketStr := range strings.Split(bucketsString, ",") {
+			bucket, err := strconv.ParseFloat(bucketStr, 64)
+
+			if err != nil {
+				buckets = nil
+				break
+			}
+
+			buckets = append(buckets, bucket)
+		}
+
+		histogramBuckets = buckets
+	}
+
+	if histogramBuckets == nil {
+		histogramBuckets = prometheus.DefBuckets
+	}
+
 	// setup checker
-	chk, err := servicecheck.New(ctx, discovery, promRegistry, server.allowUnschedulable, 3*time.Second)
+	chk, err := servicecheck.New(ctx, discovery, promRegistry, server.allowUnschedulable, 3*time.Second, histogramBuckets)
 	if err != nil {
 		return nil, err
 	}
