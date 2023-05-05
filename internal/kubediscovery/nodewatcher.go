@@ -30,13 +30,16 @@ func watchNodes(ctx context.Context, client kubernetes.Interface) (*nodeCache, e
 
 	informer := informers.NewSharedInformerFactory(client, resyncPeriod).Core().V1().Nodes().Informer()
 
-	informer.AddEventHandler(
+	_, err := informer.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    nc.add,
 			UpdateFunc: nc.update,
 			DeleteFunc: nc.delete,
 		},
 	)
+	if err != nil {
+		return nil, fmt.Errorf("cannot add event handler for watching nodes: %w", err)
+	}
 
 	go informer.Run(ctx.Done())
 
