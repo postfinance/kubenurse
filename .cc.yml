@@ -1,7 +1,7 @@
 sections:
     - type: build
-      title: Build System
-      hidden: true
+      title: Dependencies
+      hidden: false
     - type: docs
       title: Documentation
       hidden: true
