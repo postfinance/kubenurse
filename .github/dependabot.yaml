@@ -11,11 +11,11 @@ updates:
       - "go"
       - "dependencies"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     target-branch: master
     commit-message:
       prefix: "build(deps)"
   - package-ecosystem: "github-actions"
     directory: "/" 
     schedule:
-      interval: "daily"
+      interval: "weekly"
