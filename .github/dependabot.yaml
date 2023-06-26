@@ -13,6 +13,8 @@ updates:
     schedule:
       interval: "daily"
     target-branch: master
+    commit-message:
+      prefix: "build(deps)"
   - package-ecosystem: "github-actions"
     directory: "/" 
     schedule:
