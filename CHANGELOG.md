@@ -1,3 +1,12 @@
+## 1.8.0 (2023-06-26)
+
+### New Features
+
+* **common**: add new helm configurations ([8c2e6c65](https://github.com/postfinance/kubenurse/commit/8c2e6c65))
+* **helm**: new configuration options (#57) ([13484e61](https://github.com/postfinance/kubenurse/commit/13484e61))
+
+
+
 ## 1.7.0 (2022-11-01)
 
 
