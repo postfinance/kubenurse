@@ -128,3 +128,6 @@ spec:
       {{- if .Values.daemonset.volumes -}}
       {{- toYaml .Values.daemonset.volumes | nindent 6 }}
       {{- end }}
+      {{- if .Values.daemonset.priorityClassName }}
+      priorityClassName: {{ .Values.daemonset.priorityClassName }}
+      {{- end }}
