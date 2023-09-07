@@ -19,6 +19,7 @@ daemonset:
   dnsConfig: {}
   volumeMounts: []
   volumes: []
+  priorityClassName: ""
 
 serviceMonitor: 
   enabled: false
