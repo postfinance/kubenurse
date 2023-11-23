@@ -12,13 +12,13 @@ spec:
   - host: {{ .Values.ingress.url }}
     http:
       paths:
-      - backend:
+      - path: /alwayshappy
+        pathType: Exact
+        backend:
           service:
             name: {{ include "kubenurse.fullname" . }}
             port:
               number: {{ .Values.service.port }}
-        path: /
-        pathType: Prefix
   tls:
   - hosts:
     - {{ .Values.ingress.url }}

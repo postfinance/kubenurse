@@ -24,8 +24,8 @@ spec:
   - host: ingress-nginx-controller.ingress-nginx.svc.cluster.local
     http:
       paths:
-      - pathType: Prefix
-        path: "/"
+      - path: /alwayshappy
+        pathType: Exact
         backend:
           service:
             name: kubenurse

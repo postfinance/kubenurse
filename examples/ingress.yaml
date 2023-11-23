@@ -10,8 +10,8 @@ spec:
   - host: kubenurse.example.com
     http:
       paths:
-      - pathType: Prefix
-        path: "/"
+      - path: /alwayshappy
+        pathType: Exact
         backend:
           service:
             name: kubenurse
