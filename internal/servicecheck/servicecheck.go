@@ -11,6 +11,7 @@ import (
 
 	"github.com/postfinance/kubenurse/internal/kubediscovery"
 	"github.com/prometheus/client_golang/prometheus"
+	v1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -186,8 +187,10 @@ func (c *Checker) MeService() (string, error) {
 // which are not schedulable are excluded from this check to avoid possible false errors.
 func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 	for _, neighbour := range nh {
-		neighbour := neighbour // pin
-		if c.allowUnschedulable || neighbour.NodeSchedulable == kubediscovery.NodeSchedulable {
+		neighbour := neighbour                 // pin
+		if neighbour.Phase == v1.PodRunning && // only query running pods (excludes pending ones)
+			!neighbour.Terminating && // exclude terminating pods
+			(c.allowUnschedulable || neighbour.NodeSchedulable == kubediscovery.NodeSchedulable) {
 			check := func() (string, error) {
 				if c.UseTLS {
 					return c.doRequest("https://" + neighbour.PodIP + ":8443/alwayshappy")

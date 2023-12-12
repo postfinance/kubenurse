@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/client-go/kubernetes"
@@ -35,7 +36,8 @@ type Neighbour struct {
 	HostIP          string
 	NodeName        string
 	NodeSchedulable NodeSchedulability
-	Phase           string // Pod Phase
+	Phase           v1.PodPhase
+	Terminating     bool
 }
 
 // New creates a new kubediscovery client. The context is used to stop the k8s watchers/informers.
@@ -92,8 +94,9 @@ func (c *Client) GetNeighbours(ctx context.Context, namespace, labelSelector str
 			PodName:         pod.Name,
 			PodIP:           pod.Status.PodIP,
 			HostIP:          pod.Status.HostIP,
-			Phase:           string(pod.Status.Phase),
+			Phase:           pod.Status.Phase,
 			NodeName:        pod.Spec.NodeName,
+			Terminating:     pod.DeletionTimestamp != nil,
 			NodeSchedulable: sched,
 		}
 		neighbours[idx] = n
