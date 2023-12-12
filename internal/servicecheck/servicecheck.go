@@ -170,7 +170,7 @@ func (c *Checker) MeIngress() (string, error) {
 		return skippedStr, nil
 	}
 
-	return c.doRequest(c.KubenurseIngressURL + "/alwayshappy")
+	return c.doRequest(c.KubenurseIngressURL + "/alwayshappy") //nolint:goconst // readability
 }
 
 // MeService checks if the kubenurse is reachable at the /alwayshappy endpoint through the kubernetes service

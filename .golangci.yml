@@ -42,13 +42,10 @@ linters-settings:
       - gocognit
       - funlen
       - gocyclo
-
 linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
-    - depguard
     - dogsled
     - dupl
     - errcheck
@@ -71,19 +68,18 @@ linters:
     - misspell
     - nakedret
     - prealloc
+    - protogetter
     - rowserrcheck
     - exportloopref
     - staticcheck
-    - structcheck
     - stylecheck
+    - sqlclosecheck
     - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
     - whitespace
     - wsl
-issues:
   exclude:
     # Very commonly not checked.
     - 'Error return value of .(l.Sync|.*Close|.*.Write|.*Flush|os\.Remove(All)?|os\.(Un)?Setenv). is not checked'
