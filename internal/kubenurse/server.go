@@ -198,6 +198,12 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	s.ready = false
 	s.mu.Unlock()
 
+	// wait 5 second before actually shutting down the http/s server, as the updated
+	// endpoints for the kubenurse service might not have propagated everywhere
+	// (other kubenurse/ingress controller) yet, which will lead to
+	// me_ingress or path errors in other pods
+	time.Sleep(5 * time.Second)
+
 	// stop the scheduled checker
 	s.checker.StopScheduled()
 
