@@ -1,7 +1,0 @@
-bases:
-- ../../examples/
-patchesStrategicMerge:
-- conf.yaml
-images:
-- name: postfinance/kubenurse
-  newTag: latest-ci
