@@ -9,7 +9,7 @@ daemonset:
   containerSecurityContext: {}
   containerResources: {}
   containerImagePullPolicy: IfNotPresent
-  tolerations: 
+  tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
     operator: Equal
@@ -21,7 +21,7 @@ daemonset:
   volumes: []
   priorityClassName: ""
 
-serviceMonitor: 
+serviceMonitor:
   enabled: false
   labels: {}
 
@@ -33,7 +33,7 @@ insecure: true
 service_url: ""
 # KUBENURSE_ALLOW_UNSCHEDULABLE
 allow_unschedulable: false
-# KUBENURSE_NEIGHBOUR_FILTER 
+# KUBENURSE_NEIGHBOUR_FILTER
 neighbour_filter: app.kubernetes.io/name=kubenurse
 # KUBENURSE_EXTRA_CA
 extra_ca: ""
@@ -49,6 +49,8 @@ check_api_me_service: true
 check_neighbourhood: true
 # KUBENURSE_CHECK_INTERVAL
 check_interval: 5s
+# KUBENURSE_SHUTDOWN_DURATION
+shutdown_duration: 5s
 # KUBENURSE_USE_TLS
 use_tls: false
 # KUBENURSE_CERT_FILE
