@@ -46,6 +46,7 @@ type Server struct {
 // * KUBERNETES_SERVICE_PORT
 // * KUBENURSE_NAMESPACE
 // * KUBENURSE_NEIGHBOUR_FILTER
+// * KUBENURSE_SHUTDOWN_DURATION
 // * KUBENURSE_CHECK_API_SERVER_DIRECT
 // * KUBENURSE_CHECK_API_SERVER_DNS
 // * KUBENURSE_CHECK_ME_INGRESS
@@ -107,12 +108,24 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 		return nil, err
 	}
 
+	shutdownDuration := 5 * time.Second
+
+	if v, ok := os.LookupEnv("KUBENURSE_SHUTDOWN_DURATION"); ok {
+		var err error
+		shutdownDuration, err = time.ParseDuration(v)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	chk.KubenurseIngressURL = os.Getenv("KUBENURSE_INGRESS_URL")
 	chk.KubenurseServiceURL = os.Getenv("KUBENURSE_SERVICE_URL")
 	chk.KubernetesServiceHost = os.Getenv("KUBERNETES_SERVICE_HOST")
 	chk.KubernetesServicePort = os.Getenv("KUBERNETES_SERVICE_PORT")
 	chk.KubenurseNamespace = os.Getenv("KUBENURSE_NAMESPACE")
 	chk.NeighbourFilter = os.Getenv("KUBENURSE_NEIGHBOUR_FILTER")
+	chk.ShutdownDuration = shutdownDuration
 
 	//nolint:goconst // No need to make "false" a constant in my opinion, readability is better like this.
 	chk.SkipCheckAPIServerDirect = os.Getenv("KUBENURSE_CHECK_API_SERVER_DIRECT") == "false"
@@ -197,6 +210,12 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	s.mu.Lock()
 	s.ready = false
 	s.mu.Unlock()
+
+	// wait before actually shutting down the http/s server, as the updated
+	// endpoints for the kubenurse service might not have propagated everywhere
+	// (other kubenurse/ingress controller) yet, which will lead to
+	// me_ingress or path errors in other pods
+	time.Sleep(s.checker.ShutdownDuration)
 
 	// stop the scheduled checker
 	s.checker.StopScheduled()
