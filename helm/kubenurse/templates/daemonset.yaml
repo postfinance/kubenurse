@@ -85,7 +85,7 @@ spec:
           {{- if .Values.daemonset.extraEnvs -}}
           {{- toYaml .Values.daemonset.extraEnvs | nindent 8 }}
           {{- end }}
-        image: {{ include "image" . | quote }}
+        image: "{{ .Values.daemonset.image.repository  }}:{{ .Values.daemonset.image.tag | default .Chart.AppVersion }}"
         ports:
         - containerPort: 8080
           protocol: TCP
