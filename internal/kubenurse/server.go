@@ -4,6 +4,7 @@ package kubenurse
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -55,7 +56,7 @@ type Server struct {
 // * KUBENURSE_CHECK_ME_SERVICE
 // * KUBENURSE_CHECK_NEIGHBOURHOOD
 // * KUBENURSE_CHECK_INTERVAL
-func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
+func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) { //nolint:funlen // TODO: use a flag parsing library (e.g. ff) to reduce complexity
 	mux := http.NewServeMux()
 
 	checkInterval := defaultCheckInterval
@@ -107,20 +108,15 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 	var histogramBuckets []float64
 
 	if bucketsString := os.Getenv("KUBENURSE_HISTOGRAM_BUCKETS"); bucketsString != "" {
-		var buckets []float64
-
 		for _, bucketStr := range strings.Split(bucketsString, ",") {
-			bucket, err := strconv.ParseFloat(bucketStr, 64)
+			bucket, e := strconv.ParseFloat(bucketStr, 64)
 
-			if err != nil {
-				buckets = nil
-				break
+			if e != nil {
+				log.Fatalf("couldn't parse one of the custom histogram buckets. error:\n%v", e)
 			}
 
-			buckets = append(buckets, bucket)
+			histogramBuckets = append(histogramBuckets, bucket)
 		}
-
-		histogramBuckets = buckets
 	}
 
 	if histogramBuckets == nil {
