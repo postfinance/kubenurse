@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.17
+          go-version: '1.20'
       - name: GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v4
         with:
           version: latest
           args: release --snapshot --rm-dist --skip-publish
@@ -60,6 +60,8 @@ jobs:
           sleep 15 # wait for the scheduler to create pods
           kubectl -n kube-system wait pods -l app=kubenurse --for=condition=Ready
           kubectl -n kube-system get pods -l app=kubenurse
+          kubectl rollout restart daemonset kubenurse
+          kubectl rollout status  daemonset kubenurse --timeout=1m
           sleep 60 # Wait to generate some checks etc.
       - name: Check deployment
         uses: ./.github/actions/check-deployment

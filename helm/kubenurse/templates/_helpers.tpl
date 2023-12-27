@@ -60,7 +60,3 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
-
-{{ define "image" -}}
-{{ printf "%s:%s" .Values.daemonset.image.repository .Values.daemonset.image.tag }}
-{{- end }}

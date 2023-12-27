@@ -1,3 +1,4 @@
+// Package main holds the entrypoint for kubenurse
 package main
 
 import (

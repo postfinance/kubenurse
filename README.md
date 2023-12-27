@@ -25,6 +25,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | daemonset.podLabels                | Additional labels to be added to the pods of the daemonset                                                           | `[]`                               |
 | daemonset.podAnnotations           | Additional annotations to be added to the pods of the daemonset                                                      | `[]`                               |
 | daemonset.podSecurityContext       | The security context of the daemonset                                                                                | `{}`                               |
+| daemonset.priorityClassName        | The priority class name for the daemonset pods                                                                       | `""`                               |
 | daemonset.containerSecurityContext | The security context of the containers within the pods of the daemonset                                              | `{}`                               |
 | daemonset.containerResources       | The container resources of the containers within the pods of the daemonset                                           | `{}`                               |
 | daemonset.containerImagePullPolicy | The container image pull policy the pods of the daemonset                                                            | `IfNotPresent`                     |

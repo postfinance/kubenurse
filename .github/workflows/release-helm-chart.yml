@@ -1,9 +1,8 @@
 name: Release Helm Charts
 on:
   push:
-    branches:
-      - master
-      - main
+    tags:
+      - v*
 jobs:
   release:
     permissions:
@@ -11,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Configure Git
@@ -19,12 +18,23 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: Install Helm
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v3
         with:
           version: v3.8.1
+
+
+      - name: Prepare version
+        run: |
+          export TAG=$(echo ${{ github.ref }} | cut -d '/' -f 3 - )
+          export VERSION=${TAG#v} # tag without leading v
+          echo TAG=${TAG} >> $GITHUB_ENV
+          echo VERSION=${VERSION} >> $GITHUB_ENV
+          echo "TAG: ${TAG}"
+          echo "(unused, but still: ) VERSION: ${VERSION}"
+
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.4.0
+        uses: stefanprodan/helm-gh-pages@v1.7.0
         with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          app_version: "${{env.TAG}}"
           charts_dir: helm
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

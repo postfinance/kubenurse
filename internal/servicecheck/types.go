@@ -16,6 +16,9 @@ type Checker struct {
 	SkipCheckMeIngress  bool
 	SkipCheckMeService  bool
 
+	// shutdownDuration defines the time during which kubenurse will wait before stopping
+	ShutdownDuration time.Duration
+
 	// Kubernetes API
 	KubernetesServiceHost    string
 	KubernetesServicePort    string
