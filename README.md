@@ -91,6 +91,7 @@ kubenurse is configured with environment variables:
 - `KUBENURSE_CHECK_ME_SERVICE`: If this is `"true"`, kubenurse will perform the check [Me Service](#Me Service). default is "true"
 - `KUBENURSE_CHECK_NEIGHBOURHOOD`: If this is `"true"`, kubenurse will perform the check [Neighbourhood](#Neighbourhood). default is "true"
 - `KUBENURSE_CHECK_INTERVAL`: the frequency to perform kubenurse checks. the string should be formatted for [time.ParseDuration](https://pkg.go.dev/time#ParseDuration). defaults to `5s`
+- `KUBENURSE_HISTOGRAM_BUCKETS`: optional comma-separated list of float64, used in place of the [default prometheus histogram buckets](https://pkg.go.dev/github.com/prometheus/client_golang@v1.16.0/prometheus#DefBuckets)
 - `KUBENURSE_USE_TLS`: If this is `"true"`, enable TLS endpoint on port 8443
 - `KUBENURSE_CERT_FILE`: Certificate to use with TLS endpoint
 - `KUBENURSE_CERT_KEY`: Key to use with TLS endpoint
