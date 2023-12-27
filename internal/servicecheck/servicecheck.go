@@ -24,7 +24,7 @@ const (
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
 func New(_ context.Context, discovery *kubediscovery.Client, promRegistry *prometheus.Registry,
-	allowUnschedulable bool, cacheTTL time.Duration) (*Checker, error) {
+	allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64) (*Checker, error) {
 	errorCounter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -39,7 +39,7 @@ func New(_ context.Context, discovery *kubediscovery.Client, promRegistry *prome
 			Namespace: metricsNamespace,
 			Name:      "request_duration",
 			Help:      "Kubenurse request duration partitioned by target path",
-			Buckets:   prometheus.DefBuckets,
+			Buckets:   durationHistogramBuckets,
 		},
 		[]string{"type"},
 	)

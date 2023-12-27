@@ -4,8 +4,11 @@ package kubenurse
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -53,7 +56,7 @@ type Server struct {
 // * KUBENURSE_CHECK_ME_SERVICE
 // * KUBENURSE_CHECK_NEIGHBOURHOOD
 // * KUBENURSE_CHECK_INTERVAL
-func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
+func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) { //nolint:funlen // TODO: use a flag parsing library (e.g. ff) to reduce complexity
 	mux := http.NewServeMux()
 
 	checkInterval := defaultCheckInterval
@@ -102,8 +105,26 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) {
 		return nil, fmt.Errorf("create k8s discovery client: %w", err)
 	}
 
+	var histogramBuckets []float64
+
+	if bucketsString := os.Getenv("KUBENURSE_HISTOGRAM_BUCKETS"); bucketsString != "" {
+		for _, bucketStr := range strings.Split(bucketsString, ",") {
+			bucket, e := strconv.ParseFloat(bucketStr, 64)
+
+			if e != nil {
+				log.Fatalf("couldn't parse one of the custom histogram buckets. error:\n%v", e)
+			}
+
+			histogramBuckets = append(histogramBuckets, bucket)
+		}
+	}
+
+	if histogramBuckets == nil {
+		histogramBuckets = prometheus.DefBuckets
+	}
+
 	// setup checker
-	chk, err := servicecheck.New(ctx, discovery, promRegistry, server.allowUnschedulable, 3*time.Second)
+	chk, err := servicecheck.New(ctx, discovery, promRegistry, server.allowUnschedulable, 3*time.Second, histogramBuckets)
 	if err != nil {
 		return nil, err
 	}
