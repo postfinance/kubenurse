@@ -3,6 +3,7 @@ package servicecheck
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
@@ -51,6 +52,7 @@ func New(_ context.Context, discovery *kubediscovery.Client, promRegistry *prome
 	tlsConfig, err := generateTLSConfig(os.Getenv("KUBENURSE_EXTRA_CA"))
 	if err != nil {
 		log.Printf("cannot generate tlsConfig with KUBENURSE_EXTRA_CA: %s", err)
+		tlsConfig = &tls.Config{}
 	}
 
 	tlsConfig.InsecureSkipVerify = os.Getenv("KUBENURSE_INSECURE") == "true"
