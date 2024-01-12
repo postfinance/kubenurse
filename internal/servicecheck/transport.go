@@ -12,16 +12,16 @@ import (
 
 const (
 	//nolint:gosec // This is the well-known path to Kubernetes serviceaccount tokens.
-	tokenFile = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-	caFile    = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+	K8sTokenFile = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+	k8sCAFile    = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 )
 
 // doRequest does an http request only to get the http status code
 func (c *Checker) doRequest(url string) (string, error) {
 	// Read Bearer Token file from ServiceAccount
-	token, err := os.ReadFile(tokenFile)
+	token, err := os.ReadFile(K8sTokenFile)
 	if err != nil {
-		return errStr, fmt.Errorf("load kubernetes serviceaccount token from %s: %w", tokenFile, err)
+		return errStr, fmt.Errorf("load kubernetes serviceaccount token from %s: %w", K8sTokenFile, err)
 	}
 
 	req, _ := http.NewRequest("GET", url, http.NoBody)
@@ -46,8 +46,8 @@ func (c *Checker) doRequest(url string) (string, error) {
 	return resp.Status, errors.New(resp.Status)
 }
 
-// generateRoundTripper returns a custom http.RoundTripper, including the k8s CA.
-func generateRoundTripper(extraCA string, insecure bool) (http.RoundTripper, error) {
+// generateTLSConfig returns a TLSConfig including K8s CA and the user-defined extraCA
+func generateTLSConfig(extraCA string) (*tls.Config, error) {
 	// Append default certpool
 	rootCAs, _ := x509.SystemCertPool()
 	if rootCAs == nil {
@@ -55,9 +55,9 @@ func generateRoundTripper(extraCA string, insecure bool) (http.RoundTripper, err
 	}
 
 	// Append ServiceAccount cacert
-	caCert, err := os.ReadFile(caFile)
+	caCert, err := os.ReadFile(k8sCAFile)
 	if err != nil {
-		return nil, fmt.Errorf("could not load certificate %s: %w", caFile, err)
+		return nil, fmt.Errorf("could not load certificate %s: %w", k8sCAFile, err)
 	}
 
 	if ok := rootCAs.AppendCertsFromPEM(caCert); !ok {
@@ -78,11 +78,9 @@ func generateRoundTripper(extraCA string, insecure bool) (http.RoundTripper, err
 
 	// Configure transport
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: insecure, //nolint:gosec // Can be true if the user requested this.
-		RootCAs:            rootCAs,
+		RootCAs:    rootCAs,
+		MinVersion: tls.VersionTLS12,
 	}
 
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
-
-	return transport, nil
+	return tlsConfig, nil
 }
