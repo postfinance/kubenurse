@@ -46,19 +46,7 @@ func New(_ context.Context, discovery *kubediscovery.Client, promRegistry *prome
 		[]string{"type"},
 	)
 
-	// TODO: Add label for which request it was as this is not helpful in this current state
-	// TODO: Do we want to have it also as summary?
-	latencyVec := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
-			Name:      "httpclient_trace_request_duration_seconds",
-			Help:      "Latency histogram for requests from the kubenurse http client. Time in seconds since the start of the http request.",
-			Buckets:   []float64{.0005, .005, .01, .025, .05, .1, .25, .5, 1}, // TODO: Which buckets are really needed?
-		},
-		[]string{"event", "type"},
-	)
-
-	promRegistry.MustRegister(errorCounter, durationHistogram, latencyVec)
+	promRegistry.MustRegister(errorCounter, durationHistogram)
 
 	// setup http transport
 	tlsConfig, err := generateTLSConfig(os.Getenv("KUBENURSE_EXTRA_CA"))
@@ -87,7 +75,7 @@ func New(_ context.Context, discovery *kubediscovery.Client, promRegistry *prome
 
 	httpClient := &http.Client{
 		Timeout:   5 * time.Second,
-		Transport: withHttptrace(promRegistry, transport, latencyVec),
+		Transport: withHttptrace(promRegistry, transport),
 	}
 
 	return &Checker{
@@ -241,7 +229,7 @@ func (c *Checker) measure(check Check, label string) (string, error) {
 
 	// Add our label (check type) to the context so our http tracer can annotate
 	// metrics and errors based with the label
-	ctx := context.WithValue(context.Background(), kubenurseContextKey{}, label)
+	ctx := context.WithValue(context.Background(), kubenurseTypeKey{}, label)
 
 	// Execute check
 	res, err := check(ctx)

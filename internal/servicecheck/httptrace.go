@@ -8,19 +8,16 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// TODO:
-// - RoundTripperCounter and RoundTripper duration useful? Was never officially documented and I don't see anything usable with it
-
 // unique type for context.Context to avoid collisions.
-type kubenurseContextKey struct{}
+type kubenurseTypeKey struct{}
 
-//http.RoundTripper
+// http.RoundTripper
 // TODO: Easier method to get a round tripper?
 type RoundTripperFunc func(req *http.Request) (*http.Response, error)
 
-//
 func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return rt(r)
 }
@@ -28,21 +25,54 @@ func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 // Ensure RoundTripperFunc is a http.RoundTripper
 var _ http.RoundTripper = (*RoundTripperFunc)(nil)
 
-// TODO: Description
 // This collects traces and logs errors. As promhttp.InstrumentRoundTripperTrace doesn't process
 // errors, this is custom made and inspired by prometheus/client_golang's promhttp
-func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, latencyVec *prometheus.HistogramVec) http.RoundTripper {
-	collectMetric := func(traceType string, start time.Time, r *http.Request, err error) {
+func withHttptrace(registry *prometheus.Registry, next http.RoundTripper) http.RoundTripper {
+	httpclientReqTotal := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "httpclient_requests_total",
+			Help:      "A counter for requests from the kubenurse http client.",
+		},
+		// []string{"code", "method", "type"}, // TODO
+		[]string{"code", "method"},
+	)
+
+	httpclientReqDuration := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "httpclient_request_duration_seconds",
+			Help:      "A latency histogram of request latencies from the kubenurse http client.",
+			Buckets:   prometheus.DefBuckets,
+		},
+		// []string{"type"}, // TODO
+		[]string{},
+	)
+
+	httpclientTraceReqDuration := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "httpclient_trace_request_duration_seconds",
+			Help:      "Latency histogram for requests from the kubenurse http client. Time in seconds since the start of the http request.",
+			Buckets:   []float64{.0005, .005, .01, .025, .05, .1, .25, .5, 1}, // TODO: Which buckets are really needed?
+		},
+		[]string{"event"},
+		// []string{"event", "type"}, // TODO
+	)
+
+	registry.MustRegister(httpclientReqTotal, httpclientReqDuration, httpclientTraceReqDuration)
+
+	collectMetric := func(traceEventType string, start time.Time, r *http.Request, err error) {
 		td := time.Since(start).Seconds()
-		kubenurseCheckLabel := r.Context().Value(kubenurseContextKey{}).(string)
+		kubenurseTypeLabel := r.Context().Value(kubenurseTypeKey{}).(string)
 
 		// If we got an error inside a trace, log it and do not collect metrics
 		if err != nil {
-			log.Printf("httptrace: failed %s for %s with %v", traceType, kubenurseCheckLabel, err)
+			log.Printf("httptrace: failed %s for %s with %v", traceEventType, kubenurseTypeLabel, err)
 			return
 		}
 
-		latencyVec.WithLabelValues(traceType, kubenurseCheckLabel).Observe(td)
+		httpclientTraceReqDuration.WithLabelValues(traceEventType).Observe(td) // TODO: add back kubenurseTypeKey
 	}
 
 	// Return a http.RoundTripper for tracing requests
@@ -84,6 +114,14 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, latenc
 		// Do request with tracing enabled
 		r = r.WithContext(httptrace.WithClientTrace(r.Context(), trace))
 
-		return next.RoundTrip(r)
+		// // TODO: uncomment when issue #55 is solved (N^2 request will increase cardinality of path_ metrics too much otherwise)
+		// typeFromCtxFn := promhttp.WithLabelFromCtx("type", func(ctx context.Context) string {
+		// 	return ctx.Value(kubenurseTypeKey{}).(string)
+		// })
+
+		rt := next
+		rt = promhttp.InstrumentRoundTripperCounter(httpclientReqTotal, rt)
+		rt = promhttp.InstrumentRoundTripperDuration(httpclientReqDuration, rt)
+		return rt.RoundTrip(r)
 	})
 }
