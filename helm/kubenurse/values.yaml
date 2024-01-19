@@ -49,6 +49,8 @@ check_api_me_service: true
 check_neighbourhood: true
 # KUBENURSE_CHECK_INTERVAL
 check_interval: 5s
+# KUBENURSE_REUSE_CONNECTIONS
+reuse_connections: false
 # KUBENURSE_SHUTDOWN_DURATION
 shutdown_duration: 5s
 # KUBENURSE_USE_TLS

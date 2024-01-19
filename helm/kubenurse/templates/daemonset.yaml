@@ -72,6 +72,8 @@ spec:
           value: {{ .Values.check_neighbourhood | quote }}
         - name: KUBENURSE_CHECK_INTERVAL
           value: {{ .Values.check_interval }}
+        - name: KUBENURSE_REUSE_CONNECTIONS
+          value: {{ .Values.reuse_connections | quote }}
         - name: KUBENURSE_SHUTDOWN_DURATION
           value: {{ .Values.shutdown_duration }}
         - name: KUBENURSE_USE_TLS
