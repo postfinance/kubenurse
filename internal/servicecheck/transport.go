@@ -1,6 +1,7 @@
 package servicecheck
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -17,14 +18,14 @@ const (
 )
 
 // doRequest does an http request only to get the http status code
-func (c *Checker) doRequest(url string) (string, error) {
+func (c *Checker) doRequest(ctx context.Context, url string) (string, error) {
 	// Read Bearer Token file from ServiceAccount
 	token, err := os.ReadFile(K8sTokenFile)
 	if err != nil {
 		return errStr, fmt.Errorf("load kubernetes serviceaccount token from %s: %w", K8sTokenFile, err)
 	}
 
-	req, _ := http.NewRequest("GET", url, http.NoBody)
+	req, _ := http.NewRequestWithContext(ctx, "GET", url, http.NoBody)
 
 	// Only add the Bearer for API Server Requests
 	if strings.HasSuffix(url, "/version") {

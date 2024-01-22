@@ -75,7 +75,7 @@ func New(_ context.Context, discovery *kubediscovery.Client, promRegistry *prome
 
 	httpClient := &http.Client{
 		Timeout:   5 * time.Second,
-		Transport: withRequestTracing(promRegistry, transport),
+		Transport: withHttptrace(promRegistry, transport, durationHistogramBuckets),
 	}
 
 	return &Checker{
@@ -163,43 +163,43 @@ func (c *Checker) StopScheduled() {
 }
 
 // APIServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link
-func (c *Checker) APIServerDirect() (string, error) {
+func (c *Checker) APIServerDirect(ctx context.Context) (string, error) {
 	if c.SkipCheckAPIServerDirect {
 		return skippedStr, nil
 	}
 
 	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
 
-	return c.doRequest(apiurl)
+	return c.doRequest(ctx, apiurl)
 }
 
 // APIServerDNS checks the /version endpoint of the Kubernetes API Server through the Cluster DNS URL
-func (c *Checker) APIServerDNS() (string, error) {
+func (c *Checker) APIServerDNS(ctx context.Context) (string, error) {
 	if c.SkipCheckAPIServerDNS {
 		return skippedStr, nil
 	}
 
 	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
 
-	return c.doRequest(apiurl)
+	return c.doRequest(ctx, apiurl)
 }
 
 // MeIngress checks if the kubenurse is reachable at the /alwayshappy endpoint behind the ingress
-func (c *Checker) MeIngress() (string, error) {
+func (c *Checker) MeIngress(ctx context.Context) (string, error) {
 	if c.SkipCheckMeIngress {
 		return skippedStr, nil
 	}
 
-	return c.doRequest(c.KubenurseIngressURL + "/alwayshappy") //nolint:goconst // readability
+	return c.doRequest(ctx, c.KubenurseIngressURL+"/alwayshappy") //nolint:goconst // readability
 }
 
 // MeService checks if the kubenurse is reachable at the /alwayshappy endpoint through the kubernetes service
-func (c *Checker) MeService() (string, error) {
+func (c *Checker) MeService(ctx context.Context) (string, error) {
 	if c.SkipCheckMeService {
 		return skippedStr, nil
 	}
 
-	return c.doRequest(c.KubenurseServiceURL + "/alwayshappy")
+	return c.doRequest(ctx, c.KubenurseServiceURL+"/alwayshappy")
 }
 
 // checkNeighbours checks the /alwayshappy endpoint from every discovered kubenurse neighbour. Neighbour pods on nodes
@@ -210,12 +210,12 @@ func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 		if neighbour.Phase == v1.PodRunning && // only query running pods (excludes pending ones)
 			!neighbour.Terminating && // exclude terminating pods
 			(c.allowUnschedulable || neighbour.NodeSchedulable == kubediscovery.NodeSchedulable) {
-			check := func() (string, error) {
+			check := func(ctx context.Context) (string, error) {
 				if c.UseTLS {
-					return c.doRequest("https://" + neighbour.PodIP + ":8443/alwayshappy")
+					return c.doRequest(ctx, "https://"+neighbour.PodIP+":8443/alwayshappy")
 				}
 
-				return c.doRequest("http://" + neighbour.PodIP + ":8080/alwayshappy")
+				return c.doRequest(ctx, "http://"+neighbour.PodIP+":8080/alwayshappy")
 			}
 
 			_, _ = c.measure(check, "path_"+neighbour.NodeName)
@@ -227,8 +227,12 @@ func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
 func (c *Checker) measure(check Check, label string) (string, error) {
 	start := time.Now()
 
+	// Add our label (check type) to the context so our http tracer can annotate
+	// metrics and errors based with the label
+	ctx := context.WithValue(context.Background(), kubenurseTypeKey{}, label)
+
 	// Execute check
-	res, err := check()
+	res, err := check(ctx)
 
 	// Process metrics
 	c.durationHistogram.WithLabelValues(label).Observe(time.Since(start).Seconds())
