@@ -1,3 +1,57 @@
+## 1.9.0 (2024-01-22)
+
+
+### Bug Fixes
+
+* **common**: added missing condition in ingress.yaml chart file ([21165026](https://github.com/postfinance/kubenurse/commit/21165026))
+* **common**: create empty tls.Config when loading extraCA fails ([41130653](https://github.com/postfinance/kubenurse/commit/41130653))
+* **common**: do not reuse connections per default ([4f1f5b80](https://github.com/postfinance/kubenurse/commit/4f1f5b80))
+  > stop reusing connections per default, by modifying the http.Transport
+  > DisableKeepAlive field to true per default. Can be overriden through
+  > setting KUBENURSE_REUSE_CONNECTIONS env var to "true"
+* **common**: linting and error handling ([1057536e](https://github.com/postfinance/kubenurse/commit/1057536e))
+* **common**: use same histogram buckets everywhere ([03505e9c](https://github.com/postfinance/kubenurse/commit/03505e9c))
+* **helm-lint**: place separator at correct location ([0fa8b064](https://github.com/postfinance/kubenurse/commit/0fa8b064))
+* **helm-lint**: place separator at correct location ([c7724bba](https://github.com/postfinance/kubenurse/commit/c7724bba))
+
+
+### Dependencies
+
+* **common**: bump go version in gh-actions ([fec132df](https://github.com/postfinance/kubenurse/commit/fec132df))
+* **deps**: bump github.com/prometheus/client_golang ([533a4ec5](https://github.com/postfinance/kubenurse/commit/533a4ec5))
+  > Bumps [github.com/prometheus/client_golang](https://github.com/prometheus/client_golang) from 1.16.0 to 1.18.0.
+  > - [Release notes](https://github.com/prometheus/client_golang/releases)
+  > - [Changelog](https://github.com/prometheus/client_golang/blob/main/CHANGELOG.md)
+  > - [Commits](https://github.com/prometheus/client_golang/compare/v1.16.0...v1.18.0)
+  > 
+  > ---
+  > updated-dependencies:
+  > - dependency-name: github.com/prometheus/client_golang
+  >   dependency-type: direct:production
+  >   update-type: version-update:semver-minor
+  > ...
+* **deps**: bump k8s.io/client-go from 0.28.4 to 0.29.0 ([15d67150](https://github.com/postfinance/kubenurse/commit/15d67150))
+  > Bumps [k8s.io/client-go](https://github.com/kubernetes/client-go) from 0.28.4 to 0.29.0.
+  > - [Changelog](https://github.com/kubernetes/client-go/blob/master/CHANGELOG.md)
+  > - [Commits](https://github.com/kubernetes/client-go/compare/v0.28.4...v0.29.0)
+  > 
+  > ---
+  > updated-dependencies:
+  > - dependency-name: k8s.io/client-go
+  >   dependency-type: direct:production
+  >   update-type: version-update:semver-minor
+  > ...
+
+
+### New Features
+
+* **httptrace**: add back total and duration instrumentation ([330d2d45](https://github.com/postfinance/kubenurse/commit/330d2d45))
+  > as this is used by our Grafana dashboards, and quite useful
+  > also prepare for adding the `type` label, once the N^2 issue
+  > is solved
+
+
+
 ## 1.8.1 (2023-12-14)
 
 
