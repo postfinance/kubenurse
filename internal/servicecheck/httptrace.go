@@ -14,20 +14,16 @@ import (
 // unique type for context.Context to avoid collisions.
 type kubenurseTypeKey struct{}
 
-// http.RoundTripper
-// TODO: Easier method to get a round tripper?
+// // http.RoundTripper
 type RoundTripperFunc func(req *http.Request) (*http.Response, error)
 
 func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return rt(r)
 }
 
-// Ensure RoundTripperFunc is a http.RoundTripper
-var _ http.RoundTripper = (*RoundTripperFunc)(nil)
-
 // This collects traces and logs errors. As promhttp.InstrumentRoundTripperTrace doesn't process
 // errors, this is custom made and inspired by prometheus/client_golang's promhttp
-func withHttptrace(registry *prometheus.Registry, next http.RoundTripper) http.RoundTripper {
+func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durationHistogram []float64) http.RoundTripper {
 	httpclientReqTotal := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -43,7 +39,7 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper) http.R
 			Namespace: metricsNamespace,
 			Name:      "httpclient_request_duration_seconds",
 			Help:      "A latency histogram of request latencies from the kubenurse http client.",
-			Buckets:   prometheus.DefBuckets,
+			Buckets:   durationHistogram,
 		},
 		// []string{"type"}, // TODO
 		[]string{},
@@ -54,7 +50,7 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper) http.R
 			Namespace: metricsNamespace,
 			Name:      "httpclient_trace_request_duration_seconds",
 			Help:      "Latency histogram for requests from the kubenurse http client. Time in seconds since the start of the http request.",
-			Buckets:   []float64{.0005, .005, .01, .025, .05, .1, .25, .5, 1}, // TODO: Which buckets are really needed?
+			Buckets:   durationHistogram,
 		},
 		[]string{"event"},
 		// []string{"event", "type"}, // TODO
@@ -119,7 +115,7 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper) http.R
 		// 	return ctx.Value(kubenurseTypeKey{}).(string)
 		// })
 
-		rt := next
+		rt := next // variable pinning :) essential, to prevent always re-instrumenting the original variable
 		rt = promhttp.InstrumentRoundTripperCounter(httpclientReqTotal, rt)
 		rt = promhttp.InstrumentRoundTripperDuration(httpclientReqDuration, rt)
 		return rt.RoundTrip(r)

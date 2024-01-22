@@ -75,7 +75,7 @@ func New(_ context.Context, discovery *kubediscovery.Client, promRegistry *prome
 
 	httpClient := &http.Client{
 		Timeout:   5 * time.Second,
-		Transport: withHttptrace(promRegistry, transport),
+		Transport: withHttptrace(promRegistry, transport, durationHistogramBuckets),
 	}
 
 	return &Checker{
