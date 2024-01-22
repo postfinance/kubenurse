@@ -52,6 +52,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | check_me_service                   | Sets `KUBENURSE_CHECK_ME_SERVICE` environment variable                                                               | `true`                             |
 | check_neighbourhood                | Sets `KUBENURSE_CHECK_NEIGHBOURHOOD` environment variable                                                            | `true`                             |
 | check_interval                     | Sets `KUBENURSE_CHECK_INTERVAL` environment variable                                                                 | `5s`                               |
+| reuse_connections                  | Sets `KUBENURSE_REUSE_CONNECTIONS` environment variable                                                              | `false`                            |
 | use_tls                            | Sets `KUBENURSE_USE_TLS` environment variable                                                                        | `false`                            |
 | cert_file                          | Sets `KUBENURSE_CERT_FILE` environment variable                                                                      |                                    |
 | cert_key                           | Sets `KUBENURSE_CERT_KEY` environment variable                                                                       |                                    |
@@ -91,6 +92,7 @@ kubenurse is configured with environment variables:
 - `KUBENURSE_CHECK_ME_SERVICE`: If this is `"true"`, kubenurse will perform the check [Me Service](#Me Service). default is "true"
 - `KUBENURSE_CHECK_NEIGHBOURHOOD`: If this is `"true"`, kubenurse will perform the check [Neighbourhood](#Neighbourhood). default is "true"
 - `KUBENURSE_CHECK_INTERVAL`: the frequency to perform kubenurse checks. the string should be formatted for [time.ParseDuration](https://pkg.go.dev/time#ParseDuration). defaults to `5s`
+- `KUBENURSE_REUSE_CONNECTIONS`: whether to reuse connections or not for all checks. default is "false"
 - `KUBENURSE_HISTOGRAM_BUCKETS`: optional comma-separated list of float64, used in place of the [default prometheus histogram buckets](https://pkg.go.dev/github.com/prometheus/client_golang@v1.16.0/prometheus#DefBuckets)
 - `KUBENURSE_USE_TLS`: If this is `"true"`, enable TLS endpoint on port 8443
 - `KUBENURSE_CERT_FILE`: Certificate to use with TLS endpoint
