@@ -1,3 +1,13 @@
+## 1.9.1 (2024-01-22)
+
+
+### Dependencies
+
+* **common**: make helm chart version equal to tag ([f248d2ad](https://github.com/postfinance/kubenurse/commit/f248d2ad))
+  > [skip ci]
+
+
+
 ## 1.9.0 (2024-01-22)
 
 
