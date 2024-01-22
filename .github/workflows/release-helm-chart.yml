@@ -28,13 +28,14 @@ jobs:
           export TAG=$(echo ${{ github.ref }} | cut -d '/' -f 3 - )
           export VERSION=${TAG#v} # tag without leading v
           echo TAG=${TAG} >> $GITHUB_ENV
-          echo VERSION=${VERSION} >> $GITHUB_ENV
           echo "TAG: ${TAG}"
-          echo "(unused, but still: ) VERSION: ${VERSION}"
+          echo VERSION=${VERSION} >> $GITHUB_ENV
+          echo "VERSION: ${VERSION}"
 
       - name: Run chart-releaser
         uses: stefanprodan/helm-gh-pages@v1.7.0
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
           app_version: "${{env.TAG}}"
+          chart_version: "${{env.VERSION}}"
           charts_dir: helm
