@@ -49,7 +49,7 @@ func main() {
 	}
 
 	go func() {
-		if err = ca.Start(ctx); !errors.Is(err, context.Canceled) {
+		if err = ca.Start(ctx); err != nil && !errors.Is(err, context.Canceled) {
 			log.Printf("client cache error: %s", err)
 			cancel()
 		}
