@@ -96,12 +96,6 @@ func (c *Checker) Run() (Result, bool) {
 		err    error
 	)
 
-	// Check if a result is cached and return it
-	cacheRes := c.retrieveResultFromCache()
-	if cacheRes != nil {
-		return *cacheRes, false
-	}
-
 	// Run Checks
 	res := Result{}
 
@@ -134,8 +128,8 @@ func (c *Checker) Run() (Result, bool) {
 		}
 	}
 
-	// Cache result
-	c.cacheResult(&res)
+	// Cache result (used for /alive handler)
+	c.LastCheckResult = &res
 
 	return res, haserr
 }

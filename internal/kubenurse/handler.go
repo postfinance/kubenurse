@@ -38,15 +38,15 @@ func (s *Server) aliveHandler() func(w http.ResponseWriter, r *http.Request) {
 			Neighbourhood      []servicecheck.Neighbour `json:"neighbourhood"`
 		}
 
-		// Run checks now
-		res, haserr := s.checker.Run()
-		if haserr {
+		res := s.checker.LastCheckResult
+		if res == nil {
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		// Add additional data
 		out := Output{
-			Result:             res,
+			Result:             *res,
 			Headers:            r.Header,
 			UserAgent:          r.UserAgent(),
 			RequestURI:         r.RequestURI,

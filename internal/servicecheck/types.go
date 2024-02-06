@@ -45,8 +45,8 @@ type Checker struct {
 	// Http Client for https requests
 	httpClient *http.Client
 
-	// cachedResult represents a cached check result
-	cachedResult *CachedResult
+	// LastCheckResult represents a cached check result
+	LastCheckResult *Result
 
 	// cacheTTL defines the TTL of how long a cached result is valid
 	cacheTTL time.Duration
@@ -67,9 +67,3 @@ type Result struct {
 
 // Check is the signature used by all checks that the checker can execute.
 type Check func(ctx context.Context) (string, error)
-
-// CachedResult represents a cached check result that is valid until the expiration.
-type CachedResult struct {
-	result     *Result
-	expiration time.Time
-}

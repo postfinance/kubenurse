@@ -118,7 +118,7 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 	}
 
 	// setup checker
-	chk, err := servicecheck.New(ctx, c, promRegistry, server.allowUnschedulable, 3*time.Second, histogramBuckets)
+	chk, err := servicecheck.New(ctx, c, promRegistry, server.allowUnschedulable, 1*time.Second, histogramBuckets)
 	if err != nil {
 		return nil, err
 	}
