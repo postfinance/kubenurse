@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/postfinance/kubenurse/internal/kubediscovery"
 	"github.com/postfinance/kubenurse/internal/servicecheck"
 )
 
@@ -35,8 +34,8 @@ func (s *Server) aliveHandler() func(w http.ResponseWriter, r *http.Request) {
 			servicecheck.Result
 
 			// kubediscovery
-			NeighbourhoodState string                    `json:"neighbourhood_state"`
-			Neighbourhood      []kubediscovery.Neighbour `json:"neighbourhood"`
+			NeighbourhoodState string                   `json:"neighbourhood_state"`
+			Neighbourhood      []servicecheck.Neighbour `json:"neighbourhood"`
 		}
 
 		// Run checks now

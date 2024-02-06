@@ -11,9 +11,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/postfinance/kubenurse/internal/kubediscovery"
 	"github.com/prometheus/client_golang/prometheus"
-	v1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -25,7 +24,7 @@ const (
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
-func New(_ context.Context, discovery *kubediscovery.Client, promRegistry *prometheus.Registry,
+func New(_ context.Context, cl client.Client, promRegistry *prometheus.Registry,
 	allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64) (*Checker, error) {
 	errorCounter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -80,7 +79,7 @@ func New(_ context.Context, discovery *kubediscovery.Client, promRegistry *prome
 
 	return &Checker{
 		allowUnschedulable: allowUnschedulable,
-		discovery:          discovery,
+		client:             cl,
 		httpClient:         httpClient,
 		cacheTTL:           cacheTTL,
 		errorCounter:       errorCounter,
@@ -121,7 +120,7 @@ func (c *Checker) Run() (Result, bool) {
 	if c.SkipCheckNeighbourhood {
 		res.NeighbourhoodState = skippedStr
 	} else {
-		res.Neighbourhood, err = c.discovery.GetNeighbours(context.TODO(), c.KubenurseNamespace, c.NeighbourFilter)
+		res.Neighbourhood, err = c.GetNeighbours(context.TODO(), c.KubenurseNamespace, c.NeighbourFilter)
 		haserr = haserr || (err != nil)
 
 		// Neighbourhood special error treating
@@ -200,27 +199,6 @@ func (c *Checker) MeService(ctx context.Context) (string, error) {
 	}
 
 	return c.doRequest(ctx, c.KubenurseServiceURL+"/alwayshappy")
-}
-
-// checkNeighbours checks the /alwayshappy endpoint from every discovered kubenurse neighbour. Neighbour pods on nodes
-// which are not schedulable are excluded from this check to avoid possible false errors.
-func (c *Checker) checkNeighbours(nh []kubediscovery.Neighbour) {
-	for _, neighbour := range nh {
-		neighbour := neighbour                 // pin
-		if neighbour.Phase == v1.PodRunning && // only query running pods (excludes pending ones)
-			!neighbour.Terminating && // exclude terminating pods
-			(c.allowUnschedulable || neighbour.NodeSchedulable == kubediscovery.NodeSchedulable) {
-			check := func(ctx context.Context) (string, error) {
-				if c.UseTLS {
-					return c.doRequest(ctx, "https://"+neighbour.PodIP+":8443/alwayshappy")
-				}
-
-				return c.doRequest(ctx, "http://"+neighbour.PodIP+":8080/alwayshappy")
-			}
-
-			_, _ = c.measure(check, "path_"+neighbour.NodeName)
-		}
-	}
 }
 
 // measure implements metric collections for the check
