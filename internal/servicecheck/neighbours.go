@@ -3,6 +3,7 @@ package servicecheck
 import (
 	"context"
 	"fmt"
+	"os"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -34,6 +35,8 @@ func (c *Checker) GetNeighbours(ctx context.Context, namespace, labelSelector st
 
 	var neighbours = make([]Neighbour, 0, len(pods.Items))
 
+	var hostname, _ = os.Hostname()
+
 	// process pods
 	for idx := range pods.Items {
 		pod := pods.Items[idx]
@@ -49,6 +52,10 @@ func (c *Checker) GetNeighbours(ctx context.Context, namespace, labelSelector st
 
 		if pod.Status.Phase != v1.PodRunning || // only query running pods (excludes pending ones)
 			pod.DeletionTimestamp != nil { // exclude terminating pods
+			continue
+		}
+
+		if pod.Name == hostname { // only quey other pods, not the currently running pod
 			continue
 		}
 
