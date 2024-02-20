@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   kubenurse:
   - apiVersion: v2
+    appVersion: v1.10.0
+    created: "2024-02-20T05:28:04.220983416Z"
+    description: A Helm chart for Kubernetes to deploy kubenurse
+    digest: d8f3279366b013395f32ffe1ff58e7b54d91ab317eeb2d2cef41bb5c7bbb4c75
+    icon: https://avatars.githubusercontent.com/u/34368733
+    name: kubenurse
+    urls:
+    - https://postfinance.github.io/kubenurse/kubenurse-1.10.0.tgz
+    version: 1.10.0
+  - apiVersion: v2
     appVersion: v1.9.1
     created: "2024-01-22T10:41:41.264761751Z"
     description: A Helm chart for Kubernetes to deploy kubenurse
@@ -71,4 +81,4 @@ entries:
     urls:
     - https://github.com/postfinance/kubenurse/releases/download/kubenurse-0.2.0/kubenurse-0.2.0.tgz
     version: 0.2.0
-generated: "2024-01-22T10:41:41.264215583Z"
+generated: "2024-02-20T05:28:04.220425097Z"
