@@ -12,12 +12,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/postfinance/kubenurse/internal/kubediscovery"
 	"github.com/postfinance/kubenurse/internal/servicecheck"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const defaultCheckInterval = 5 * time.Second
@@ -56,7 +55,7 @@ type Server struct {
 // * KUBENURSE_CHECK_ME_SERVICE
 // * KUBENURSE_CHECK_NEIGHBOURHOOD
 // * KUBENURSE_CHECK_INTERVAL
-func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) { //nolint:funlen // TODO: use a flag parsing library (e.g. ff) to reduce complexity
+func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag parsing library (e.g. ff) to reduce complexity
 	mux := http.NewServeMux()
 
 	checkInterval := defaultCheckInterval
@@ -100,11 +99,6 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) { //nol
 		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
 	)
 
-	discovery, err := kubediscovery.New(ctx, k8s, server.allowUnschedulable)
-	if err != nil {
-		return nil, fmt.Errorf("create k8s discovery client: %w", err)
-	}
-
 	var histogramBuckets []float64
 
 	if bucketsString := os.Getenv("KUBENURSE_HISTOGRAM_BUCKETS"); bucketsString != "" {
@@ -124,7 +118,7 @@ func New(ctx context.Context, k8s kubernetes.Interface) (*Server, error) { //nol
 	}
 
 	// setup checker
-	chk, err := servicecheck.New(ctx, discovery, promRegistry, server.allowUnschedulable, 3*time.Second, histogramBuckets)
+	chk, err := servicecheck.New(ctx, c, promRegistry, server.allowUnschedulable, 1*time.Second, histogramBuckets)
 	if err != nil {
 		return nil, err
 	}

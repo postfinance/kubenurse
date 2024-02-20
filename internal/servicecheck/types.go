@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/postfinance/kubenurse/internal/kubediscovery"
 	"github.com/prometheus/client_golang/prometheus"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Checker implements the kubenurse checker
@@ -35,7 +35,8 @@ type Checker struct {
 	// TLS
 	UseTLS bool
 
-	discovery *kubediscovery.Client
+	// Controller runtime cached client
+	client client.Client
 
 	// metrics
 	errorCounter      *prometheus.CounterVec
@@ -44,8 +45,8 @@ type Checker struct {
 	// Http Client for https requests
 	httpClient *http.Client
 
-	// cachedResult represents a cached check result
-	cachedResult *CachedResult
+	// LastCheckResult represents a cached check result
+	LastCheckResult *Result
 
 	// cacheTTL defines the TTL of how long a cached result is valid
 	cacheTTL time.Duration
@@ -56,19 +57,13 @@ type Checker struct {
 
 // Result contains the result of a performed check run
 type Result struct {
-	APIServerDirect    string                    `json:"api_server_direct"`
-	APIServerDNS       string                    `json:"api_server_dns"`
-	MeIngress          string                    `json:"me_ingress"`
-	MeService          string                    `json:"me_service"`
-	NeighbourhoodState string                    `json:"neighbourhood_state"`
-	Neighbourhood      []kubediscovery.Neighbour `json:"neighbourhood"`
+	APIServerDirect    string      `json:"api_server_direct"`
+	APIServerDNS       string      `json:"api_server_dns"`
+	MeIngress          string      `json:"me_ingress"`
+	MeService          string      `json:"me_service"`
+	NeighbourhoodState string      `json:"neighbourhood_state"`
+	Neighbourhood      []Neighbour `json:"neighbourhood"`
 }
 
 // Check is the signature used by all checks that the checker can execute.
 type Check func(ctx context.Context) (string, error)
-
-// CachedResult represents a cached check result that is valid until the expiration.
-type CachedResult struct {
-	result     *Result
-	expiration time.Time
-}

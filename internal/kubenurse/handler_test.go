@@ -7,15 +7,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"k8s.io/client-go/kubernetes/fake"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 func TestServerHandler(t *testing.T) {
 	r := require.New(t)
 
-	fakeClient := fake.NewSimpleClientset()
-
+	fakeClient := fake.NewFakeClient()
 	kubenurse, err := New(context.Background(), fakeClient)
+
 	r.NoError(err)
 	r.NotNil(kubenurse)
 
