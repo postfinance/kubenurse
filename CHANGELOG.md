@@ -1,3 +1,36 @@
+## 1.10.0 (2024-02-20)
+
+
+### Bug Fixes
+
+* **common**: don't log nil error returned when the cache terminates ([8d891b6a](https://github.com/postfinance/kubenurse/commit/8d891b6a))
+* **neighbours**: only check other kubenurse pods ([#110](https://github.com/postfinance/kubenurse/issues/110), [62e737c9](https://github.com/postfinance/kubenurse/commit/62e737c9))
+
+
+### Dependencies
+
+* **deps**: bump golangci/golangci-lint-action from 3 to 4 ([8efc9050](https://github.com/postfinance/kubenurse/commit/8efc9050))
+  > Bumps [golangci/golangci-lint-action](https://github.com/golangci/golangci-lint-action) from 3 to 4.
+  > - [Release notes](https://github.com/golangci/golangci-lint-action/releases)
+  > - [Commits](https://github.com/golangci/golangci-lint-action/compare/v3...v4)
+  > 
+  > ---
+  > updated-dependencies:
+  > - dependency-name: golangci/golangci-lint-action
+  >   dependency-type: direct:production
+  >   update-type: version-update:semver-major
+  > ...
+
+
+### New Features
+
+* **common**: use controller-runtime's client with integrated caching ([7b1edea5](https://github.com/postfinance/kubenurse/commit/7b1edea5))
+  > permits to get rid of kubediscovery package and to simplify the codebase
+  > 
+  > linked to: https://github.com/postfinance/kubenurse/issues/55
+
+
+
 ## 1.9.1 (2024-01-22)
 
 
