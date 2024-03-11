@@ -48,6 +48,7 @@ type Server struct {
 // * KUBERNETES_SERVICE_PORT
 // * KUBENURSE_NAMESPACE
 // * KUBENURSE_NEIGHBOUR_FILTER
+// * KUBENURSE_NEIGHBOUR_LIMIT
 // * KUBENURSE_SHUTDOWN_DURATION
 // * KUBENURSE_CHECK_API_SERVER_DIRECT
 // * KUBENURSE_CHECK_API_SERVER_DNS
@@ -126,7 +127,6 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 	shutdownDuration := 5 * time.Second
 
 	if v, ok := os.LookupEnv("KUBENURSE_SHUTDOWN_DURATION"); ok {
-		var err error
 		shutdownDuration, err = time.ParseDuration(v)
 
 		if err != nil {
@@ -134,13 +134,18 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 		}
 	}
 
+	chk.ShutdownDuration = shutdownDuration
 	chk.KubenurseIngressURL = os.Getenv("KUBENURSE_INGRESS_URL")
 	chk.KubenurseServiceURL = os.Getenv("KUBENURSE_SERVICE_URL")
 	chk.KubernetesServiceHost = os.Getenv("KUBERNETES_SERVICE_HOST")
 	chk.KubernetesServicePort = os.Getenv("KUBERNETES_SERVICE_PORT")
 	chk.KubenurseNamespace = os.Getenv("KUBENURSE_NAMESPACE")
 	chk.NeighbourFilter = os.Getenv("KUBENURSE_NEIGHBOUR_FILTER")
-	chk.ShutdownDuration = shutdownDuration
+	neighLimit := os.Getenv("KUBENURSE_NEIGHBOUR_LIMIT")
+
+	if chk.NeighbourLimit, err = strconv.Atoi(neighLimit); err != nil {
+		return nil, err
+	}
 
 	//nolint:goconst // No need to make "false" a constant in my opinion, readability is better like this.
 	chk.SkipCheckAPIServerDirect = os.Getenv("KUBENURSE_CHECK_API_SERVER_DIRECT") == "false"

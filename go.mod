@@ -1,8 +1,6 @@
 module github.com/postfinance/kubenurse
 
-go 1.21
-
-toolchain go1.21.5
+go 1.22
 
 require (
 	github.com/prometheus/client_golang v1.19.0
