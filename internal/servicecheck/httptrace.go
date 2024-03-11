@@ -78,10 +78,10 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durati
 
 		// Add tracing hooks
 		trace := &httptrace.ClientTrace{
-			GotConn: func(info httptrace.GotConnInfo) {
+			GotConn: func(_ httptrace.GotConnInfo) {
 				collectMetric("got_conn", start, r, nil)
 			},
-			DNSStart: func(info httptrace.DNSStartInfo) {
+			DNSStart: func(_ httptrace.DNSStartInfo) {
 				collectMetric("dns_start", start, r, nil)
 			},
 			DNSDone: func(info httptrace.DNSDoneInfo) {
@@ -96,7 +96,7 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durati
 			TLSHandshakeStart: func() {
 				collectMetric("tls_handshake_start", start, r, nil)
 			},
-			TLSHandshakeDone: func(_ tls.ConnectionState, err error) {
+			TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
 				collectMetric("tls_handshake_done", start, r, nil)
 			},
 			WroteRequest: func(info httptrace.WroteRequestInfo) {
@@ -118,6 +118,7 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durati
 		rt := next // variable pinning :) essential, to prevent always re-instrumenting the original variable
 		rt = promhttp.InstrumentRoundTripperCounter(httpclientReqTotal, rt)
 		rt = promhttp.InstrumentRoundTripperDuration(httpclientReqDuration, rt)
+
 		return rt.RoundTrip(r)
 	})
 }

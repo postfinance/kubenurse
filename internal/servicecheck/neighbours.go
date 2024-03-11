@@ -85,8 +85,6 @@ func (c *Checker) checkNeighbours(nh []*Neighbour) {
 	}
 
 	for _, neighbour := range nh {
-		neighbour := neighbour // pin
-
 		check := func(ctx context.Context) (string, error) {
 			if c.UseTLS {
 				return c.doRequest(ctx, "https://"+neighbour.PodIP+":8443/alwayshappy")
