@@ -13,7 +13,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var osHostname = os.Hostname //nolint:gochecknoglobals // used during testing
+//nolint:gochecknoglobals // used during testing
+var (
+	osHostname  = os.Hostname
+	currentNode string
+)
 
 // Neighbour represents a kubenurse which should be reachable
 type Neighbour struct {
@@ -60,7 +64,8 @@ func (c *Checker) GetNeighbours(ctx context.Context, namespace, labelSelector st
 			continue
 		}
 
-		if pod.Name == hostname { // only quey other pods, not the currently running pod
+		if pod.Name == hostname { // only query other pods, not the currently running pod
+			currentNode = pod.Spec.NodeName
 			continue
 		}
 
@@ -108,19 +113,13 @@ func (c *Checker) filterNeighbours(nh []*Neighbour) []*Neighbour {
 
 	slices.Sort(l)
 
-	currentHostName, _ := osHostname()
-	hostnameHash := sha256String(currentHostName)
-
-	if m[hostnameHash].NodeName != currentHostName {
-		panic("the current hostname hash doesn't match the value in the map")
-	}
-
-	idx, _ := slices.BinarySearch(l, hostnameHash)
+	currentNodeHash := sha256String(currentNode)
+	idx, _ := slices.BinarySearch(l, currentNodeHash)
 
 	filteredNeighbours := make([]*Neighbour, 0, c.NeighbourLimit)
 
 	for i := 0; i < c.NeighbourLimit; i++ {
-		hash := l[(idx+i+1)%len(l)]
+		hash := l[(idx+i)%len(l)]
 		filteredNeighbours = append(filteredNeighbours, m[hash])
 	}
 

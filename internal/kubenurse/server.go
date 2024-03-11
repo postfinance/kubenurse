@@ -143,8 +143,11 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 	chk.NeighbourFilter = os.Getenv("KUBENURSE_NEIGHBOUR_FILTER")
 	neighLimit := os.Getenv("KUBENURSE_NEIGHBOUR_LIMIT")
 
-	if chk.NeighbourLimit, err = strconv.Atoi(neighLimit); err != nil {
-		return nil, err
+	if neighLimit != "" {
+		chk.NeighbourLimit, err = strconv.Atoi(neighLimit)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	//nolint:goconst // No need to make "false" a constant in my opinion, readability is better like this.

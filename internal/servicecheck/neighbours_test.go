@@ -30,11 +30,6 @@ func TestNodeFiltering(t *testing.T) {
 	nh := generateNeighbours(n)
 	require.NotNil(t, nh)
 
-	trueOsHostname := osHostname
-	defer func() { osHostname = trueOsHostname }()
-
-	// fake client, with a dummy neighbour pod
-	// fakeClient := fake.NewFakeClient(&fakeNeighbourPod)
 	checker := Checker{
 		NeighbourLimit: neighbourLimit,
 	}
@@ -43,9 +38,7 @@ func TestNodeFiltering(t *testing.T) {
 		counter := make(map[string]int, n)
 
 		for i := range n {
-			osHostname = func() (name string, err error) {
-				return nh[i].NodeName, nil
-			}
+			currentNode = nh[i].NodeName
 			filtered := checker.filterNeighbours(nh)
 			require.Equal(t, neighbourLimit, len(filtered))
 
