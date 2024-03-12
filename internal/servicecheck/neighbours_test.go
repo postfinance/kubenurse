@@ -15,12 +15,31 @@ func generateNeighbours(n int) (nh []*Neighbour) {
 		nodeName := fmt.Sprintf("a1-k8s-abcd%03d.domain.tld", i)
 		neigh := Neighbour{
 			NodeName: nodeName,
-			NodeHash: sha256String(nodeName),
+			NodeHash: sha256Uint64(nodeName),
 		}
 		nh = append(nh, &neigh)
 	}
 
 	return
+}
+
+func BenchmarkNodeFiltering(b *testing.B) {
+	n := 10_000
+	neighbourLimit := 10
+	nh := generateNeighbours(n)
+	require.NotNil(b, nh)
+
+	checker := Checker{
+		NeighbourLimit: neighbourLimit,
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		currentNode = nh[i%len(nh)].NodeName
+		b.StartTimer()
+		checker.filterNeighbours(nh)
+		b.StopTimer()
+	}
 }
 
 func TestNodeFiltering(t *testing.T) {
