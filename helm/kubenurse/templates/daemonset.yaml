@@ -56,6 +56,8 @@ spec:
           value: {{ .Release.Namespace }}
         - name: KUBENURSE_NEIGHBOUR_FILTER
           value: {{ .Values.neighbour_filter }}
+        - name: KUBENURSE_NEIGHBOUR_LIMIT
+          value: {{ .Values.neighbour_limit | quote }}
           {{- if .Values.extra_ca }}
         - name: KUBENURSE_EXTRA_CA
           value: {{ .Values.extra_ca }}

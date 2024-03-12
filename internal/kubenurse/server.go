@@ -148,6 +148,8 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		chk.NeighbourLimit = 10
 	}
 
 	//nolint:goconst // No need to make "false" a constant in my opinion, readability is better like this.
