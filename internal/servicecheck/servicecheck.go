@@ -114,7 +114,7 @@ func (c *Checker) Run() (Result, bool) {
 	if c.SkipCheckNeighbourhood {
 		res.NeighbourhoodState = skippedStr
 	} else {
-		res.Neighbourhood, err = c.GetNeighbours(context.TODO(), c.KubenurseNamespace, c.NeighbourFilter)
+		res.Neighbourhood, err = c.GetNeighbours(context.Background(), c.KubenurseNamespace, c.NeighbourFilter)
 		haserr = haserr || (err != nil)
 
 		// Neighbourhood special error treating
