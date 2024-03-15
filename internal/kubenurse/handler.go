@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Server) readyHandler() func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		s.mu.Lock()
 		defer s.mu.Unlock()
 
@@ -34,8 +34,8 @@ func (s *Server) aliveHandler() func(w http.ResponseWriter, r *http.Request) {
 			servicecheck.Result
 
 			// kubediscovery
-			NeighbourhoodState string                   `json:"neighbourhood_state"`
-			Neighbourhood      []servicecheck.Neighbour `json:"neighbourhood"`
+			NeighbourhoodState string                    `json:"neighbourhood_state"`
+			Neighbourhood      []*servicecheck.Neighbour `json:"neighbourhood"`
 		}
 
 		res := s.checker.LastCheckResult

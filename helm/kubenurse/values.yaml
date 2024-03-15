@@ -35,6 +35,8 @@ service_url: ""
 allow_unschedulable: false
 # KUBENURSE_NEIGHBOUR_FILTER
 neighbour_filter: app.kubernetes.io/name=kubenurse
+# KUBENURSE_NEIGHBOUR_LIMIT
+neighbour_limit: 10
 # KUBENURSE_EXTRA_CA
 extra_ca: ""
 # KUBENURSE_CHECK_API_SERVER_DIRECT

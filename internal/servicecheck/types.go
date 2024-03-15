@@ -29,6 +29,7 @@ type Checker struct {
 	// Neighbourhood
 	KubenurseNamespace     string
 	NeighbourFilter        string
+	NeighbourLimit         int
 	allowUnschedulable     bool
 	SkipCheckNeighbourhood bool
 
@@ -57,12 +58,12 @@ type Checker struct {
 
 // Result contains the result of a performed check run
 type Result struct {
-	APIServerDirect    string      `json:"api_server_direct"`
-	APIServerDNS       string      `json:"api_server_dns"`
-	MeIngress          string      `json:"me_ingress"`
-	MeService          string      `json:"me_service"`
-	NeighbourhoodState string      `json:"neighbourhood_state"`
-	Neighbourhood      []Neighbour `json:"neighbourhood"`
+	APIServerDirect    string       `json:"api_server_direct"`
+	APIServerDNS       string       `json:"api_server_dns"`
+	MeIngress          string       `json:"me_ingress"`
+	MeService          string       `json:"me_service"`
+	NeighbourhoodState string       `json:"neighbourhood_state"`
+	Neighbourhood      []*Neighbour `json:"neighbourhood"`
 }
 
 // Check is the signature used by all checks that the checker can execute.
