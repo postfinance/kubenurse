@@ -10,14 +10,16 @@ type CacheEntry[K comparable] struct {
 	lastInsert time.Time
 }
 
-func (ce *CacheEntry[K]) expired() bool {
-	return ce.lastInsert.Before(time.Now())
-}
-
 type TTLCache[K comparable] struct {
 	m   map[K]*CacheEntry[K]
 	TTL time.Duration
 	mu  sync.Mutex
+}
+
+func (c *TTLCache[K]) Init(TTL time.Duration) {
+	c.m = make(map[K]*CacheEntry[K])
+	c.mu = sync.Mutex{}
+	c.TTL = TTL
 }
 
 func (c *TTLCache[K]) Insert(k K) {
@@ -42,7 +44,7 @@ func (c *TTLCache[K]) cleanupExpired() {
 	defer c.mu.Unlock()
 
 	for k, entry := range c.m {
-		if entry.expired() {
+		if time.Since(entry.lastInsert) > c.TTL {
 			delete(c.m, k)
 		}
 	}
