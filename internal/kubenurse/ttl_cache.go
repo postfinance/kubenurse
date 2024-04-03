@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-type CacheEntry[K comparable] struct {
-	val        K
-	lastInsert time.Time
-}
+// This TTLCache is a suboptimal, first-shot implementation of TTL cache,
+// that is, entries expire after a certain duration.
+// It should ideally be implemented with a Red-Black Binary tree to keep track
+// of the entries to expire.
 
 type TTLCache[K comparable] struct {
 	m   map[K]*CacheEntry[K]
@@ -16,10 +16,15 @@ type TTLCache[K comparable] struct {
 	mu  sync.Mutex
 }
 
-func (c *TTLCache[K]) Init(TTL time.Duration) {
+type CacheEntry[K comparable] struct {
+	val        K
+	lastInsert time.Time
+}
+
+func (c *TTLCache[K]) Init(ttl time.Duration) {
 	c.m = make(map[K]*CacheEntry[K])
 	c.mu = sync.Mutex{}
-	c.TTL = TTL
+	c.TTL = ttl
 }
 
 func (c *TTLCache[K]) Insert(k K) {
