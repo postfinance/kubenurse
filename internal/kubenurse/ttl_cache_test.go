@@ -16,6 +16,11 @@ func TestTTLCache(t *testing.T) {
 	time.Sleep(5 * time.Millisecond)
 
 	require.Equal(t, 1, c.ActiveEntries(), "after 5ms and with a 10ms TTL, there should have been 1 entry in the cache")
+
+	c.Insert("node-a") // refresh ttl
+	time.Sleep(5 * time.Millisecond)
+	require.Equal(t, 1, c.ActiveEntries(), "after 5ms and with a 10ms TTL, there should have been 1 entry in the cache")
+
 	time.Sleep(5 * time.Millisecond)
 	require.Equal(t, 0, c.ActiveEntries(), "after 10ms and with a 10ms TTL, there should be no entry in the cache")
 
