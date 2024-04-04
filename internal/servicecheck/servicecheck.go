@@ -19,7 +19,7 @@ const (
 	okStr            = "ok"
 	errStr           = "error"
 	skippedStr       = "skipped"
-	metricsNamespace = "kubenurse"
+	MetricsNamespace = "kubenurse"
 )
 
 // New configures the checker with a httpClient and a cache timeout for check
@@ -28,7 +28,7 @@ func New(_ context.Context, cl client.Client, promRegistry *prometheus.Registry,
 	allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64) (*Checker, error) {
 	errorCounter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
+			Namespace: MetricsNamespace,
 			Name:      "errors_total",
 			Help:      "Kubenurse error counter partitioned by error type",
 		},
@@ -37,7 +37,7 @@ func New(_ context.Context, cl client.Client, promRegistry *prometheus.Registry,
 
 	durationHistogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
+			Namespace: MetricsNamespace,
 			Name:      "request_duration",
 			Help:      "Kubenurse request duration partitioned by target path",
 			Buckets:   durationHistogramBuckets,
@@ -163,7 +163,7 @@ func (c *Checker) APIServerDirect(ctx context.Context) (string, error) {
 
 	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
 
-	return c.doRequest(ctx, apiurl)
+	return c.doRequest(ctx, apiurl, false)
 }
 
 // APIServerDNS checks the /version endpoint of the Kubernetes API Server through the Cluster DNS URL
@@ -174,7 +174,7 @@ func (c *Checker) APIServerDNS(ctx context.Context) (string, error) {
 
 	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
 
-	return c.doRequest(ctx, apiurl)
+	return c.doRequest(ctx, apiurl, false)
 }
 
 // MeIngress checks if the kubenurse is reachable at the /alwayshappy endpoint behind the ingress
@@ -183,7 +183,7 @@ func (c *Checker) MeIngress(ctx context.Context) (string, error) {
 		return skippedStr, nil
 	}
 
-	return c.doRequest(ctx, c.KubenurseIngressURL+"/alwayshappy") //nolint:goconst // readability
+	return c.doRequest(ctx, c.KubenurseIngressURL+"/alwayshappy", false) //nolint:goconst // readability
 }
 
 // MeService checks if the kubenurse is reachable at the /alwayshappy endpoint through the kubernetes service
@@ -192,7 +192,7 @@ func (c *Checker) MeService(ctx context.Context) (string, error) {
 		return skippedStr, nil
 	}
 
-	return c.doRequest(ctx, c.KubenurseServiceURL+"/alwayshappy")
+	return c.doRequest(ctx, c.KubenurseServiceURL+"/alwayshappy", false)
 }
 
 // measure implements metric collections for the check

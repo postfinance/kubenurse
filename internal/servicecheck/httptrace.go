@@ -27,7 +27,7 @@ func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durationHistogram []float64) http.RoundTripper {
 	httpclientReqTotal := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
+			Namespace: MetricsNamespace,
 			Name:      "httpclient_requests_total",
 			Help:      "A counter for requests from the kubenurse http client.",
 		},
@@ -36,7 +36,7 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durati
 
 	httpclientReqDuration := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
+			Namespace: MetricsNamespace,
 			Name:      "httpclient_request_duration_seconds",
 			Help:      "A latency histogram of request latencies from the kubenurse http client.",
 			Buckets:   durationHistogram,
@@ -46,7 +46,7 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durati
 
 	httpclientTraceReqDuration := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Namespace: metricsNamespace,
+			Namespace: MetricsNamespace,
 			Name:      "httpclient_trace_request_duration_seconds",
 			Help:      "Latency histogram for requests from the kubenurse http client. Time in seconds since the start of the http request.",
 			Buckets:   durationHistogram,

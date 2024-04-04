@@ -37,6 +37,10 @@ type Server struct {
 	// Mutex to protect ready flag
 	mu    *sync.Mutex
 	ready bool
+
+	// Neighbourhood incoming checks
+	neighbouringIncomingChecks prometheus.Gauge
+	neighboursTTLCache         TTLCache[string]
 }
 
 // New creates a new kubenurse server. The server can be configured with the following environment variables:
@@ -94,11 +98,22 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 		ready:              true,
 	}
 
+	server.neighboursTTLCache.Init(60 * time.Second)
+
 	promRegistry := prometheus.NewRegistry()
 	promRegistry.MustRegister(
 		collectors.NewGoCollector(),
 		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
 	)
+
+	server.neighbouringIncomingChecks = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: servicecheck.MetricsNamespace,
+			Name:      "neighbourhood_incoming_checks",
+			Help:      "Number of unique source nodes checks in the last minute for the neighbourhood checks",
+		},
+	)
+	promRegistry.MustRegister(server.neighbouringIncomingChecks)
 
 	var histogramBuckets []float64
 
@@ -166,7 +181,7 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 	// setup http routes
 	mux.HandleFunc("/ready", server.readyHandler())
 	mux.HandleFunc("/alive", server.aliveHandler())
-	mux.HandleFunc("/alwayshappy", func(http.ResponseWriter, *http.Request) {})
+	mux.HandleFunc("/alwayshappy", server.alwaysHappyHandler())
 	mux.Handle("/metrics", promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{}))
 	mux.Handle("/", http.RedirectHandler("/alive", http.StatusMovedPermanently))
 
@@ -179,6 +194,17 @@ func (s *Server) Run() error {
 		wg   sync.WaitGroup
 		errc = make(chan error, 2) // max two errors can happen
 	)
+
+	go func() { // update the incoming neighbouring check gauge every second
+		t := time.NewTicker(1 * time.Second)
+		defer t.Stop()
+
+		for range t.C {
+			s.neighbouringIncomingChecks.Set(
+				float64(s.neighboursTTLCache.ActiveEntries()),
+			)
+		}
+	}()
 
 	wg.Add(1)
 

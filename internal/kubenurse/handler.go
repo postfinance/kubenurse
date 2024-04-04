@@ -62,3 +62,12 @@ func (s *Server) aliveHandler() func(w http.ResponseWriter, r *http.Request) {
 		_ = enc.Encode(out)
 	}
 }
+
+func (s *Server) alwaysHappyHandler() func(w http.ResponseWriter, r *http.Request) {
+	return func(_ http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get(servicecheck.NeighbourOriginHeader)
+		if origin != "" {
+			s.neighboursTTLCache.Insert(origin)
+		}
+	}
+}
