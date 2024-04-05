@@ -221,6 +221,10 @@ To combat this, a node filtering feature was implemented, which works as follows
 - it computes its own node name checksum, and queries the next 10 (per default)
   nodes in the sorted checksums list
 
+Here's an example with 6 nodes, where each node queries the next 3 nodes:
+
+![node filtering drawing](./doc/node_filtering.png)
+
 Thanks to this, every node is making queries to the same 10 nodes, unless one
 of those nodes disappears, in which case kubenurse will pick the next node in
 the sorted checksums list. This comes with several advantages:
@@ -241,6 +245,14 @@ the sorted checksums list. This comes with several advantages:
 Per default, the neighbourhood filtering is set to 10 nodes, which means that
 on cluster with more than 10 nodes, each kubenurse will query 10 nodes, as
 described above.
+
+##### Neighbourhood incoming checks metric
+
+It is possible to check that each node receives the proper number of
+neighbourhood queries with the `kubenurse_neighbourhood_incoming_checks`
+metric. If you have the neighbourhood limit set to e.g. 10, then this
+metric should be equal to 10 on all nodes, with some variations during a
+rollout restart.
 
 To bypass the node filtering feature, you simply need to set the
 `KUBENURSE_NEIGHBOUR_LIMIT` environment variable to 0.
