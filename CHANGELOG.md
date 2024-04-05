@@ -1,3 +1,17 @@
+## [1.12.1] - 2024-04-05
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.0...1.12.1
+
+### 📚 Documentation
+
+- *(README)* Add background to drawings - ([bb1a24d](https://github.com/postfinance/kubenurse/commit/bb1a24d70cfd1004d4ac59640a4d8a706ab53cba))
+
+### Build
+
+- *(ci)* Switch branch name to main - ([7d06dea](https://github.com/postfinance/kubenurse/commit/7d06deac3f4d4170e8d15650d03f1dfb19ecc773))
+- *(helm)* Add values.histogram_buckets option - ([9824bc7](https://github.com/postfinance/kubenurse/commit/9824bc72de66ebc6474a149cd19491f1175de335))
+
+
 ## [1.12.0] - 2024-04-05
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.11.0...v1.12.0
@@ -27,6 +41,7 @@
 
 - *(deps)* Bump k8s.io/api from 0.29.2 to 0.29.3 - ([4cd0aa4](https://github.com/postfinance/kubenurse/commit/4cd0aa49eeea2c1458ed1a237f8d28ef93d59129))
 - *(deps)* Bump k8s.io/client-go from 0.29.2 to 0.29.3 - ([c883fb1](https://github.com/postfinance/kubenurse/commit/c883fb1b3a6063c9fed3bfdb661dc735df4d1d3b))
+- Tailor git-cliff to add scope to changelog + release v1.12.0 - ([aa8c556](https://github.com/postfinance/kubenurse/commit/aa8c5566bf9e40421bd1579b57efa15b05828281))
 
 
 ## [1.11.0] - 2024-03-15
