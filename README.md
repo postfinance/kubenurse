@@ -1,11 +1,38 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Kubenurse](#kubenurse)
+  - [Deployment](#deployment)
+    - [Helm deployment](#helm-deployment)
+      - [Configuration settings](#configuration-settings)
+  - [Configuration](#configuration)
+  - [http Endpoints](#http-endpoints)
+  - [Health Checks](#health-checks)
+    - [API Server Direct](#api-server-direct)
+    - [API Server DNS](#api-server-dns)
+    - [Me Ingress](#me-ingress)
+    - [Me Service](#me-service)
+    - [Neighbourhood](#neighbourhood)
+      - [Neighbourhood filtering](#neighbourhood-filtering)
+        - [Neighbourhood incoming checks metric](#neighbourhood-incoming-checks-metric)
+  - [Metrics](#metrics)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 [![CI](https://github.com/postfinance/kubenurse/actions/workflows/release.yml/badge.svg)](https://github.com/postfinance/kubenurse/actions/workflows/release.yml)
 [![Coverage Status](https://coveralls.io/repos/github/postfinance/kubenurse/badge.svg?branch=master)](https://coveralls.io/github/postfinance/kubenurse?branch=master)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/postfinance/kubenurse)
 
 # Kubenurse
 
-kubenurse is a little service that monitors all network connections in a Kubernetes
-cluster. Kubenurse measures request durations, records errors and exports those metrics in Prometheus format.
+Kubenurse is a little service that monitors all network connections in a
+Kubernetes cluster. Kubenurse measures request durations, records errors and
+exports those metrics in Prometheus format.
+
+Here's an overview of the checks performed by kubenurse, which are exposed as
+labels for the various duration/error prometheus metrics.
+
+![kubenurse request types](./doc/kubenurse.png)
 
 ## Deployment
 
@@ -72,7 +99,8 @@ Default tolerations:
 ```
 
 After everything is set up and Prometheus scrapes the kubenurses, you can build
-dashboards [as this example](./doc/grafana-kubenurse.json) that show network latencies and errors or use the metrics for alarming.
+dashboards [as this example](./doc/grafana-kubenurse.json) that show network
+latencies and errors or use the metrics for alarming.
 
 ![Grafana ingress view](doc/grafana_ingress.png "Grafana ingress view")
 ![Grafana path view](doc/grafana_path.png "Grafana path view")
@@ -157,8 +185,7 @@ The `/alive` endpoint returns a JSON like this with status code 200 if everythin
 
 ## Health Checks
 
-Every five seconds and on every access of `/alive`, the checks described below are run.
-Check results are cached for 3 seconds in order to prevent excessive network traffic.
+Every five seconds, the checks described below are run.
 
 A little illustration of what communication occurs, is here:
 
@@ -261,16 +288,23 @@ To bypass the node filtering feature, you simply need to set the
 
 All performed checks expose metrics which can be used to monitor/alert:
 
-- SDN network latencies and errors
-- kubelet-to-kubelet network latencies and errors
+- node-to-node network latencies and errors
 - pod-to-apiserver communication
 - Ingress roundtrip latencies and errors
-- Service roundtrip latencies and errors (kube-proxy)
+- Service roundtrip latencies and errors (kube-proxy / your CNI)
 - Major kube-apiserver issues
 - kube-dns (or CoreDNS) errors
 - External DNS resolution errors (ingress URL resolution)
 
-At `/metrics` you will find these:
+At `/metrics` you will find the following metrics:
 
 - `kubenurse_errors_total`: Kubenurse error counter partitioned by error type
 - `kubenurse_request_duration`: a histogram for Kubenurse request duration partitioned by error type
+- `kubenurse_httpclient_request_duration_seconds`:  a latency histogram of request latencies from the kubenurse http client.
+- `kubenurse_httpclient_trace_requests_total`: a latency histogram for the http
+  client _trace_ metric instrumentation, with detailed statistics for e.g.
+  `dns_start`, `got_conn` events, and more. the details can be seen in the
+  [`httptrace.go`](https://github.com/postfinance/kubenurse/blob/52767fbb280b65c06ac926dac49dd874e9ec4aee/internal/servicecheck/httptrace.go#L73)
+  file
+- `kubenurse_neighbourhood_incoming_checks`: a gauge which reports how many
+  unique neighbours have queried the current pod in the last minute
