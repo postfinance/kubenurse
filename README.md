@@ -1,27 +1,20 @@
+[![CI](https://github.com/postfinance/kubenurse/actions/workflows/release.yml/badge.svg)](https://github.com/postfinance/kubenurse/actions/workflows/release.yml)
+[![Coverage Status](https://coveralls.io/repos/github/postfinance/kubenurse/badge.svg?branch=master)](https://coveralls.io/github/postfinance/kubenurse?branch=master)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/postfinance/kubenurse)
+
+<!-- DocToc command: doctoc --notitle README.md --update-only --maxlevel 2 -->
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Kubenurse](#kubenurse)
   - [Deployment](#deployment)
-    - [Helm deployment](#helm-deployment)
-      - [Configuration settings](#configuration-settings)
   - [Configuration](#configuration)
   - [http Endpoints](#http-endpoints)
   - [Health Checks](#health-checks)
-    - [API Server Direct](#api-server-direct)
-    - [API Server DNS](#api-server-dns)
-    - [Me Ingress](#me-ingress)
-    - [Me Service](#me-service)
-    - [Neighbourhood](#neighbourhood)
-      - [Neighbourhood filtering](#neighbourhood-filtering)
-        - [Neighbourhood incoming checks metric](#neighbourhood-incoming-checks-metric)
   - [Metrics](#metrics)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-[![CI](https://github.com/postfinance/kubenurse/actions/workflows/release.yml/badge.svg)](https://github.com/postfinance/kubenurse/actions/workflows/release.yml)
-[![Coverage Status](https://coveralls.io/repos/github/postfinance/kubenurse/badge.svg?branch=master)](https://coveralls.io/github/postfinance/kubenurse?branch=master)
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/postfinance/kubenurse)
 
 # Kubenurse
 
