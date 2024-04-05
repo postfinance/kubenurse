@@ -12,10 +12,10 @@ updates:
       - "dependencies"
     schedule:
       interval: "weekly"
-    target-branch: master
+    target-branch: main
     commit-message:
       prefix: "build(deps)"
   - package-ecosystem: "github-actions"
-    directory: "/" 
+    directory: "/"
     schedule:
       interval: "weekly"
