@@ -9,9 +9,15 @@
 
 - [Kubenurse](#kubenurse)
   - [Deployment](#deployment)
+    - [Helm deployment](#helm-deployment)
   - [Configuration](#configuration)
   - [http Endpoints](#http-endpoints)
   - [Health Checks](#health-checks)
+    - [API Server Direct](#api-server-direct)
+    - [API Server DNS](#api-server-dns)
+    - [Me Ingress](#me-ingress)
+    - [Me Service](#me-service)
+    - [Neighbourhood](#neighbourhood)
   - [Metrics](#metrics)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -25,7 +31,7 @@ exports those metrics in Prometheus format.
 Here's an overview of the checks performed by kubenurse, which are exposed as
 labels for the various duration/error prometheus metrics.
 
-![kubenurse request types](./doc/kubenurse.png)
+![kubenurse request types](./doc/kubenurse.svg)
 
 ## Deployment
 
@@ -243,7 +249,7 @@ To combat this, a node filtering feature was implemented, which works as follows
 
 Here's an example with 6 nodes, where each node queries the next 3 nodes:
 
-![node filtering drawing](./doc/node_filtering.png)
+![node filtering drawing](./doc/kubenurse_node_filtering.svg)
 
 Thanks to this, every node is making queries to the same 10 nodes, unless one
 of those nodes disappears, in which case kubenurse will pick the next node in
