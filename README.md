@@ -74,6 +74,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | allow_unschedulable                | Sets `KUBENURSE_ALLOW_UNSCHEDULABLE` environment variable                                                            | `false`                            |
 | neighbour_filter                   | Sets `KUBENURSE_NEIGHBOUR_FILTER` environment variable                                                               | `app.kubernetes.io/name=kubenurse` |
 | neighbour_limit                    | Sets `KUBENURSE_NEIGHBOUR_LIMIT` environment variable                                                                | `10`                               |
+| histogram_buckets                  | Sets `KUBENURSE_HISTOGRAM_BUCKETS` environment variable                                                              |                                  |
 | extra_ca                           | Sets `KUBENURSE_EXTRA_CA` environment variable                                                                       |                                    |
 | check_api_server_direct            | Sets `KUBENURSE_CHECK_API_SERVER_DIRECT` environment variable                                                        | `true`                             |
 | check_api_server_dns               | Sets `KUBENURSE_CHECK_API_SERVER_DNS` environment variable                                                           | `true`                             |

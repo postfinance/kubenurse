@@ -62,6 +62,10 @@ spec:
         - name: KUBENURSE_EXTRA_CA
           value: {{ .Values.extra_ca }}
           {{- end }}
+          {{- if .Values.histogram_buckets }}
+        - name: KUBENURSE_HISTOGRAM_BUCKETS
+          value: {{ .Values.histogram_buckets | quote }}
+          {{- end }}
         - name: KUBENURSE_CHECK_API_SERVER_DIRECT
           value: {{ .Values.check_api_server_direct | quote }}
         - name: KUBENURSE_CHECK_API_SERVER_DNS
