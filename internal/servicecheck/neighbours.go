@@ -20,6 +20,10 @@ var (
 	currentNode string
 )
 
+const (
+	NeighbourOriginHeader = "KUBENURSE-NEIGHBOUR-ORIGIN"
+)
+
 // Neighbour represents a kubenurse which should be reachable
 type Neighbour struct {
 	PodName  string
@@ -93,10 +97,10 @@ func (c *Checker) checkNeighbours(nh []*Neighbour) {
 	for _, neighbour := range nh {
 		check := func(ctx context.Context) (string, error) {
 			if c.UseTLS {
-				return c.doRequest(ctx, "https://"+neighbour.PodIP+":8443/alwayshappy")
+				return c.doRequest(ctx, "https://"+neighbour.PodIP+":8443/alwayshappy", true)
 			}
 
-			return c.doRequest(ctx, "http://"+neighbour.PodIP+":8080/alwayshappy")
+			return c.doRequest(ctx, "http://"+neighbour.PodIP+":8080/alwayshappy", true)
 		}
 
 		_, _ = c.measure(check, "path_"+neighbour.NodeName)

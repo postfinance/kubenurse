@@ -18,7 +18,7 @@ const (
 )
 
 // doRequest does an http request only to get the http status code
-func (c *Checker) doRequest(ctx context.Context, url string) (string, error) {
+func (c *Checker) doRequest(ctx context.Context, url string, addOriginHeader bool) (string, error) {
 	// Read Bearer Token file from ServiceAccount
 	token, err := os.ReadFile(K8sTokenFile)
 	if err != nil {
@@ -30,6 +30,11 @@ func (c *Checker) doRequest(ctx context.Context, url string) (string, error) {
 	// Only add the Bearer for API Server Requests
 	if strings.HasSuffix(url, "/version") {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	}
+
+	if addOriginHeader {
+		hostname, _ := os.Hostname()
+		req.Header.Add(NeighbourOriginHeader, hostname)
 	}
 
 	resp, err := c.httpClient.Do(req)
