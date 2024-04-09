@@ -5,3 +5,14 @@ description: A Helm chart for Kubernetes to deploy kubenurse
 version: 0.0.1-dummy
 appVersion: v0.0.1-dummy
 icon: https://avatars.githubusercontent.com/u/34368733
+repositoryID: a9a52ede-b29e-426d-b0ca-663026f0f8d5
+maintainers:
+  - name: clementnuss
+  - name: opensourcepf
+    email: opensource@postfinance.ch
+owners:
+  - name: opensourcepf
+    email: opensource@postfinance.ch
+home: https://github.com/postfinance/kubenurse
+sources:
+  - https://github.com/postfinance/kubenurse
