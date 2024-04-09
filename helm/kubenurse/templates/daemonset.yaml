@@ -11,6 +11,11 @@ spec:
   selector:
     matchLabels:
       {{- include "kubenurse.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: {{ .Values.daemonset.rollingUpdate.maxUnavailable }}
+    type: RollingUpdate
   template:
     metadata:
       labels:

@@ -20,6 +20,8 @@ daemonset:
   volumeMounts: []
   volumes: []
   priorityClassName: ""
+  rollingUpdate:
+    maxUnavailable: 34%
 
 serviceMonitor:
   enabled: false
