@@ -31,7 +31,7 @@ exports those metrics in Prometheus format.
 Here's an overview of the checks performed by kubenurse, which are exposed as
 labels for the various duration/error prometheus metrics.
 
-![kubenurse request types](./doc/kubenurse.svg)
+![kubenurse request types](./doc/kubenurse.png)
 
 ## Deployment
 
@@ -250,7 +250,7 @@ To combat this, a node filtering feature was implemented, which works as follows
 
 Here's an example with 6 nodes, where each node queries the next 3 nodes:
 
-![node filtering drawing](./doc/kubenurse_node_filtering.svg)
+![node filtering drawing](./doc/kubenurse-node-filtering.png)
 
 Thanks to this, every node is making queries to the same 10 nodes, unless one
 of those nodes disappears, in which case kubenurse will pick the next node in
