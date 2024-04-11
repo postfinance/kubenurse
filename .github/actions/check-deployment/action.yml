@@ -22,7 +22,7 @@ runs:
     run: |
       echo "Check for unexpected log lines"
       test $(kubectl -n ${{ inputs.namespace }} logs -l app.kubernetes.io/name=kubenurse \
-        | grep -v "I'm ready to help you" \
+        | grep -v "kubenurse just started" \
         | wc -l) -eq 0 \
   - shell: bash
     run: |
