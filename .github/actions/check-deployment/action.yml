@@ -36,14 +36,14 @@ runs:
       curl -k -s --resolve \
         ${{ inputs.svc-domain }}:443:127.0.0.1 \
         https://${{ inputs.svc-domain }}:443/metrics \
-        | grep "kubenurse_request_" > /dev/null
+        | grep "kubenurse_httpclient_request_" > /dev/null
   - shell: bash
     run: |
       echo "Check that metrics contain neighbours"
       curl -k -s --resolve \
         ${{ inputs.svc-domain }}:443:127.0.0.1 \
         https://${{ inputs.svc-domain }}:443/metrics \
-        | grep "kubenurse_request_" | grep 'type="path_' > /dev/null
+        | grep "kubenurse_httpclient_request_" | grep 'type="path_' > /dev/null
   - shell: bash
     run: |
       echo "Check that metrics contain no errors"
