@@ -35,18 +35,6 @@ func New(_ context.Context, cl client.Client, promRegistry *prometheus.Registry,
 		[]string{"type"},
 	)
 
-	durationHistogram := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: MetricsNamespace,
-			Name:      "request_duration",
-			Help:      "Kubenurse request duration partitioned by target path",
-			Buckets:   durationHistogramBuckets,
-		},
-		[]string{"type"},
-	)
-
-	promRegistry.MustRegister(errorCounter, durationHistogram)
-
 	// setup http transport
 	tlsConfig, err := generateTLSConfig(os.Getenv("KUBENURSE_EXTRA_CA"))
 	if err != nil {
