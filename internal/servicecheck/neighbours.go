@@ -103,7 +103,7 @@ func (c *Checker) checkNeighbours(nh []*Neighbour) {
 			return c.doRequest(ctx, "http://"+neighbour.PodIP+":8080/alwayshappy", true)
 		}
 
-		_, _ = c.measure(check, "path_"+neighbour.NodeName)
+		c.measure(check, "path_"+neighbour.NodeName)
 	}
 }
 

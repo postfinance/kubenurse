@@ -4,7 +4,7 @@ package kubenurse
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -122,7 +122,8 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 			bucket, e := strconv.ParseFloat(bucketStr, 64)
 
 			if e != nil {
-				log.Fatalf("couldn't parse one of the custom histogram buckets. error:\n%v", e)
+				slog.Error("couldn't parse one of the custom histogram buckets", "bucket", bucket, "err", e)
+				return nil, e
 			}
 
 			histogramBuckets = append(histogramBuckets, bucket)
@@ -242,6 +243,8 @@ func (s *Server) Run() error {
 			}
 		}()
 	}
+
+	slog.Info("kubenurse just started")
 
 	wg.Wait()
 	close(errc)

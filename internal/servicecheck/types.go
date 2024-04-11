@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -38,10 +37,6 @@ type Checker struct {
 
 	// Controller runtime cached client
 	client client.Client
-
-	// metrics
-	errorCounter      *prometheus.CounterVec
-	durationHistogram *prometheus.HistogramVec
 
 	// Http Client for https requests
 	httpClient *http.Client

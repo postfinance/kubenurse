@@ -42,9 +42,9 @@ func TestCombined(t *testing.T) {
 
 	t.Run("run", func(t *testing.T) {
 		r := require.New(t)
-		result, hadError := checker.Run()
-		r.True(hadError)
-		r.Len(result.Neighbourhood, 1)
+		checker.Run()
+
+		r.Len(checker.LastCheckResult.Neighbourhood, 1)
 	})
 
 	t.Run("scheduled", func(t *testing.T) {
