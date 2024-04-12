@@ -47,7 +47,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 #### Configuration settings
 
 | Setting                            | Description                                                                                                          | Default                            |
-|------------------------------------|----------------------------------------------------------------------------------------------------------------------|------------------------------------|
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | daemonset.image.repository         | The repository name                                                                                                  | `postfinance/kubenurse`            |
 | daemonset.image.tag                | The tag/ version of the image                                                                                        | `v1.4.0`                           |
 | daemonset.podLabels                | Additional labels to be added to the pods of the daemonset                                                           | `[]`                               |
@@ -74,7 +74,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | allow_unschedulable                | Sets `KUBENURSE_ALLOW_UNSCHEDULABLE` environment variable                                                            | `false`                            |
 | neighbour_filter                   | Sets `KUBENURSE_NEIGHBOUR_FILTER` environment variable                                                               | `app.kubernetes.io/name=kubenurse` |
 | neighbour_limit                    | Sets `KUBENURSE_NEIGHBOUR_LIMIT` environment variable                                                                | `10`                               |
-| histogram_buckets                  | Sets `KUBENURSE_HISTOGRAM_BUCKETS` environment variable                                                              |                                  |
+| histogram_buckets                  | Sets `KUBENURSE_HISTOGRAM_BUCKETS` environment variable                                                              |                                    |
 | extra_ca                           | Sets `KUBENURSE_EXTRA_CA` environment variable                                                                       |                                    |
 | check_api_server_direct            | Sets `KUBENURSE_CHECK_API_SERVER_DIRECT` environment variable                                                        | `true`                             |
 | check_api_server_dns               | Sets `KUBENURSE_CHECK_API_SERVER_DNS` environment variable                                                           | `true`                             |
@@ -298,28 +298,21 @@ All performed checks expose metrics which can be used to monitor/alert:
 
 At `/metrics` you will find the following metrics:
 
-- ~~`kubenurse_request_duration`~~ \
-  (deprecated since v1.13.0) latency histogram for
-  request duration, replaced with the metric below.
-- `kubenurse_httpclient_request_duration_seconds` \
-  latency histogram for request duration, partitioned by request type
-- `kubenurse_httpclient_trace_request_duration_seconds` \
-  latency histogram for httpclient _trace_ metric instrumentation, partitioned
-  by request type and httptrace connection events, where events are e.g.
-  `dns_start`, `got_conn`, `tls_handshake_done`, and more. the details can be
-  seen in the
-  [`httptrace.go`](https://github.com/postfinance/kubenurse/blob/v1.13.0/internal/servicecheck/httptrace.go#L91)
-  file
-- `kubenurse_httpclient_requests_total` \
-  counter for the total number of http requests, partitioned by HTTP code,
-  method, and request type
-- `kubenurse_errors_total` \
-  error counter, partitioned by httptrace event and request type
-- `kubenurse_neighbourhood_incoming_checks` \
-  gauge which reports how many unique neighbours have queried the current pod
-  in the last minute
+| metric name                                           | labels               | description                                                                                                                  |
+| ----------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| ~~`kubenurse request duration`~~                      | `type`               | (deprecated since v1.13.0) latency histogram for request duration, replaced with the metric below.                           |
+| `kubenurse httpclient request duration seconds`       | `type`               | latency histogram for request duration, partitioned by request type                                                          |
+| `kubenurse httpclient trace request duration seconds` | `type, event`        | latency histogram for httpclient _trace_ metric instrumentation, partitioned by request type and httptrace connection events |
+| `kubenurse httpclient requests total`                 | `type, code, method` | counter for the total number of http requests, partitioned by HTTP code, method, and request type                            |
+| `kubenurse errors total`                              | `type, event`        | error counter, partitioned by httptrace event and request type                                                               |
+| `kubenurse neighbourhood incoming checks`             | n\a                  | gauge which reports how many unique neighbours have queried the current pod in the last minute                               |
 
 For metrics partitioned with a `type` label, it is possible to precisely know
 which request type increased an error counter, or to compare the latencies of
 multiple request types, for example compare how your service and ingress
 latencies differ.
+
+Some `event` labels include `dns_start`, `got_conn`, `tls_handshake_done`, and
+more. the details can be  seen in the
+[`httptrace.go`](https://github.com/postfinance/kubenurse/blob/v1.13.0/internal/servicecheck/httptrace.go#L91)
+file.
