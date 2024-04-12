@@ -119,11 +119,11 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 
 	if bucketsString := os.Getenv("KUBENURSE_HISTOGRAM_BUCKETS"); bucketsString != "" {
 		for _, bucketStr := range strings.Split(bucketsString, ",") {
-			bucket, e := strconv.ParseFloat(bucketStr, 64)
+			bucket, err := strconv.ParseFloat(bucketStr, 64)
 
-			if e != nil {
-				slog.Error("couldn't parse one of the custom histogram buckets", "bucket", bucket, "err", e)
-				return nil, e
+			if err != nil {
+				slog.Error("couldn't parse one of the custom histogram buckets", "bucket", bucket, "err", err)
+				os.Exit(1)
 			}
 
 			histogramBuckets = append(histogramBuckets, bucket)
