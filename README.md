@@ -8,17 +8,21 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Kubenurse](#kubenurse)
+  - [Grafana dashboard](#grafana-dashboard)
+  - [Metrics](#metrics)
   - [Deployment](#deployment)
     - [Helm deployment](#helm-deployment)
-  - [Configuration](#configuration)
-  - [http Endpoints](#http-endpoints)
+      - [Helm parameters](#helm-parameters)
+    - [Configuration](#configuration)
+  - [HTTP Endpoints](#http-endpoints)
   - [Health Checks](#health-checks)
     - [API Server Direct](#api-server-direct)
     - [API Server DNS](#api-server-dns)
     - [Me Ingress](#me-ingress)
     - [Me Service](#me-service)
     - [Neighbourhood](#neighbourhood)
-  - [Metrics](#metrics)
+  - [Neighbourhood filtering](#neighbourhood-filtering)
+    - [Neighbourhood incoming checks metric](#neighbourhood-incoming-checks-metric)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -33,6 +37,47 @@ labels for the various duration/error prometheus metrics.
 
 ![kubenurse request types](./doc/kubenurse.png)
 
+## Grafana dashboard
+
+Once the kubenurse pods are up and running and scraped by your metrics agent,
+you can import the [example dashboard](./doc/grafana-kubenurse.json) to start
+scrutinizing network latencies and errors.
+
+![Grafana overview](doc/grafana.png "Grafana ingress view")
+
+## Metrics
+
+All performed checks expose metrics which can be used to monitor/alert:
+
+- node-to-node network latencies and errors
+- pod-to-apiserver communication
+- Ingress roundtrip latencies and errors
+- Service roundtrip latencies and errors (kube-proxy / your CNI)
+- Major kube-apiserver issues
+- kube-dns (or CoreDNS) errors
+- External DNS resolution errors (ingress URL resolution)
+
+At `/metrics` you will find the following metrics:
+
+| metric name                                           | labels               | description                                                                                                                  |
+| ----------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| ~~`kubenurse request duration`~~                      | `type`               | (deprecated since v1.13.0) latency histogram for request duration, replaced with the metric below.                           |
+| `kubenurse httpclient request duration seconds`       | `type`               | latency histogram for request duration, partitioned by request type                                                          |
+| `kubenurse httpclient trace request duration seconds` | `type, event`        | latency histogram for httpclient _trace_ metric instrumentation, partitioned by request type and httptrace connection events |
+| `kubenurse httpclient requests total`                 | `type, code, method` | counter for the total number of http requests, partitioned by HTTP code, method, and request type                            |
+| `kubenurse errors total`                              | `type, event`        | error counter, partitioned by httptrace event and request type                                                               |
+| `kubenurse neighbourhood incoming checks`             | n\a                  | gauge which reports how many unique neighbours have queried the current pod in the last minute                               |
+
+For metrics partitioned with a `type` label, it is possible to precisely know
+which request type increased an error counter, or to compare the latencies of
+multiple request types, for example compare how your service and ingress
+latencies differ.
+
+Some `event` labels include `dns_start`, `got_conn`, `tls_handshake_done`, and
+more. the details can be  seen in the
+[`httptrace.go`](https://github.com/postfinance/kubenurse/blob/v1.13.0/internal/servicecheck/httptrace.go#L91)
+file.
+
 ## Deployment
 
 You can get the Docker image from [Docker Hub](https://hub.docker.com/r/postfinance/kubenurse/).
@@ -44,7 +89,10 @@ contains manifests which can be used to deploy kubenurse to the kube-system name
 You can also deploy kubenurse with Helm, the Chart can be found in repository `https://postfinance.github.io/kubenurse/` or directory `./helm/kubenurse/`.
 The following command can be used to install kubenurse with Helm: `helm upgrade [RELEASE_NAME] --install --repo https://postfinance.github.io/kubenurse/ kubenurse`.
 
-#### Configuration settings
+#### Helm parameters
+
+<details>
+<summary>helm parameters list</summary>
 
 | Setting                            | Description                                                                                                          | Default                            |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
@@ -87,26 +135,12 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | cert_file                          | Sets `KUBENURSE_CERT_FILE` environment variable                                                                      |                                    |
 | cert_key                           | Sets `KUBENURSE_CERT_KEY` environment variable                                                                       |                                    |
 
-Default tolerations:
+</details>
 
-```yaml
-- effect: NoSchedule
-  key: node-role.kubernetes.io/master
-  operator: Equal
-- effect: NoSchedule
-  key: node-role.kubernetes.io/control-plane
-  operator: Equal
-```
+### Configuration
 
-After everything is set up and Prometheus scrapes the kubenurses, you can
-import the [example dashboard](./doc/grafana-kubenurse.json) to start
-scrutinizing network latencies and errors.
-
-![Grafana overview](doc/grafana.png "Grafana ingress view")
-
-## Configuration
-
-kubenurse is configured with environment variables:
+<details>
+<summary>kubenurse environment variables list</summary>
 
 - `KUBENURSE_INGRESS_URL`: An URL to the kubenurse in order to check the ingress
 - `KUBENURSE_SERVICE_URL`: An URL to the kubenurse in order to check the Kubernetes service
@@ -132,10 +166,9 @@ Following variables are injected to the Pod by Kubernetes and should not be defi
 
 - `KUBERNETES_SERVICE_HOST`: Host to communicate to the kube-apiserver
 - `KUBERNETES_SERVICE_PORT`: Port to communicate to the kube-apiserver
+</details>
 
-The used http client appends the certificate `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt` if found.
-
-## http Endpoints
+## HTTP Endpoints
 
 The kubenurse service listens for http requests on port 8080 (optionally https on port 8443) and exposes endpoints:
 
@@ -186,10 +219,6 @@ The `/alive` endpoint returns a JSON like this with status code 200 if everythin
 
 Every five seconds, the checks described below are run.
 
-A little illustration of what communication occurs, is here:
-
-![Communication](doc/Communication.png "Communication")
-
 ### API Server Direct
 
 Checks the `/version` endpoint of the Kubernetes API Server through
@@ -235,7 +264,7 @@ this can be changed by setting `KUBENURSE_ALLOW_UNSCHEDULABLE="true"`.
 
 Metric type: `path_$KUBELET_HOSTNAME`
 
-#### Neighbourhood filtering
+## Neighbourhood filtering
 
 The number of checks for the neighbourhood used to grow as $O(N^2)$, which
 rendered `kubenurse` impractical on large clusters, as documented in issue
@@ -255,9 +284,9 @@ Thanks to this, every node is making queries to the same 10 nodes, unless one
 of those nodes disappears, in which case kubenurse will pick the next node in
 the sorted checksums list. This comes with several advantages:
 
-- because of the way we first hash the node names, the checks distribution is
-  randomly distributed, independant of the node names. if we only picked the 10
-  next nodes in a sorted list of the node names, then we might have biased the
+- because of the way we first hash the node names, the checks are randomly
+  distributed, independant of the node names. if we only picked the 10 next
+  nodes in a sorted list of the node names, then we might have biased the
   results in environments where node names are sequential
 - metrics-wise, a `kubenurse` pod should typically only have entries for ca. 10
   other neighbouring nodes worth of checks, which greatly reduces the load on
@@ -269,10 +298,10 @@ the sorted checksums list. This comes with several advantages:
   infrastructure)
 
 Per default, the neighbourhood filtering is set to 10 nodes, which means that
-on cluster with more than 10 nodes, each kubenurse will query 10 nodes, as
-described above.
+on cluster with more than 10 nodes, each kubenurse will query exactly 10 nodes,
+as described above.
 
-##### Neighbourhood incoming checks metric
+### Neighbourhood incoming checks metric
 
 It is possible to check that each node receives the proper number of
 neighbourhood queries with the `kubenurse_neighbourhood_incoming_checks`
@@ -282,36 +311,3 @@ rollout restart.
 
 To bypass the node filtering feature, you simply need to set the
 `KUBENURSE_NEIGHBOUR_LIMIT` environment variable to 0.
-
-## Metrics
-
-All performed checks expose metrics which can be used to monitor/alert:
-
-- node-to-node network latencies and errors
-- pod-to-apiserver communication
-- Ingress roundtrip latencies and errors
-- Service roundtrip latencies and errors (kube-proxy / your CNI)
-- Major kube-apiserver issues
-- kube-dns (or CoreDNS) errors
-- External DNS resolution errors (ingress URL resolution)
-
-At `/metrics` you will find the following metrics:
-
-| metric name                                           | labels               | description                                                                                                                  |
-| ----------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| ~~`kubenurse request duration`~~                      | `type`               | (deprecated since v1.13.0) latency histogram for request duration, replaced with the metric below.                           |
-| `kubenurse httpclient request duration seconds`       | `type`               | latency histogram for request duration, partitioned by request type                                                          |
-| `kubenurse httpclient trace request duration seconds` | `type, event`        | latency histogram for httpclient _trace_ metric instrumentation, partitioned by request type and httptrace connection events |
-| `kubenurse httpclient requests total`                 | `type, code, method` | counter for the total number of http requests, partitioned by HTTP code, method, and request type                            |
-| `kubenurse errors total`                              | `type, event`        | error counter, partitioned by httptrace event and request type                                                               |
-| `kubenurse neighbourhood incoming checks`             | n\a                  | gauge which reports how many unique neighbours have queried the current pod in the last minute                               |
-
-For metrics partitioned with a `type` label, it is possible to precisely know
-which request type increased an error counter, or to compare the latencies of
-multiple request types, for example compare how your service and ingress
-latencies differ.
-
-Some `event` labels include `dns_start`, `got_conn`, `tls_handshake_done`, and
-more. the details can be  seen in the
-[`httptrace.go`](https://github.com/postfinance/kubenurse/blob/v1.13.0/internal/servicecheck/httptrace.go#L91)
-file.
