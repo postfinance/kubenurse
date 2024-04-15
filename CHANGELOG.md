@@ -1,6 +1,6 @@
-## [1.13.0] - 2024-04-12
+## [1.13.0] - 2024-04-15
 
-**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.3...v1.13.0
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.3...1.13.0
 
 ### 🚀 Features
 
@@ -10,6 +10,7 @@
 
 - *(ci)* Change kubenurse startup string in test condition - ([bd91d7d](https://github.com/postfinance/kubenurse/commit/bd91d7da68b3408d70dfe846562557396b4522c4))
 - *(ci)* Update metric name for sanity check - ([c3e7287](https://github.com/postfinance/kubenurse/commit/c3e72874e509cff3fa72381d8aa882878ef32385))
+- *(server)* Improve error handling for histogram buckets parsing - ([e324325](https://github.com/postfinance/kubenurse/commit/e3243259626f3e4f2fd4ad68307205298b340276))
 
 ### 🚜 Refactor
 
@@ -20,18 +21,52 @@
 - *(drawings)* Add excalidraw file - ([852ab85](https://github.com/postfinance/kubenurse/commit/852ab85fc2ec00804a290730b5276fb9689116f4))
 - *(readme.md)* Format metrics as a table - ([6a35209](https://github.com/postfinance/kubenurse/commit/6a3520955e2e91e3cccb203c528e23cd2032e127))
 
+### ⚙️ Miscellaneous Tasks
+
+- Add v1.13.0 changelog - ([ee0ad5e](https://github.com/postfinance/kubenurse/commit/ee0ad5e685a10571ec322eebd279ff2e3dacbc8b))
+
 ### Build
 
 - *(artifacthub)* Add validation file - ([e2bf079](https://github.com/postfinance/kubenurse/commit/e2bf079504223a3293ed1be73d061bed49e00e02))
 
 
+## [1.12.3] - 2024-04-09
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.2...v1.12.3
+
+### Build
+
+- *(helm)* Add artifacthub metadata - ([6466e17](https://github.com/postfinance/kubenurse/commit/6466e17a25352baa8f82c6d4a0420d35e9f4c702))
+
+
+## [1.12.2] - 2024-04-09
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.1...v1.12.2
+
+### 🚀 Features
+
+- *(helm)* Set rollingUpdate.maxUnavailable to 34% per default - ([9c44a69](https://github.com/postfinance/kubenurse/commit/9c44a69b697f4f389d888e3ee64c551cf3503751))
+
+### 📚 Documentation
+
+- Add drawings as png again - ([2fc3d08](https://github.com/postfinance/kubenurse/commit/2fc3d088dfa01ad3d0f0f2a6cc08a136c5e84e3b))
+
+### Build
+
+- *(ci)* Use git-cliff release notes - ([8f8c64f](https://github.com/postfinance/kubenurse/commit/8f8c64f067d6402319145e6217e53fb01e477fb4))
+
+
 ## [1.12.1] - 2024-04-05
 
-**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.0...1.12.1
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.0...v1.12.1
 
 ### 📚 Documentation
 
 - *(README)* Add background to drawings - ([bb1a24d](https://github.com/postfinance/kubenurse/commit/bb1a24d70cfd1004d4ac59640a4d8a706ab53cba))
+
+### ⚙️ Miscellaneous Tasks
+
+- *(changelog)* Add v1.12.1 changelog - ([5cfd422](https://github.com/postfinance/kubenurse/commit/5cfd42237b30b64a91ce38f9b58a49d8c2c38940))
 
 ### Build
 
