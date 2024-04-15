@@ -4,8 +4,7 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,17 +17,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const (
-	nurse = "I'm ready to help you!"
-)
-
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
 	restConf, err := controllerruntime.GetConfig()
 	if err != nil {
-		log.Println(err)
+		slog.Error("error during controllerruntime.GetConfig()", "err", err)
 		return
 	}
 
@@ -44,13 +39,13 @@ func main() {
 	})
 
 	if err != nil {
-		log.Printf("error during cache creation: %s", err)
+		slog.Error("error during cache creation", "err", err)
 		return
 	}
 
 	go func() {
 		if err = ca.Start(ctx); err != nil && !errors.Is(err, context.Canceled) {
-			log.Printf("client cache error: %s", err)
+			slog.Error("controller-runtime client cache error", "err", err)
 			cancel()
 		}
 	}()
@@ -63,34 +58,32 @@ func main() {
 
 	c, err := client.New(restConf, opts)
 	if err != nil {
-		log.Printf("error while starting controller-runtime client: %s", err)
+		slog.Error("error while starting controller-runtime client", "err", err)
 		return
 	}
 
 	server, err := kubenurse.New(ctx, c)
 	if err != nil {
-		log.Printf("%s", err)
+		slog.Error("error in kubenurse.New call", "err", err)
 		return
 	}
 
 	go func() {
 		<-ctx.Done() // blocks until ctx is canceled
 
-		log.Println("shutting down, received signal to stop")
+		slog.Info("shutting down, received signal to stop")
 
 		// background ctx since, the "root" context is already canceled
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer shutdownCancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil {
-			log.Printf("gracefully halting kubenurse server: %s", err)
+			slog.Error("error during graceful shutdown", "err", err)
 		}
 	}()
 
-	fmt.Println(nurse) // most important line of this project
-
 	// blocks, until the server is stopped by calling Shutdown()
 	if err := server.Run(); err != nil {
-		log.Printf("running kubenurse: %s", err)
+		slog.Error("error while running kubenurse", "err", err)
 	}
 }

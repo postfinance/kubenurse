@@ -1,3 +1,30 @@
+## [1.13.0] - 2024-04-12
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.3...v1.13.0
+
+### 🚀 Features
+
+- [**breaking**] Use slog and add event type to error counter - ([e9d51a2](https://github.com/postfinance/kubenurse/commit/e9d51a2f781eaa2cb7e415fd175d158fdd681bb3))
+
+### 🐛 Bug Fixes
+
+- *(ci)* Change kubenurse startup string in test condition - ([bd91d7d](https://github.com/postfinance/kubenurse/commit/bd91d7da68b3408d70dfe846562557396b4522c4))
+- *(ci)* Update metric name for sanity check - ([c3e7287](https://github.com/postfinance/kubenurse/commit/c3e72874e509cff3fa72381d8aa882878ef32385))
+
+### 🚜 Refactor
+
+- [**breaking**] Remove kubenurse_request_duration histogram - ([3061b64](https://github.com/postfinance/kubenurse/commit/3061b6490d26e39bf096d050e54e15f7d43c0f8e))
+
+### 📚 Documentation
+
+- *(drawings)* Add excalidraw file - ([852ab85](https://github.com/postfinance/kubenurse/commit/852ab85fc2ec00804a290730b5276fb9689116f4))
+- *(readme.md)* Format metrics as a table - ([6a35209](https://github.com/postfinance/kubenurse/commit/6a3520955e2e91e3cccb203c528e23cd2032e127))
+
+### Build
+
+- *(artifacthub)* Add validation file - ([e2bf079](https://github.com/postfinance/kubenurse/commit/e2bf079504223a3293ed1be73d061bed49e00e02))
+
+
 ## [1.12.1] - 2024-04-05
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.0...1.12.1

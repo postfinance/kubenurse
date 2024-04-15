@@ -3,7 +3,7 @@ package servicecheck
 import (
 	"context"
 	"crypto/tls"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/http/httptrace"
 	"time"
@@ -24,7 +24,9 @@ func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 
 // This collects traces and logs errors. As promhttp.InstrumentRoundTripperTrace doesn't process
 // errors, this is custom made and inspired by prometheus/client_golang's promhttp
-func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durationHistogram []float64) http.RoundTripper {
+//
+//nolint:funlen // needed to pack all histograms and use them directly in the httptrace wrapper
+func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHist []float64) http.RoundTripper {
 	httpclientReqTotal := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: MetricsNamespace,
@@ -39,7 +41,7 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durati
 			Namespace: MetricsNamespace,
 			Name:      "httpclient_request_duration_seconds",
 			Help:      "A latency histogram of request latencies from the kubenurse http client.",
-			Buckets:   durationHistogram,
+			Buckets:   durHist,
 		},
 		[]string{"type"},
 	)
@@ -49,20 +51,31 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durati
 			Namespace: MetricsNamespace,
 			Name:      "httpclient_trace_request_duration_seconds",
 			Help:      "Latency histogram for requests from the kubenurse http client. Time in seconds since the start of the http request.",
-			Buckets:   durationHistogram,
+			Buckets:   durHist,
 		},
 		[]string{"event", "type"},
 	)
 
-	registry.MustRegister(httpclientReqTotal, httpclientReqDuration, httpclientTraceReqDuration)
+	errorCounter := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: MetricsNamespace,
+			Name:      "errors_total",
+			Help:      "Kubenurse error counter partitioned by error type",
+		},
+		[]string{"event", "type"},
+	)
+
+	registry.MustRegister(httpclientReqTotal, httpclientReqDuration, httpclientTraceReqDuration, errorCounter)
 
 	collectMetric := func(traceEventType string, start time.Time, r *http.Request, err error) {
 		td := time.Since(start).Seconds()
 		kubenurseTypeLabel := r.Context().Value(kubenurseTypeKey{}).(string)
 
-		// If we got an error inside a trace, log it and do not collect metrics
+		// If we get an error inside a trace, log it
 		if err != nil {
-			log.Printf("httptrace: failed %s for %s with %v", traceEventType, kubenurseTypeLabel, err)
+			errorCounter.WithLabelValues(traceEventType, kubenurseTypeLabel).Inc()
+			slog.Error("request failure in httptrace", "event_type", traceEventType, "request_type", kubenurseTypeLabel, "err", err)
+
 			return
 		}
 
@@ -94,8 +107,8 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durati
 			TLSHandshakeStart: func() {
 				collectMetric("tls_handshake_start", start, r, nil)
 			},
-			TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
-				collectMetric("tls_handshake_done", start, r, nil)
+			TLSHandshakeDone: func(_ tls.ConnectionState, err error) {
+				collectMetric("tls_handshake_done", start, r, err)
 			},
 			WroteRequest: func(info httptrace.WroteRequestInfo) {
 				collectMetric("wrote_request", start, r, info.Err)
