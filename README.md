@@ -98,12 +98,11 @@ Default tolerations:
   operator: Equal
 ```
 
-After everything is set up and Prometheus scrapes the kubenurses, you can build
-dashboards [as this example](./doc/grafana-kubenurse.json) that show network
-latencies and errors or use the metrics for alarming.
+After everything is set up and Prometheus scrapes the kubenurses, you can
+import the [example dashboard](./doc/grafana-kubenurse.json) to start
+scrutinizing network latencies and errors.
 
-![Grafana ingress view](doc/grafana_ingress.png "Grafana ingress view")
-![Grafana path view](doc/grafana_path.png "Grafana path view")
+![Grafana overview](doc/grafana.png "Grafana ingress view")
 
 ## Configuration
 
