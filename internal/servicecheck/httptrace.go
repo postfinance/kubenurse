@@ -144,7 +144,10 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHis
 			}
 		} else {
 			eventType := "round_trip_error"
-			errorCounter.WithLabelValues(eventType, kubenurseRequestType).Inc()
+			// errorCounter.WithLabelValues(eventType, kubenurseRequestType).Inc()
+			// normally, errors are already accounted for in the ClientTrace section.
+			// we still log the error, so in the future we can compare the log entries and see if somehow
+			// an error isn't catched in the ClientTrace section
 			slog.Error("request failure in httptrace",
 				"event_type", eventType,
 				"request_type", kubenurseRequestType, "err", err)
