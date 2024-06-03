@@ -3,6 +3,7 @@ package servicecheck
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptrace"
@@ -129,6 +130,29 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHis
 		rt = promhttp.InstrumentRoundTripperCounter(httpclientReqTotal, rt, typeFromCtxFn)
 		rt = promhttp.InstrumentRoundTripperDuration(httpclientReqDuration, rt, typeFromCtxFn)
 
-		return rt.RoundTrip(r)
+		kubenurseRequestType := r.Context().Value(kubenurseTypeKey{}).(string)
+		resp, err := rt.RoundTrip(r)
+
+		if err == nil {
+			if resp.StatusCode != http.StatusOK {
+				eventType := fmt.Sprintf("status_code_%d", resp.StatusCode)
+
+				errorCounter.WithLabelValues(eventType, kubenurseRequestType).Inc()
+				slog.Error("request failure in httptrace",
+					"event_type", eventType,
+					"request_type", kubenurseRequestType)
+			}
+		} else {
+			eventType := "round_trip_error"
+			// errorCounter.WithLabelValues(eventType, kubenurseRequestType).Inc()
+			// normally, errors are already accounted for in the ClientTrace section.
+			// we still log the error, so in the future we can compare the log entries and see if somehow
+			// an error isn't catched in the ClientTrace section
+			slog.Error("request failure in httptrace",
+				"event_type", eventType,
+				"request_type", kubenurseRequestType, "err", err)
+		}
+
+		return resp, err
 	})
 }
