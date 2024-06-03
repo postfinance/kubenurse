@@ -1,6 +1,33 @@
+## [1.13.1] - 2024-06-03
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.13.0...v1.13.1
+
+### 🐛 Bug Fixes
+
+- StatusCode != 200 trigger an error and increase error counter - ([b403ddd](https://github.com/postfinance/kubenurse/commit/b403dddabbcd5ee30a532c05a735754cb7c95044))
+- Only increase error counter once when catching roundTripper errors - ([740b8d4](https://github.com/postfinance/kubenurse/commit/740b8d46f557039e924200fd87976192867c50a3))
+
+### 📚 Documentation
+
+- *(drawings)* Change request_type to request type - ([175c17c](https://github.com/postfinance/kubenurse/commit/175c17cec93f373166a4df042d34085659df67c2))
+- *(grafana)* Add updated grafana dashboard - ([2760b9f](https://github.com/postfinance/kubenurse/commit/2760b9f41ef7f2d44cec416067c67dfb4bee4df0))
+- *(readme)* Simplify documentation and improve readbility - ([983a2bc](https://github.com/postfinance/kubenurse/commit/983a2bca4fc0011ceb000c46b9f501b514865315))
+
+### Build
+
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.17.2 to 0.17.3 - ([7966f1c](https://github.com/postfinance/kubenurse/commit/7966f1c39b6fc386ba50359472ea61225b073864))
+- *(deps)* Bump golangci/golangci-lint-action from 4 to 5 - ([9ac2183](https://github.com/postfinance/kubenurse/commit/9ac2183c35e46fc96700119d7c6f27bcbc20bcdd))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.18.0 to 0.18.1 - ([504c082](https://github.com/postfinance/kubenurse/commit/504c082245dd89a5a32d8a6a5784f0615f339cc2))
+- *(deps)* Bump golangci/golangci-lint-action from 5 to 6 - ([b8e6781](https://github.com/postfinance/kubenurse/commit/b8e678178493358f75f3dc73b7c2d823833be718))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.18.1 to 0.18.2 - ([7acb1db](https://github.com/postfinance/kubenurse/commit/7acb1db6c81344cefd665c015dbf0cd205b91f24))
+- *(deps)* Bump github.com/prometheus/client_golang - ([5067e6c](https://github.com/postfinance/kubenurse/commit/5067e6cdb99245ac45bd96c54ce29e2db2e1c8fc))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.18.2 to 0.18.3 - ([0fcddee](https://github.com/postfinance/kubenurse/commit/0fcddeeccb56f69c83a76853d4ce6e2e297b27e8))
+- Controller-runtime v1.18 with k8s 1.30 client - ([c5534da](https://github.com/postfinance/kubenurse/commit/c5534da37499d7471f471f8a470249db2f0feaa9))
+
+
 ## [1.13.0] - 2024-04-15
 
-**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.3...1.13.0
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.12.3...v1.13.0
 
 ### 🚀 Features
 
@@ -24,6 +51,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Add v1.13.0 changelog - ([ee0ad5e](https://github.com/postfinance/kubenurse/commit/ee0ad5e685a10571ec322eebd279ff2e3dacbc8b))
+- Update changelog - ([55bd79f](https://github.com/postfinance/kubenurse/commit/55bd79f6888910b60eac9e7c498b2b0ae0dbc1f8))
 
 ### Build
 
