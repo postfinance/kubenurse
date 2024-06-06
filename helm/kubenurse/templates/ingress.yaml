@@ -5,6 +5,10 @@ kind: Ingress
 metadata:
   labels:
     {{- include "kubenurse.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   name: {{ include "kubenurse.fullname" . }}
   namespace: {{ .Release.Namespace }}
 spec:
@@ -23,4 +27,5 @@ spec:
   tls:
   - hosts:
     - {{ .Values.ingress.url }}
+    secretName: kubenurse-ingress-tls
 {{- end -}}

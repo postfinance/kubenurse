@@ -85,5 +85,6 @@ service:
 ingress:
   enabled: true
   className: nginx
+  annotations: {}
   # KUBENURSE_INGRESS_URL
   url: dummy-kubenurse.example.com
