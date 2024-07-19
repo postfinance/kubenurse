@@ -70,32 +70,30 @@ func New(_ context.Context, cl client.Client, promRegistry *prometheus.Registry,
 // is respected.
 func (c *Checker) Run() {
 	// Run Checks
-	res := Result{}
+	result := make(map[string]any)
 
-	res.APIServerDirect = c.measure(c.APIServerDirect, "api_server_direct")
-	res.APIServerDNS = c.measure(c.APIServerDNS, "api_server_dns")
-	res.MeIngress = c.measure(c.MeIngress, "me_ingress")
-	res.MeService = c.measure(c.MeService, "me_service")
+	result[APIServerDirect] = c.measure(c.APIServerDirect, APIServerDirect)
+	result[APIServerDNS] = c.measure(c.APIServerDNS, APIServerDNS)
+	result[meIngress] = c.measure(c.MeIngress, meIngress)
+	result[meService] = c.measure(c.MeService, meService)
 
 	if c.SkipCheckNeighbourhood {
-		res.NeighbourhoodState = skippedStr
+		result[NeighbourhoodState] = skippedStr
 	} else {
-		var err error
-		res.Neighbourhood, err = c.GetNeighbours(context.Background(), c.KubenurseNamespace, c.NeighbourFilter)
+		neighbours, err := c.GetNeighbours(context.Background(), c.KubenurseNamespace, c.NeighbourFilter)
 
-		// Neighbourhood special error treating
 		if err != nil {
-			res.NeighbourhoodState = err.Error()
+			result[NeighbourhoodState] = err.Error()
 		} else {
-			res.NeighbourhoodState = okStr
+			result[NeighbourhoodState] = okStr
+			result["neighbourhood"] = neighbours
 
-			// Check all neighbours if the neighbourhood was discovered
-			c.checkNeighbours(res.Neighbourhood)
+			c.checkNeighbours(neighbours)
 		}
 	}
 
 	// Cache result (used for /alive handler)
-	c.LastCheckResult = &res
+	c.LastCheckResult = result
 }
 
 // RunScheduled runs the checks in the specified interval which can be used to keep the metrics up-to-date. This

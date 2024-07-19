@@ -29,13 +29,7 @@ func (s *Server) aliveHandler() func(w http.ResponseWriter, r *http.Request) {
 			UserAgent  string              `json:"user_agent"`
 			RequestURI string              `json:"request_uri"`
 			RemoteAddr string              `json:"remote_addr"`
-
-			// checker.Result
-			servicecheck.Result
-
-			// kubediscovery
-			NeighbourhoodState string                    `json:"neighbourhood_state"`
-			Neighbourhood      []*servicecheck.Neighbour `json:"neighbourhood"`
+			Result     map[string]any      `json:"last_check_result"`
 		}
 
 		res := s.checker.LastCheckResult
@@ -46,13 +40,11 @@ func (s *Server) aliveHandler() func(w http.ResponseWriter, r *http.Request) {
 
 		// Add additional data
 		out := Output{
-			Result:             *res,
-			Headers:            r.Header,
-			UserAgent:          r.UserAgent(),
-			RequestURI:         r.RequestURI,
-			RemoteAddr:         r.RemoteAddr,
-			Neighbourhood:      res.Neighbourhood,
-			NeighbourhoodState: res.NeighbourhoodState,
+			Result:     res,
+			Headers:    r.Header,
+			UserAgent:  r.UserAgent(),
+			RequestURI: r.RequestURI,
+			RemoteAddr: r.RemoteAddr,
 		}
 		out.Hostname, _ = os.Hostname()
 

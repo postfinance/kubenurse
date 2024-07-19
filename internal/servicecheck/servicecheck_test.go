@@ -44,7 +44,7 @@ func TestCombined(t *testing.T) {
 		r := require.New(t)
 		checker.Run()
 
-		r.Len(checker.LastCheckResult.Neighbourhood, 1)
+		r.Equal(okStr, checker.LastCheckResult[NeighbourhoodState])
 	})
 
 	t.Run("scheduled", func(t *testing.T) {

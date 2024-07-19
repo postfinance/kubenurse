@@ -8,6 +8,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	NeighbourhoodState = "neighbourhood_state"
+	meService          = "me_service"
+	meIngress          = "me_ingress"
+	APIServerDirect    = "api_server_direct"
+	APIServerDNS       = "api_server_dns"
+)
+
 // Checker implements the kubenurse checker
 type Checker struct {
 	// Ingress and service config
@@ -42,23 +50,13 @@ type Checker struct {
 	httpClient *http.Client
 
 	// LastCheckResult represents a cached check result
-	LastCheckResult *Result
+	LastCheckResult map[string]any
 
 	// cacheTTL defines the TTL of how long a cached result is valid
 	cacheTTL time.Duration
 
 	// stop is used to cancel RunScheduled
 	stop chan struct{}
-}
-
-// Result contains the result of a performed check run
-type Result struct {
-	APIServerDirect    string       `json:"api_server_direct"`
-	APIServerDNS       string       `json:"api_server_dns"`
-	MeIngress          string       `json:"me_ingress"`
-	MeService          string       `json:"me_service"`
-	NeighbourhoodState string       `json:"neighbourhood_state"`
-	Neighbourhood      []*Neighbour `json:"neighbourhood"`
 }
 
 // Check is the signature used by all checks that the checker can execute.
