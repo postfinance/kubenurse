@@ -60,4 +60,4 @@ type Checker struct {
 }
 
 // Check is the signature used by all checks that the checker can execute.
-type Check func(ctx context.Context) (string, error)
+type Check func(ctx context.Context) string

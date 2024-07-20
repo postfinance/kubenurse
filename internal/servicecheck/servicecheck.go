@@ -118,9 +118,9 @@ func (c *Checker) StopScheduled() {
 }
 
 // APIServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link
-func (c *Checker) APIServerDirect(ctx context.Context) (string, error) {
+func (c *Checker) APIServerDirect(ctx context.Context) string {
 	if c.SkipCheckAPIServerDirect {
-		return skippedStr, nil
+		return skippedStr
 	}
 
 	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
@@ -129,9 +129,9 @@ func (c *Checker) APIServerDirect(ctx context.Context) (string, error) {
 }
 
 // APIServerDNS checks the /version endpoint of the Kubernetes API Server through the Cluster DNS URL
-func (c *Checker) APIServerDNS(ctx context.Context) (string, error) {
+func (c *Checker) APIServerDNS(ctx context.Context) string {
 	if c.SkipCheckAPIServerDNS {
-		return skippedStr, nil
+		return skippedStr
 	}
 
 	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
@@ -140,18 +140,18 @@ func (c *Checker) APIServerDNS(ctx context.Context) (string, error) {
 }
 
 // MeIngress checks if the kubenurse is reachable at the /alwayshappy endpoint behind the ingress
-func (c *Checker) MeIngress(ctx context.Context) (string, error) {
+func (c *Checker) MeIngress(ctx context.Context) string {
 	if c.SkipCheckMeIngress {
-		return skippedStr, nil
+		return skippedStr
 	}
 
 	return c.doRequest(ctx, c.KubenurseIngressURL+"/alwayshappy", false) //nolint:goconst // readability
 }
 
 // MeService checks if the kubenurse is reachable at the /alwayshappy endpoint through the kubernetes service
-func (c *Checker) MeService(ctx context.Context) (string, error) {
+func (c *Checker) MeService(ctx context.Context) string {
 	if c.SkipCheckMeService {
-		return skippedStr, nil
+		return skippedStr
 	}
 
 	return c.doRequest(ctx, c.KubenurseServiceURL+"/alwayshappy", false)
@@ -163,8 +163,5 @@ func (c *Checker) measure(check Check, requestType string) string {
 	// metrics and errors based with the label
 	ctx := context.WithValue(context.Background(), kubenurseTypeKey{}, requestType)
 
-	// Execute check
-	res, _ := check(ctx) // this error is ignored as it is already logged in httptrace
-
-	return res
+	return check(ctx)
 }
