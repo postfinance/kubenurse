@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/postfinance/kubenurse/internal/servicecheck"
@@ -34,9 +35,7 @@ type Server struct {
 	// If we want to consider kubenurses on unschedulable nodes
 	allowUnschedulable bool
 
-	// Mutex to protect ready flag
-	mu    *sync.Mutex
-	ready bool
+	ready atomic.Bool
 
 	// Neighbourhood incoming checks
 	neighbouringIncomingChecks prometheus.Gauge
@@ -94,10 +93,10 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 		useTLS:             os.Getenv("KUBENURSE_USE_TLS") == "true",
 		allowUnschedulable: os.Getenv("KUBENURSE_ALLOW_UNSCHEDULABLE") == "true",
 		checkInterval:      checkInterval,
-		mu:                 new(sync.Mutex),
-		ready:              true,
+		ready:              atomic.Bool{},
 	}
 
+	server.ready.Store(true)
 	server.neighboursTTLCache.Init(60 * time.Second)
 
 	promRegistry := prometheus.NewRegistry()
@@ -261,9 +260,7 @@ func (s *Server) Run() error {
 
 // Shutdown disables the readiness probe and then gracefully halts the kubenurse http/https server(s).
 func (s *Server) Shutdown(ctx context.Context) error {
-	s.mu.Lock()
-	s.ready = false
-	s.mu.Unlock()
+	s.ready.Store(false)
 
 	// wait before actually shutting down the http/s server, as the updated
 	// endpoints for the kubenurse service might not have propagated everywhere

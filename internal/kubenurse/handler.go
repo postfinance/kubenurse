@@ -10,13 +10,10 @@ import (
 
 func (s *Server) readyHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		s.mu.Lock()
-		defer s.mu.Unlock()
-
-		if s.ready {
+		if s.ready.Load() {
 			w.WriteHeader(http.StatusOK)
 		} else {
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusServiceUnavailable)
 		}
 	}
 }
