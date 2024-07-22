@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/postfinance/kubenurse/internal/kubenurse"
 	corev1 "k8s.io/api/core/v1"
@@ -62,7 +61,7 @@ func main() {
 		return
 	}
 
-	server, err := kubenurse.New(ctx, c)
+	server, err := kubenurse.New(c)
 	if err != nil {
 		slog.Error("error in kubenurse.New call", "err", err)
 		return
@@ -73,17 +72,13 @@ func main() {
 
 		slog.Info("shutting down, received signal to stop")
 
-		// background ctx since, the "root" context is already canceled
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer shutdownCancel()
-
-		if err := server.Shutdown(shutdownCtx); err != nil {
+		if err := server.Shutdown(); err != nil {
 			slog.Error("error during graceful shutdown", "err", err)
 		}
 	}()
 
 	// blocks, until the server is stopped by calling Shutdown()
-	if err := server.Run(); err != nil {
+	if err := server.Run(ctx); err != nil {
 		slog.Error("error while running kubenurse", "err", err)
 	}
 }

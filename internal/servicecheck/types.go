@@ -25,7 +25,7 @@ type Checker struct {
 	SkipCheckMeIngress  bool
 	SkipCheckMeService  bool
 
-	// shutdownDuration defines the time during which kubenurse will wait before stopping
+	// shutdownDuration defines the time during which kubenurse will accept https requests during shutdown
 	ShutdownDuration time.Duration
 
 	// Kubernetes API
@@ -55,9 +55,6 @@ type Checker struct {
 
 	// cacheTTL defines the TTL of how long a cached result is valid
 	cacheTTL time.Duration
-
-	// stop is used to cancel RunScheduled
-	stop chan struct{}
 }
 
 // Check is the signature used by all checks that the checker can execute.

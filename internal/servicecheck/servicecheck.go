@@ -25,7 +25,7 @@ const (
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
-func New(_ context.Context, cl client.Client, promRegistry *prometheus.Registry,
+func New(cl client.Client, promRegistry *prometheus.Registry,
 	allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64) (*Checker, error) {
 	// setup http transport
 	tlsConfig, err := generateTLSConfig(os.Getenv("KUBENURSE_EXTRA_CA"))
@@ -63,13 +63,12 @@ func New(_ context.Context, cl client.Client, promRegistry *prometheus.Registry,
 		client:             cl,
 		httpClient:         httpClient,
 		cacheTTL:           cacheTTL,
-		stop:               make(chan struct{}),
 	}, nil
 }
 
 // Run runs all servicechecks and returns the result togeter with a boolean which indicates success. The cache
 // is respected.
-func (c *Checker) Run() {
+func (c *Checker) Run(ctx context.Context) {
 	// Run Checks
 	result := sync.Map{}
 
@@ -91,17 +90,17 @@ func (c *Checker) Run() {
 
 	wg.Add(4)
 
-	go c.measure(&wg, &result, c.APIServerDirect, APIServerDirect)
-	go c.measure(&wg, &result, c.APIServerDNS, APIServerDNS)
-	go c.measure(&wg, &result, c.MeIngress, meIngress)
-	go c.measure(&wg, &result, c.MeService, meService)
+	go c.measure(ctx, &wg, &result, c.APIServerDirect, APIServerDirect)
+	go c.measure(ctx, &wg, &result, c.APIServerDNS, APIServerDNS)
+	go c.measure(ctx, &wg, &result, c.MeIngress, meIngress)
+	go c.measure(ctx, &wg, &result, c.MeService, meService)
 
 	if c.SkipCheckNeighbourhood {
 		result.Store(NeighbourhoodState, skippedStr)
 		return
 	}
 
-	neighbours, err := c.getNeighbours(context.Background(), c.KubenurseNamespace, c.NeighbourFilter)
+	neighbours, err := c.getNeighbours(ctx, c.KubenurseNamespace, c.NeighbourFilter)
 	if err != nil {
 		result.Store(NeighbourhoodState, err.Error())
 		return
@@ -121,31 +120,10 @@ func (c *Checker) Run() {
 			return c.doRequest(ctx, podIPtoURL(neighbour.PodIP, c.UseTLS), true)
 		}
 
-		go c.measure(&wg, &result, check, "path_"+neighbour.NodeName)
+		go c.measure(ctx, &wg, &result, check, "path_"+neighbour.NodeName)
 	}
 
 	wg.Wait()
-}
-
-// RunScheduled runs the checks in the specified interval which can be used to keep the metrics up-to-date. This
-// function does not return until StopScheduled is called.
-func (c *Checker) RunScheduled(d time.Duration) {
-	ticker := time.NewTicker(d)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			c.Run()
-		case <-c.stop:
-			return
-		}
-	}
-}
-
-// StopScheduled is used to stop the scheduled run of checks.
-func (c *Checker) StopScheduled() {
-	close(c.stop)
 }
 
 // APIServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link
@@ -189,12 +167,12 @@ func (c *Checker) MeService(ctx context.Context) string {
 }
 
 // measure implements metric collections for the check
-func (c *Checker) measure(wg *sync.WaitGroup, res *sync.Map, check Check, requestType string) {
+func (c *Checker) measure(ctx context.Context, wg *sync.WaitGroup, res *sync.Map, check Check, requestType string) {
 	// Add our label (check type) to the context so our http tracer can annotate
 	// metrics and errors based with the label
 	defer wg.Done()
 
-	ctx := context.WithValue(context.Background(), kubenurseTypeKey{}, requestType)
+	ctx = context.WithValue(ctx, kubenurseTypeKey{}, requestType)
 	res.Store(requestType, check(ctx))
 }
 

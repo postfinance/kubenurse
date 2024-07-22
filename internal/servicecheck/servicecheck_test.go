@@ -36,29 +36,14 @@ func TestCombined(t *testing.T) {
 	// fake client, with a dummy neighbour pod
 	fakeClient := fake.NewFakeClient(&fakeNeighbourPod)
 
-	checker, err := New(context.Background(), fakeClient, prometheus.NewRegistry(), false, 3*time.Second, prometheus.DefBuckets)
+	checker, err := New(fakeClient, prometheus.NewRegistry(), false, 3*time.Second, prometheus.DefBuckets)
 	r.NoError(err)
 	r.NotNil(checker)
 
 	t.Run("run", func(t *testing.T) {
 		r := require.New(t)
-		checker.Run()
+		checker.Run(context.Background())
 
 		r.Equal(okStr, checker.LastCheckResult[NeighbourhoodState])
-	})
-
-	t.Run("scheduled", func(t *testing.T) {
-		stopped := make(chan struct{})
-
-		go func() {
-			// blocks until StopScheduled()
-			checker.RunScheduled(time.Second * 5)
-
-			close(stopped)
-		}()
-
-		checker.StopScheduled()
-
-		<-stopped
 	})
 }
