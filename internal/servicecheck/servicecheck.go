@@ -72,28 +72,39 @@ func (c *Checker) Run() {
 	// Run Checks
 	result := make(map[string]any)
 
-	result[APIServerDirect] = c.measure(c.APIServerDirect, APIServerDirect)
-	result[APIServerDNS] = c.measure(c.APIServerDNS, APIServerDNS)
-	result[meIngress] = c.measure(c.MeIngress, meIngress)
-	result[meService] = c.measure(c.MeService, meService)
+	// Cache result (used for /alive handler)
+	defer func() { c.LastCheckResult = result }()
+
+	c.measure(result, c.APIServerDirect, APIServerDirect)
+	c.measure(result, c.APIServerDNS, APIServerDNS)
+	c.measure(result, c.MeIngress, meIngress)
+	c.measure(result, c.MeService, meService)
 
 	if c.SkipCheckNeighbourhood {
 		result[NeighbourhoodState] = skippedStr
-	} else {
-		neighbours, err := c.GetNeighbours(context.Background(), c.KubenurseNamespace, c.NeighbourFilter)
-
-		if err != nil {
-			result[NeighbourhoodState] = err.Error()
-		} else {
-			result[NeighbourhoodState] = okStr
-			result["neighbourhood"] = neighbours
-
-			c.checkNeighbours(neighbours)
-		}
+		return
 	}
 
-	// Cache result (used for /alive handler)
-	c.LastCheckResult = result
+	neighbours, err := c.getNeighbours(context.Background(), c.KubenurseNamespace, c.NeighbourFilter)
+	if err != nil {
+		result[NeighbourhoodState] = err.Error()
+		return
+	}
+
+	result[NeighbourhoodState] = okStr
+	result[Neighbourhood] = neighbours
+
+	if c.NeighbourLimit > 0 && len(neighbours) > c.NeighbourLimit {
+		neighbours = c.filterNeighbours(neighbours)
+	}
+
+	for _, neighbour := range neighbours {
+		check := func(ctx context.Context) string {
+			return c.doRequest(ctx, podIPtoURL(neighbour.PodIP, c.UseTLS), true)
+		}
+
+		c.measure(result, check, "path_"+neighbour.NodeName)
+	}
 }
 
 // RunScheduled runs the checks in the specified interval which can be used to keep the metrics up-to-date. This
@@ -158,10 +169,18 @@ func (c *Checker) MeService(ctx context.Context) string {
 }
 
 // measure implements metric collections for the check
-func (c *Checker) measure(check Check, requestType string) string {
+func (c *Checker) measure(res map[string]any, check Check, requestType string) {
 	// Add our label (check type) to the context so our http tracer can annotate
 	// metrics and errors based with the label
 	ctx := context.WithValue(context.Background(), kubenurseTypeKey{}, requestType)
 
-	return check(ctx)
+	res[requestType] = check(ctx)
+}
+
+func podIPtoURL(podIP string, useTLS bool) string {
+	if useTLS {
+		return "https://" + podIP + ":8443/alwayshappy"
+	}
+
+	return "http://" + podIP + ":8080/alwayshappy"
 }

@@ -10,6 +10,7 @@ import (
 
 const (
 	NeighbourhoodState = "neighbourhood_state"
+	Neighbourhood      = "neighbourhood"
 	meService          = "me_service"
 	meIngress          = "me_ingress"
 	APIServerDirect    = "api_server_direct"
