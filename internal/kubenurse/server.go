@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/postfinance/kubenurse/internal/servicecheck"
@@ -34,9 +35,7 @@ type Server struct {
 	// If we want to consider kubenurses on unschedulable nodes
 	allowUnschedulable bool
 
-	// Mutex to protect ready flag
-	mu    *sync.Mutex
-	ready bool
+	ready atomic.Bool
 
 	// Neighbourhood incoming checks
 	neighbouringIncomingChecks prometheus.Gauge
@@ -60,7 +59,7 @@ type Server struct {
 // * KUBENURSE_CHECK_ME_SERVICE
 // * KUBENURSE_CHECK_NEIGHBOURHOOD
 // * KUBENURSE_CHECK_INTERVAL
-func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag parsing library (e.g. ff) to reduce complexity
+func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag parsing library (e.g. ff) to reduce complexity
 	mux := http.NewServeMux()
 
 	checkInterval := defaultCheckInterval
@@ -94,10 +93,10 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 		useTLS:             os.Getenv("KUBENURSE_USE_TLS") == "true",
 		allowUnschedulable: os.Getenv("KUBENURSE_ALLOW_UNSCHEDULABLE") == "true",
 		checkInterval:      checkInterval,
-		mu:                 new(sync.Mutex),
-		ready:              true,
+		ready:              atomic.Bool{},
 	}
 
+	server.ready.Store(true)
 	server.neighboursTTLCache.Init(60 * time.Second)
 
 	promRegistry := prometheus.NewRegistry()
@@ -135,7 +134,7 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 	}
 
 	// setup checker
-	chk, err := servicecheck.New(ctx, c, promRegistry, server.allowUnschedulable, 1*time.Second, histogramBuckets)
+	chk, err := servicecheck.New(c, promRegistry, server.allowUnschedulable, 1*time.Second, histogramBuckets)
 	if err != nil {
 		return nil, err
 	}
@@ -177,6 +176,19 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 
 	chk.UseTLS = server.useTLS
 
+	// Extra checks parsing
+	if extraChecks := os.Getenv("KUBENURSE_EXTRA_CHECKS"); extraChecks != "" {
+		for _, extraCheck := range strings.Split(extraChecks, "|") {
+			requestType, url, fnd := strings.Cut(extraCheck, ":")
+			if !fnd {
+				slog.Error("couldn't parse one of extraChecks", "extraCheck", extraCheck)
+				return nil, fmt.Errorf("extra checks parsing - missing colon ':' between metric name and url")
+			}
+
+			chk.ExtraChecks[requestType] = url
+		}
+	}
+
 	server.checker = chk
 
 	// setup http routes
@@ -190,7 +202,7 @@ func New(ctx context.Context, c client.Client) (*Server, error) { //nolint:funle
 }
 
 // Run starts the periodic checker and the http/https server(s) and blocks until Shutdown was called.
-func (s *Server) Run() error {
+func (s *Server) Run(ctx context.Context) error {
 	var (
 		wg   sync.WaitGroup
 		errc = make(chan error, 2) // max two errors can happen
@@ -212,7 +224,17 @@ func (s *Server) Run() error {
 	go func() {
 		defer wg.Done()
 
-		s.checker.RunScheduled(s.checkInterval)
+		ticker := time.NewTicker(s.checkInterval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				s.checker.Run(ctx)
+			case <-ctx.Done():
+				return
+			}
+		}
 	}()
 
 	wg.Add(1)
@@ -260,10 +282,8 @@ func (s *Server) Run() error {
 }
 
 // Shutdown disables the readiness probe and then gracefully halts the kubenurse http/https server(s).
-func (s *Server) Shutdown(ctx context.Context) error {
-	s.mu.Lock()
-	s.ready = false
-	s.mu.Unlock()
+func (s *Server) Shutdown() error {
+	s.ready.Store(false)
 
 	// wait before actually shutting down the http/s server, as the updated
 	// endpoints for the kubenurse service might not have propagated everywhere
@@ -271,8 +291,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	// me_ingress or path errors in other pods
 	time.Sleep(s.checker.ShutdownDuration)
 
-	// stop the scheduled checker
-	s.checker.StopScheduled()
+	// background ctx since, the "root" context is already canceled
+	ctx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
 
 	if err := s.http.Shutdown(ctx); err != nil {
 		return fmt.Errorf("stop http server: %w", err)

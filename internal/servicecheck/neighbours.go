@@ -33,8 +33,8 @@ type Neighbour struct {
 	NodeHash uint64
 }
 
-// GetNeighbours returns a slice of neighbour kubenurses for the given namespace and labelSelector.
-func (c *Checker) GetNeighbours(ctx context.Context, namespace, labelSelector string) ([]*Neighbour, error) {
+// getNeighbours returns a slice of neighbour kubenurses for the given namespace and labelSelector.
+func (c *Checker) getNeighbours(ctx context.Context, namespace, labelSelector string) ([]*Neighbour, error) {
 	// Get all pods
 	pods := v1.PodList{}
 	selector, _ := labels.Parse(labelSelector)
@@ -85,26 +85,6 @@ func (c *Checker) GetNeighbours(ctx context.Context, namespace, labelSelector st
 	}
 
 	return neighbours, nil
-}
-
-// checkNeighbours checks the /alwayshappy endpoint from every discovered kubenurse neighbour. Neighbour pods on nodes
-// which are not schedulable are excluded from this check to avoid possible false errors.
-func (c *Checker) checkNeighbours(nh []*Neighbour) {
-	if c.NeighbourLimit > 0 && len(nh) > c.NeighbourLimit {
-		nh = c.filterNeighbours(nh)
-	}
-
-	for _, neighbour := range nh {
-		check := func(ctx context.Context) (string, error) {
-			if c.UseTLS {
-				return c.doRequest(ctx, "https://"+neighbour.PodIP+":8443/alwayshappy", true)
-			}
-
-			return c.doRequest(ctx, "http://"+neighbour.PodIP+":8080/alwayshappy", true)
-		}
-
-		c.measure(check, "path_"+neighbour.NodeName)
-	}
 }
 
 func (c *Checker) filterNeighbours(nh []*Neighbour) []*Neighbour {

@@ -1,7 +1,6 @@
 package kubenurse
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,7 +13,7 @@ func TestServerHandler(t *testing.T) {
 	r := require.New(t)
 
 	fakeClient := fake.NewFakeClient()
-	kubenurse, err := New(context.Background(), fakeClient)
+	kubenurse, err := New(fakeClient)
 
 	r.NoError(err)
 	r.NotNil(kubenurse)

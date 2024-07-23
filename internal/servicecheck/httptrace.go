@@ -34,7 +34,7 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHis
 			Name:      "httpclient_requests_total",
 			Help:      "A counter for requests from the kubenurse http client.",
 		},
-		[]string{"code", "method", "type"},
+		[]string{"code", "type"},
 	)
 
 	httpclientReqDuration := prometheus.NewHistogramVec(
@@ -144,6 +144,11 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHis
 			}
 		} else {
 			eventType := "round_trip_error"
+			labels := map[string]string{
+				"code": eventType, // we reuse round_trip_error as status code to prevent introducing a new label
+				"type": kubenurseRequestType,
+			}
+			httpclientReqTotal.With(labels).Inc() // also increment the total counter, as InstrumentRoundTripperCounter only instruments successful requests
 			// errorCounter.WithLabelValues(eventType, kubenurseRequestType).Inc()
 			// normally, errors are already accounted for in the ClientTrace section.
 			// we still log the error, so in the future we can compare the log entries and see if somehow

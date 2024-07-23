@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -24,7 +25,7 @@ const (
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
-func New(_ context.Context, cl client.Client, promRegistry *prometheus.Registry,
+func New(cl client.Client, promRegistry *prometheus.Registry,
 	allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64) (*Checker, error) {
 	// setup http transport
 	tlsConfig, err := generateTLSConfig(os.Getenv("KUBENURSE_EXTRA_CA"))
@@ -62,67 +63,82 @@ func New(_ context.Context, cl client.Client, promRegistry *prometheus.Registry,
 		client:             cl,
 		httpClient:         httpClient,
 		cacheTTL:           cacheTTL,
-		stop:               make(chan struct{}),
+		ExtraChecks:        make(map[string]string),
 	}, nil
 }
 
 // Run runs all servicechecks and returns the result togeter with a boolean which indicates success. The cache
 // is respected.
-func (c *Checker) Run() {
+func (c *Checker) Run(ctx context.Context) {
 	// Run Checks
-	res := Result{}
+	result := sync.Map{}
 
-	res.APIServerDirect = c.measure(c.APIServerDirect, "api_server_direct")
-	res.APIServerDNS = c.measure(c.APIServerDNS, "api_server_dns")
-	res.MeIngress = c.measure(c.MeIngress, "me_ingress")
-	res.MeService = c.measure(c.MeService, "me_service")
-
-	if c.SkipCheckNeighbourhood {
-		res.NeighbourhoodState = skippedStr
-	} else {
-		var err error
-		res.Neighbourhood, err = c.GetNeighbours(context.Background(), c.KubenurseNamespace, c.NeighbourFilter)
-
-		// Neighbourhood special error treating
-		if err != nil {
-			res.NeighbourhoodState = err.Error()
-		} else {
-			res.NeighbourhoodState = okStr
-
-			// Check all neighbours if the neighbourhood was discovered
-			c.checkNeighbours(res.Neighbourhood)
-		}
-	}
+	wg := sync.WaitGroup{}
 
 	// Cache result (used for /alive handler)
-	c.LastCheckResult = &res
-}
+	defer func() {
+		res := make(map[string]any)
 
-// RunScheduled runs the checks in the specified interval which can be used to keep the metrics up-to-date. This
-// function does not return until StopScheduled is called.
-func (c *Checker) RunScheduled(d time.Duration) {
-	ticker := time.NewTicker(d)
-	defer ticker.Stop()
+		result.Range(func(key, value any) bool {
+			k, _ := key.(string)
+			res[k] = value
 
-	for {
-		select {
-		case <-ticker.C:
-			c.Run()
-		case <-c.stop:
-			return
-		}
+			return true
+		})
+
+		c.LastCheckResult = res
+	}()
+
+	wg.Add(4)
+
+	go c.measure(ctx, &wg, &result, c.APIServerDirect, APIServerDirect)
+	go c.measure(ctx, &wg, &result, c.APIServerDNS, APIServerDNS)
+	go c.measure(ctx, &wg, &result, c.MeIngress, meIngress)
+	go c.measure(ctx, &wg, &result, c.MeService, meService)
+
+	wg.Add(len(c.ExtraChecks))
+
+	for metricName, url := range c.ExtraChecks {
+		go c.measure(ctx, &wg, &result,
+			func(ctx context.Context) string { return c.doRequest(ctx, url, false) },
+			metricName)
 	}
-}
 
-// StopScheduled is used to stop the scheduled run of checks.
-func (c *Checker) StopScheduled() {
-	close(c.stop)
+	if c.SkipCheckNeighbourhood {
+		result.Store(NeighbourhoodState, skippedStr)
+		return
+	}
+
+	neighbours, err := c.getNeighbours(ctx, c.KubenurseNamespace, c.NeighbourFilter)
+	if err != nil {
+		result.Store(NeighbourhoodState, err.Error())
+		return
+	}
+
+	result.Store(NeighbourhoodState, okStr)
+	result.Store(Neighbourhood, neighbours)
+
+	if c.NeighbourLimit > 0 && len(neighbours) > c.NeighbourLimit {
+		neighbours = c.filterNeighbours(neighbours)
+	}
+
+	wg.Add((len(neighbours)))
+
+	for _, neighbour := range neighbours {
+		check := func(ctx context.Context) string {
+			return c.doRequest(ctx, podIPtoURL(neighbour.PodIP, c.UseTLS), true)
+		}
+
+		go c.measure(ctx, &wg, &result, check, "path_"+neighbour.NodeName)
+	}
+
+	wg.Wait()
 }
 
 // APIServerDirect checks the /version endpoint of the Kubernetes API Server through the direct link
-func (c *Checker) APIServerDirect(ctx context.Context) (string, error) {
+func (c *Checker) APIServerDirect(ctx context.Context) string {
 	if c.SkipCheckAPIServerDirect {
-		return skippedStr, nil
+		return skippedStr
 	}
 
 	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
@@ -131,9 +147,9 @@ func (c *Checker) APIServerDirect(ctx context.Context) (string, error) {
 }
 
 // APIServerDNS checks the /version endpoint of the Kubernetes API Server through the Cluster DNS URL
-func (c *Checker) APIServerDNS(ctx context.Context) (string, error) {
+func (c *Checker) APIServerDNS(ctx context.Context) string {
 	if c.SkipCheckAPIServerDNS {
-		return skippedStr, nil
+		return skippedStr
 	}
 
 	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
@@ -142,31 +158,37 @@ func (c *Checker) APIServerDNS(ctx context.Context) (string, error) {
 }
 
 // MeIngress checks if the kubenurse is reachable at the /alwayshappy endpoint behind the ingress
-func (c *Checker) MeIngress(ctx context.Context) (string, error) {
+func (c *Checker) MeIngress(ctx context.Context) string {
 	if c.SkipCheckMeIngress {
-		return skippedStr, nil
+		return skippedStr
 	}
 
 	return c.doRequest(ctx, c.KubenurseIngressURL+"/alwayshappy", false) //nolint:goconst // readability
 }
 
 // MeService checks if the kubenurse is reachable at the /alwayshappy endpoint through the kubernetes service
-func (c *Checker) MeService(ctx context.Context) (string, error) {
+func (c *Checker) MeService(ctx context.Context) string {
 	if c.SkipCheckMeService {
-		return skippedStr, nil
+		return skippedStr
 	}
 
 	return c.doRequest(ctx, c.KubenurseServiceURL+"/alwayshappy", false)
 }
 
 // measure implements metric collections for the check
-func (c *Checker) measure(check Check, requestType string) string {
+func (c *Checker) measure(ctx context.Context, wg *sync.WaitGroup, res *sync.Map, check Check, requestType string) {
 	// Add our label (check type) to the context so our http tracer can annotate
 	// metrics and errors based with the label
-	ctx := context.WithValue(context.Background(), kubenurseTypeKey{}, requestType)
+	defer wg.Done()
 
-	// Execute check
-	res, _ := check(ctx) // this error is ignored as it is already logged in httptrace
+	ctx = context.WithValue(ctx, kubenurseTypeKey{}, requestType)
+	res.Store(requestType, check(ctx))
+}
 
-	return res
+func podIPtoURL(podIP string, useTLS bool) string {
+	if useTLS {
+		return "https://" + podIP + ":8443/alwayshappy"
+	}
+
+	return "http://" + podIP + ":8080/alwayshappy"
 }

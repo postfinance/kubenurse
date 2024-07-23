@@ -36,29 +36,19 @@ func TestCombined(t *testing.T) {
 	// fake client, with a dummy neighbour pod
 	fakeClient := fake.NewFakeClient(&fakeNeighbourPod)
 
-	checker, err := New(context.Background(), fakeClient, prometheus.NewRegistry(), false, 3*time.Second, prometheus.DefBuckets)
+	checker, err := New(fakeClient, prometheus.NewRegistry(), false, 3*time.Second, prometheus.DefBuckets)
+	checker.ExtraChecks = map[string]string{
+		"check_number_two": "http://interesting.endpoint:8080/abcd",
+		"cloudy_check":     "http://cloudy.enpdoint:1234/test",
+	}
 	r.NoError(err)
 	r.NotNil(checker)
 
 	t.Run("run", func(t *testing.T) {
 		r := require.New(t)
-		checker.Run()
+		checker.Run(context.Background())
 
-		r.Len(checker.LastCheckResult.Neighbourhood, 1)
-	})
-
-	t.Run("scheduled", func(t *testing.T) {
-		stopped := make(chan struct{})
-
-		go func() {
-			// blocks until StopScheduled()
-			checker.RunScheduled(time.Second * 5)
-
-			close(stopped)
-		}()
-
-		checker.StopScheduled()
-
-		<-stopped
+		r.Equal(okStr, checker.LastCheckResult[NeighbourhoodState])
+		r.Equal(errStr, checker.LastCheckResult["cloudy_check"]) // test extra endpoint functionality
 	})
 }

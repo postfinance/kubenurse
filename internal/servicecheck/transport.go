@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -18,11 +19,12 @@ const (
 )
 
 // doRequest does an http request only to get the http status code
-func (c *Checker) doRequest(ctx context.Context, url string, addOriginHeader bool) (string, error) {
+func (c *Checker) doRequest(ctx context.Context, url string, addOriginHeader bool) string {
 	// Read Bearer Token file from ServiceAccount
 	token, err := os.ReadFile(K8sTokenFile)
 	if err != nil {
-		return errStr, fmt.Errorf("load kubernetes serviceaccount token from %s: %w", K8sTokenFile, err)
+		slog.Error("error in doRequest while reading k8sTokenFile", "err", err)
+		return errStr
 	}
 
 	req, _ := http.NewRequestWithContext(ctx, "GET", url, http.NoBody)
@@ -39,17 +41,17 @@ func (c *Checker) doRequest(ctx context.Context, url string, addOriginHeader boo
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return err.Error(), err
+		return err.Error()
 	}
 
 	// Body is non-nil if err is nil, so close it
 	_ = resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		return okStr, nil
+		return okStr
 	}
 
-	return resp.Status, errors.New(resp.Status)
+	return resp.Status
 }
 
 // generateTLSConfig returns a TLSConfig including K8s CA and the user-defined extraCA
