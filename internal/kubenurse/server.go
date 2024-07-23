@@ -176,6 +176,19 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 
 	chk.UseTLS = server.useTLS
 
+	// Extra checks parsing
+	if extraChecks := os.Getenv("KUBENURSE_EXTRA_CHECKS"); extraChecks != "" {
+		for _, extraCheck := range strings.Split(extraChecks, "|") {
+			requestType, url, fnd := strings.Cut(extraCheck, ":")
+			if !fnd {
+				slog.Error("couldn't parse one of extraChecks", "extraCheck", extraCheck)
+				return nil, fmt.Errorf("extra checks parsing - missing colon ':' between metric name and url")
+			}
+
+			chk.ExtraChecks[requestType] = url
+		}
+	}
+
 	server.checker = chk
 
 	// setup http routes

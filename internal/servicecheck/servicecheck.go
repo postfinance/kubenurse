@@ -63,6 +63,7 @@ func New(cl client.Client, promRegistry *prometheus.Registry,
 		client:             cl,
 		httpClient:         httpClient,
 		cacheTTL:           cacheTTL,
+		ExtraChecks:        make(map[string]string),
 	}, nil
 }
 
@@ -94,6 +95,14 @@ func (c *Checker) Run(ctx context.Context) {
 	go c.measure(ctx, &wg, &result, c.APIServerDNS, APIServerDNS)
 	go c.measure(ctx, &wg, &result, c.MeIngress, meIngress)
 	go c.measure(ctx, &wg, &result, c.MeService, meService)
+
+	wg.Add(len(c.ExtraChecks))
+
+	for metricName, url := range c.ExtraChecks {
+		go c.measure(ctx, &wg, &result,
+			func(ctx context.Context) string { return c.doRequest(ctx, url, false) },
+			metricName)
+	}
 
 	if c.SkipCheckNeighbourhood {
 		result.Store(NeighbourhoodState, skippedStr)

@@ -41,6 +41,9 @@ type Checker struct {
 	allowUnschedulable     bool
 	SkipCheckNeighbourhood bool
 
+	// Additional endpoints
+	ExtraChecks map[string]string
+
 	// TLS
 	UseTLS bool
 

@@ -37,6 +37,10 @@ func TestCombined(t *testing.T) {
 	fakeClient := fake.NewFakeClient(&fakeNeighbourPod)
 
 	checker, err := New(fakeClient, prometheus.NewRegistry(), false, 3*time.Second, prometheus.DefBuckets)
+	checker.ExtraChecks = map[string]string{
+		"check_number_two": "http://interesting.endpoint:8080/abcd",
+		"cloudy_check":     "http://cloudy.enpdoint:1234/test",
+	}
 	r.NoError(err)
 	r.NotNil(checker)
 
@@ -45,5 +49,6 @@ func TestCombined(t *testing.T) {
 		checker.Run(context.Background())
 
 		r.Equal(okStr, checker.LastCheckResult[NeighbourhoodState])
+		r.Equal(errStr, checker.LastCheckResult["cloudy_check"]) // test extra endpoint functionality
 	})
 }
