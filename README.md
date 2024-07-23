@@ -124,6 +124,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | neighbour_limit                    | Sets `KUBENURSE_NEIGHBOUR_LIMIT` environment variable                                                                | `10`                               |
 | histogram_buckets                  | Sets `KUBENURSE_HISTOGRAM_BUCKETS` environment variable                                                              |                                    |
 | extra_ca                           | Sets `KUBENURSE_EXTRA_CA` environment variable                                                                       |                                    |
+| extra_checks                       | Sets `KUBENURSE_EXTRA_CHECKS` environment variable                                                                   |                                    |
 | check_api_server_direct            | Sets `KUBENURSE_CHECK_API_SERVER_DIRECT` environment variable                                                        | `true`                             |
 | check_api_server_dns               | Sets `KUBENURSE_CHECK_API_SERVER_DNS` environment variable                                                           | `true`                             |
 | check_me_ingress                   | Sets `KUBENURSE_CHECK_ME_INGRESS` environment variable                                                               | `true`                             |
@@ -146,6 +147,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 - `KUBENURSE_SERVICE_URL`: An URL to the kubenurse in order to check the Kubernetes service
 - `KUBENURSE_INSECURE`: If "true", TLS connections will not validate the certificate
 - `KUBENURSE_EXTRA_CA`: Additional CA cert path for TLS connections
+- `KUBENURSE_EXTRA_CHECKS`: Additional checks, specified as a list (separated by a vertical bar `|`) where each entry of the list has the format: `<metric_name>:<url_to_check>`. For example `google:https://www.google.ch/|cloudflare:https://www.cloudflare.com/`
 - `KUBENURSE_NAMESPACE`: Namespace in which to look for the neighbour kubenurses
 - `KUBENURSE_NEIGHBOUR_FILTER`: A Kubernetes label selector (eg. `app=kubenurse`) to filter neighbour kubenurses
 - `KUBENURSE_NEIGHBOUR_LIMIT`: The maximum number of neighbours each kubenurse will query
@@ -166,6 +168,7 @@ Following variables are injected to the Pod by Kubernetes and should not be defi
 
 - `KUBERNETES_SERVICE_HOST`: Host to communicate to the kube-apiserver
 - `KUBERNETES_SERVICE_PORT`: Port to communicate to the kube-apiserver
+
 </details>
 
 ## HTTP Endpoints
