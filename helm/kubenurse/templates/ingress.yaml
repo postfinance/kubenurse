@@ -27,5 +27,7 @@ spec:
   tls:
   - hosts:
     - {{ .Values.ingress.url }}
-    secretName: kubenurse-ingress-tls
+    {{- with .Values.ingress.tlsSecretName }}
+    secretName: {{ . }}
+    {{- end -}}
 {{- end -}}
