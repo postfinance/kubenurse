@@ -31,7 +31,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
           OUTPUT: CHANGES.md
       - name: GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
           args: release --clean --release-notes=CHANGES.md
