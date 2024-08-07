@@ -1,3 +1,40 @@
+## [1.14.0] - 2024-08-05
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.13.1...1.14.0
+
+### 🚀 Features
+
+- Run checks in parallel - ([04caaa4](https://github.com/postfinance/kubenurse/commit/04caaa4ed82eb14cca74060a5f00e1861da55fd7))
+- Implement additional checks functionality - ([4d4b962](https://github.com/postfinance/kubenurse/commit/4d4b9626bb9bc352b3aa8f3aef165afe9f5478d4))
+
+### 🐛 Bug Fixes
+
+- Include failed requests in total count - ([e5e0c55](https://github.com/postfinance/kubenurse/commit/e5e0c55967ae484170a132994a8ce40d87d3f560))
+
+### 🚜 Refactor
+
+- Turn the result struct to a map - ([be906bb](https://github.com/postfinance/kubenurse/commit/be906bbd375403f3961f8b5bbce0c9ba4d2b1845))
+- Simplify check functions - ([b37c8d0](https://github.com/postfinance/kubenurse/commit/b37c8d06d808ee8665cea59702af963fef5085b0))
+- Further simplify Check function - ([a2d392f](https://github.com/postfinance/kubenurse/commit/a2d392ff0855fd28b77fb4c48a7f7c5c7fb6efaa))
+
+### 📚 Documentation
+
+- Introduce extra_checks feature and corresponding env - ([656a4a6](https://github.com/postfinance/kubenurse/commit/656a4a6f56bac3712ae0422dacc4e7180290d1c9))
+
+### ⚙️ Miscellaneous Tasks
+
+- *(helm)* Make TLS secret name configurable and optional - ([943bf66](https://github.com/postfinance/kubenurse/commit/943bf66e6c7fa8f6bca2e9f9adbeea8a6a66c9ea))
+- Use atomic.Bool for the ready flag - ([f64d442](https://github.com/postfinance/kubenurse/commit/f64d442fabe39f7e5c1118e26b1fa9d988d3954d))
+- Proper Context handling and simplifications - ([cafb7ae](https://github.com/postfinance/kubenurse/commit/cafb7aeb4d92b5191aa14c9eed6e57f3b1c2236e))
+- Upgrade dependencies - ([ba240e9](https://github.com/postfinance/kubenurse/commit/ba240e95b98e8755bd5b0da8a2c8b5b2262060b4))
+
+### Build
+
+- *(deps)* Bump goreleaser/goreleaser-action from 4 to 6 - ([beb1c4b](https://github.com/postfinance/kubenurse/commit/beb1c4bcf52d718a7bf2ba8056e9db34db04322e))
+- Fix goreleaser command - ([b07ada8](https://github.com/postfinance/kubenurse/commit/b07ada83eee9a72fce3f30017ddaa726783a3505))
+- Add goreleaser config version - ([5fc9e99](https://github.com/postfinance/kubenurse/commit/5fc9e990678d3f7bccd4f6b8fea1b0584b658800))
+
+
 ## [1.13.1] - 2024-06-03
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.13.0...v1.13.1
