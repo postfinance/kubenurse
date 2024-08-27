@@ -76,9 +76,9 @@ spec:
         - name: KUBENURSE_CHECK_API_SERVER_DNS
           value: {{ .Values.check_api_server_dns | quote }}
         - name: KUBENURSE_CHECK_ME_INGRESS
-          value: {{ .Values.check_api_me_ingress | quote }}
+          value: {{ .Values.check_me_ingress | quote }}
         - name: KUBENURSE_CHECK_ME_SERVICE
-          value: {{ .Values.check_api_me_service | quote }}
+          value: {{ .Values.check_me_service | quote }}
         - name: KUBENURSE_CHECK_NEIGHBOURHOOD
           value: {{ .Values.check_neighbourhood | quote }}
         - name: KUBENURSE_CHECK_INTERVAL

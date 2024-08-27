@@ -49,9 +49,9 @@ check_api_server_direct: true
 # KUBENURSE_CHECK_API_SERVER_DNS
 check_api_server_dns: true
 # KUBENURSE_CHECK_ME_INGRESS
-check_api_me_ingress: true
+check_me_ingress: true
 # KUBENURSE_CHECK_ME_SERVICE
-check_api_me_service: true
+check_me_service: true
 # KUBENURSE_CHECK_NEIGHBOURHOOD
 check_neighbourhood: true
 # KUBENURSE_CHECK_INTERVAL
