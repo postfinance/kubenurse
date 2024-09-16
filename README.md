@@ -125,6 +125,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | histogram_buckets                  | Sets `KUBENURSE_HISTOGRAM_BUCKETS` environment variable                                                              |                                    |
 | extra_ca                           | Sets `KUBENURSE_EXTRA_CA` environment variable                                                                       |                                    |
 | extra_checks                       | Sets `KUBENURSE_EXTRA_CHECKS` environment variable                                                                   |                                    |
+| kubernetes_service_dns             | Sets `KUBERNETES_SERVICE_DNS` environment variable                                                                   |                                    |
 | check_api_server_direct            | Sets `KUBENURSE_CHECK_API_SERVER_DIRECT` environment variable                                                        | `true`                             |
 | check_api_server_dns               | Sets `KUBENURSE_CHECK_API_SERVER_DNS` environment variable                                                           | `true`                             |
 | check_me_ingress                   | Sets `KUBENURSE_CHECK_ME_INGRESS` environment variable                                                               | `true`                             |
@@ -168,6 +169,10 @@ Following variables are injected to the Pod by Kubernetes and should not be defi
 
 - `KUBERNETES_SERVICE_HOST`: Host to communicate to the kube-apiserver
 - `KUBERNETES_SERVICE_PORT`: Port to communicate to the kube-apiserver
+
+The DNS name of the API server can be configured with the
+`KUBERNETES_SERVICE_DNS` environment variable, and it defaults to
+`kubernetes.default.svc.cluster.local`.
 
 </details>
 

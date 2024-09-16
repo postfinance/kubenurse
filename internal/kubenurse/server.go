@@ -154,6 +154,7 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	chk.KubenurseServiceURL = os.Getenv("KUBENURSE_SERVICE_URL")
 	chk.KubernetesServiceHost = os.Getenv("KUBERNETES_SERVICE_HOST")
 	chk.KubernetesServicePort = os.Getenv("KUBERNETES_SERVICE_PORT")
+	chk.KubernetesServiceDNS = getOrDefault("KUBERNETES_SERVICE_DNS", "kubernetes.default.svc.cluster.local")
 	chk.KubenurseNamespace = os.Getenv("KUBENURSE_NAMESPACE")
 	chk.NeighbourFilter = os.Getenv("KUBENURSE_NEIGHBOUR_FILTER")
 	neighLimit := os.Getenv("KUBENURSE_NEIGHBOUR_LIMIT")
@@ -306,4 +307,12 @@ func (s *Server) Shutdown() error {
 	}
 
 	return nil
+}
+
+func getOrDefault(envVar, defaultVal string) string {
+	if val := os.Getenv(envVar); len(val) > 0 {
+		return val
+	}
+
+	return defaultVal
 }

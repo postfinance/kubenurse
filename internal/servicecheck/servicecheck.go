@@ -152,7 +152,7 @@ func (c *Checker) APIServerDNS(ctx context.Context) string {
 		return skippedStr
 	}
 
-	apiurl := fmt.Sprintf("https://kubernetes.default.svc.cluster.local:%s/version", c.KubernetesServicePort)
+	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceDNS, c.KubernetesServicePort)
 
 	return c.doRequest(ctx, apiurl, false)
 }
