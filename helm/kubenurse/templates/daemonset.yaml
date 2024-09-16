@@ -55,6 +55,8 @@ spec:
           value: {{ default (printf "http://%s.%s.svc.cluster.local:%.f" $fullName .Release.Namespace .Values.service.port) .Values.service_url }}
         - name: KUBENURSE_INSECURE
           value: {{ .Values.insecure  | quote }}
+        - name: KUBERNETES_SERVICE_DNS
+          value: {{ .Values.kubernetes_service_dns  | quote }}
         - name: KUBENURSE_ALLOW_UNSCHEDULABLE
           value: {{ .Values.allow_unschedulable  | quote }}
         - name: KUBENURSE_NAMESPACE

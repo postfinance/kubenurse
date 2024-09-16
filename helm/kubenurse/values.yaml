@@ -33,6 +33,8 @@ serviceMonitor:
 insecure: true
 # KUBENURSE_SERVICE_URL
 service_url: ""
+# KUBERNETES_SERVICE_DNS
+kubernetes_service_dns: "kubernetes.default.svc.cluster.local"
 # KUBENURSE_ALLOW_UNSCHEDULABLE
 allow_unschedulable: false
 # KUBENURSE_NEIGHBOUR_FILTER

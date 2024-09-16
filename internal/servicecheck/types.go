@@ -29,6 +29,7 @@ type Checker struct {
 	ShutdownDuration time.Duration
 
 	// Kubernetes API
+	KubernetesServiceDNS     string
 	KubernetesServiceHost    string
 	KubernetesServicePort    string
 	SkipCheckAPIServerDirect bool
