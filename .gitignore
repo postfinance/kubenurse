@@ -1,2 +1,4 @@
 dist/
 CHANGES.md
+bin/
+git-cliff-**
