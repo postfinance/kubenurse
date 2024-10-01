@@ -13,6 +13,10 @@ spec:
   endpoints:
   - port: {{ .Values.service.name }}
     interval: 60s
+    {{- with .Values.serviceMonitor.relabelings }}
+    relabelings:
+    {{- toYaml . | nindent 6 }}
+    {{- end }}
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}
