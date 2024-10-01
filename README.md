@@ -111,6 +111,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | daemonset.volumes                  | Additional volumes to be added to the daemonset                                                                      | `[]`                               |
 | serviceMonitor.enabled             | Adds a ServiceMonitor for use with [Prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) | `false`                            |
 | serviceMonitor.labels              | Additional labels to be added to the ServiceMonitor                                                                  | `{}`                               |
+| serviceMonitor.relabelings         | Additional relabelings to be added to the endpoint of the ServiceMonitor                                             | `[]`                               |
 | serviceAccount.name                | The name of the service account which is used                                                                        | `Release.Name`                     |
 | service.name                       | The name of service which exposes the kubenurse application                                                          | `8080-8080`                        |
 | service.port                       | The port number of the service                                                                                       | `8080`                             |
