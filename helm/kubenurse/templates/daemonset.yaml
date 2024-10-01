@@ -13,7 +13,9 @@ spec:
       {{- include "kubenurse.selectorLabels" . | nindent 6 }}
   updateStrategy:
     rollingUpdate:
-      maxSurge: 0
+      {{- with .Values.daemonset.rollingUpdate.maxSurge }}
+      maxSurge: {{ . }}
+      {{- end }}
       maxUnavailable: {{ .Values.daemonset.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   template:

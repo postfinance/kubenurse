@@ -22,6 +22,7 @@ daemonset:
   priorityClassName: ""
   rollingUpdate:
     maxUnavailable: 34%
+    # maxSurge:
 
 serviceMonitor:
   enabled: false
