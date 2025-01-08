@@ -18,6 +18,12 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -44,7 +50,7 @@ jobs:
       - name: Import image into kind
         run: |
           docker images
-          docker tag postfinance/kubenurse:latest \
+          docker tag postfinance/kubenurse:latest-amd64 \
             postfinance/kubenurse:latest-ci
           kind load docker-image postfinance/kubenurse:latest-ci
       - name: Deploy example setup
