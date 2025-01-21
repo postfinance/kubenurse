@@ -16,7 +16,7 @@ import (
 // unique type for context.Context to avoid collisions.
 type kubenurseTypeKey struct{}
 
-// // http.RoundTripper
+// RoundTripperFunc is a function which performs a round-trip check and potentially returns a response/error
 type RoundTripperFunc func(req *http.Request) (*http.Response, error)
 
 func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
