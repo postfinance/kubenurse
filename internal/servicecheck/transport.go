@@ -74,7 +74,7 @@ func generateTLSConfig(extraCA string) (*tls.Config, error) {
 
 	// Append extra CA, if set
 	if extraCA != "" {
-		caCert, err := os.ReadFile(extraCA) // Intentionally included by the user.
+		caCert, err := os.ReadFile(extraCA) //nolint:gosec // Intentionally included by the user.
 		if err != nil {
 			return nil, fmt.Errorf("could not load certificate %s: %w", extraCA, err)
 		}

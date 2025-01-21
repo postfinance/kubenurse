@@ -310,7 +310,7 @@ func (s *Server) Shutdown() error {
 }
 
 func getOrDefault(envVar, defaultVal string) string {
-	if val := os.Getenv(envVar); len(val) > 0 {
+	if val := os.Getenv(envVar); val != "" {
 		return val
 	}
 
