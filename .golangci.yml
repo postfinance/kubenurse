@@ -1,90 +1,104 @@
----
+version: "2"
 run:
   tests: false
-linters-settings:
-  dupl:
-    threshold: 100
-  funlen:
-    lines: 100
-    statements: 50
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - hugeParam
-  gocyclo:
-    min-complexity: 15
-  revive:
-    confidence: 0.8
-  lll:
-    line-length: 140
-  misspell:
-    locale: UK
-  nolintlint:
-    require-explanation: true
-    allow-no-explanation:
-      - gocognit
-      - funlen
-      - gocyclo
-
 linters:
-  disable-all: true
+  default: none
   enable:
     - bodyclose
+    - copyloopvar
     - dogsled
     - dupl
     - errcheck
     - funlen
-    - nolintlint
     - gochecknoglobals
     - gochecknoinits
     - gocognit
-    # - goconst
     - gocritic
     - gocyclo
-    - gofmt
-    - goimports
-    - revive
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - misspell
     - nakedret
+    - nolintlint
     - prealloc
     - protogetter
+    - revive
     - rowserrcheck
-    - copyloopvar
-    - staticcheck
-    - stylecheck
     - sqlclosecheck
-    - typecheck
+    - staticcheck
     - unconvert
     - unparam
     - unused
     - whitespace
     - wsl
-
+  settings:
+    dupl:
+      threshold: 100
+    funlen:
+      lines: 100
+      statements: 50
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+    gocritic:
+      disabled-checks:
+        - hugeParam
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    gocyclo:
+      min-complexity: 15
+    lll:
+      line-length: 140
+    misspell:
+      locale: UK
+    nolintlint:
+      require-explanation: true
+      allow-no-explanation:
+        - gocognit
+        - funlen
+        - gocyclo
+    revive:
+      confidence: 0.8
+  exclusions:
+    generated: lax
+    rules:
+      - path: (.+)\.go$
+        text: Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print(f|ln)?|os\.(Un)?Setenv). is not checked
+      - path: (.+)\.go$
+        text: G104:.*
+      - path: (.+)\.go$
+        text: exported method (.*\.MarshalJSON|.*\.UnmarshalJSON|.*\.MarshalText|.*\.UnmarshalText|.*\.LogValue|.*\.MarshalLogObject) should have comment or be unexported
+      - path: (.+)\.go$
+        text: 'shadow: declaration of "err" shadows declaration.*'
+    paths:
+      - .github
+      - build
+      - web
+      - .go
+      - vendor
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude:
-    # Very commonly not checked.
-    - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print(f|ln)?|os\.(Un)?Setenv). is not checked'
-    - 'G104:.*'
-    - 'exported method (.*\.MarshalJSON|.*\.UnmarshalJSON|.*\.MarshalText|.*\.UnmarshalText|.*\.LogValue|.*\.MarshalLogObject) should have comment or be unexported'
-    - 'shadow: declaration of "err" shadows declaration.*'
   max-same-issues: 0
-  exclude-use-default: false
-  exclude-dirs:
-    - .github
-    - build
-    - web
-    - .go
-    - vendor
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - .github
+      - build
+      - web
+      - .go
+      - vendor
+      - third_party$
+      - builtin$
+      - examples$
