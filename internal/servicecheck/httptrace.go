@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptrace"
+	"sync/atomic"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -14,7 +15,10 @@ import (
 )
 
 // unique type for context.Context to avoid collisions.
-type kubenurseTypeKey struct{}
+type (
+	kubenurseTypeKey           struct{}
+	kubenurseErrorAccountedKey struct{}
+)
 
 // RoundTripperFunc is a function which performs a round-trip check and potentially returns a response/error
 type RoundTripperFunc func(req *http.Request) (*http.Response, error)
@@ -71,10 +75,12 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHis
 	collectMetric := func(traceEventType string, start time.Time, r *http.Request, err error) {
 		td := time.Since(start).Seconds()
 		kubenurseTypeLabel := r.Context().Value(kubenurseTypeKey{}).(string)
+		errorAccounted := r.Context().Value(kubenurseErrorAccountedKey{}).(*atomic.Bool)
 
 		// If we get an error inside a trace, log it
 		if err != nil {
 			errorCounter.WithLabelValues(traceEventType, kubenurseTypeLabel).Inc()
+			errorAccounted.Store(true) // mark the error as accounted, so we don't increase the error counter twice.
 			slog.Error("request failure in httptrace", "event_type", traceEventType, "request_type", kubenurseTypeLabel, "err", err)
 
 			return
@@ -131,6 +137,8 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHis
 		rt = promhttp.InstrumentRoundTripperDuration(httpclientReqDuration, rt, typeFromCtxFn)
 
 		kubenurseRequestType := r.Context().Value(kubenurseTypeKey{}).(string)
+		errorAccounted := r.Context().Value(kubenurseErrorAccountedKey{}).(*atomic.Bool)
+
 		resp, err := rt.RoundTrip(r)
 
 		if err == nil {
@@ -149,10 +157,9 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHis
 				"type": kubenurseRequestType,
 			}
 			httpclientReqTotal.With(labels).Inc() // also increment the total counter, as InstrumentRoundTripperCounter only instruments successful requests
-			// errorCounter.WithLabelValues(eventType, kubenurseRequestType).Inc()
-			// normally, errors are already accounted for in the ClientTrace section.
-			// we still log the error, so in the future we can compare the log entries and see if somehow
-			// an error isn't catched in the ClientTrace section
+			if !errorAccounted.Load() {
+				errorCounter.WithLabelValues(eventType, kubenurseRequestType).Inc()
+			}
 			slog.Error("request failure in httptrace",
 				"event_type", eventType,
 				"request_type", kubenurseRequestType, "err", err)

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -21,12 +22,14 @@ const (
 	errStr           = "error"
 	skippedStr       = "skipped"
 	MetricsNamespace = "kubenurse"
+	dialTimeout      = 5 * time.Second
 )
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
 func New(cl client.Client, promRegistry *prometheus.Registry,
-	allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64) (*Checker, error) {
+	allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64,
+) (*Checker, error) {
 	// setup http transport
 	tlsConfig, err := generateTLSConfig(os.Getenv("KUBENURSE_EXTRA_CA"))
 	if err != nil {
@@ -38,8 +41,8 @@ func New(cl client.Client, promRegistry *prometheus.Registry,
 
 	tlsConfig.InsecureSkipVerify = os.Getenv("KUBENURSE_INSECURE") == "true"
 	dialer := &net.Dialer{
-		Timeout:   30 * time.Second,
-		KeepAlive: 30 * time.Second,
+		Timeout:   dialTimeout,
+		KeepAlive: dialTimeout,
 	}
 	transport := &http.Transport{
 		TLSClientConfig:       tlsConfig,
@@ -54,7 +57,7 @@ func New(cl client.Client, promRegistry *prometheus.Registry,
 	}
 
 	httpClient := &http.Client{
-		Timeout:   5 * time.Second,
+		Timeout:   dialTimeout + time.Second,
 		Transport: withHttptrace(promRegistry, transport, durationHistogramBuckets),
 	}
 
@@ -182,6 +185,7 @@ func (c *Checker) measure(ctx context.Context, wg *sync.WaitGroup, res *sync.Map
 	defer wg.Done()
 
 	ctx = context.WithValue(ctx, kubenurseTypeKey{}, requestType)
+	ctx = context.WithValue(ctx, kubenurseErrorAccountedKey{}, &atomic.Bool{})
 	res.Store(requestType, check(ctx))
 }
 
