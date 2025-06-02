@@ -54,7 +54,7 @@ spec:
         - name: KUBENURSE_INGRESS_URL
           value: https://{{ .Values.ingress.url }}
         - name: KUBENURSE_SERVICE_URL
-          value: {{ default (printf "http://%s.%s.svc.cluster.local:%s" $fullName .Release.Namespace .Values.service.port) .Values.service_url }}
+          value: {{ default (printf "http://%s.%s.svc.cluster.local:%v" $fullName .Release.Namespace .Values.service.port) .Values.service_url }}
         - name: KUBENURSE_INSECURE
           value: {{ .Values.insecure  | quote }}
         - name: KUBERNETES_SERVICE_DNS
