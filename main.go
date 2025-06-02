@@ -11,6 +11,7 @@ import (
 
 	"github.com/postfinance/kubenurse/internal/kubenurse"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,6 +20,8 @@ import (
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
+
+	controllerruntime.SetLogger(klog.Background())
 
 	restConf, err := controllerruntime.GetConfig()
 	if err != nil {
@@ -36,7 +39,6 @@ func main() {
 			&corev1.Node{}: {},
 		},
 	})
-
 	if err != nil {
 		slog.Error("error during cache creation", "err", err)
 		return
