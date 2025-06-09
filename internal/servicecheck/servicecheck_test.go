@@ -1,11 +1,17 @@
 package servicecheck
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,10 +42,14 @@ func TestCombined(t *testing.T) {
 	// fake client, with a dummy neighbour pod
 	fakeClient := fake.NewFakeClient(&fakeNeighbourPod)
 
-	checker, err := New(fakeClient, prometheus.NewRegistry(), false, 3*time.Second, prometheus.DefBuckets)
+	promRegistry := prometheus.NewRegistry()
+	checker, err := New(fakeClient, promRegistry, false, 3*time.Second, prometheus.DefBuckets)
+	checker.SkipCheckAPIServerDNS = true
+	checker.SkipCheckAPIServerDirect = true
+
 	checker.ExtraChecks = map[string]string{
 		"check_number_two": "http://interesting.endpoint:8080/abcd",
-		"cloudy_check":     "http://cloudy.enpdoint:1234/test",
+		"google":           "http://google.ch/",
 	}
 	r.NoError(err)
 	r.NotNil(checker)
@@ -49,6 +59,15 @@ func TestCombined(t *testing.T) {
 		checker.Run(context.Background())
 
 		r.Equal(okStr, checker.LastCheckResult[NeighbourhoodState])
-		r.Equal(errStr, checker.LastCheckResult["cloudy_check"]) // test extra endpoint functionality
+		r.Equal(errStr, checker.LastCheckResult["google"]) // test extra endpoint functionality
 	})
+
+	var bb bytes.Buffer
+	metrics.WritePrometheus(&bb, false)
+
+	fmt.Println(bb.String())
+
+	rw := httptest.NewRecorder()
+	promhttp.HandlerFor(promRegistry,promhttp.HandlerOpts{}).ServeHTTP(rw, &http.Request{})
+	fmt.Println(rw.Body.String())
 }

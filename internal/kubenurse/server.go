@@ -13,10 +13,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/postfinance/kubenurse/internal/servicecheck"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -67,7 +67,6 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	if v, ok := os.LookupEnv("KUBENURSE_CHECK_INTERVAL"); ok {
 		var err error
 		checkInterval, err = time.ParseDuration(v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -119,7 +118,6 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	if bucketsString := os.Getenv("KUBENURSE_HISTOGRAM_BUCKETS"); bucketsString != "" {
 		for _, bucketStr := range strings.Split(bucketsString, ",") {
 			bucket, err := strconv.ParseFloat(bucketStr, 64)
-
 			if err != nil {
 				slog.Error("couldn't parse one of the custom histogram buckets", "bucket", bucket, "err", err)
 				os.Exit(1)
@@ -143,7 +141,6 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 
 	if v, ok := os.LookupEnv("KUBENURSE_SHUTDOWN_DURATION"); ok {
 		shutdownDuration, err = time.ParseDuration(v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -196,7 +193,10 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	mux.HandleFunc("/ready", server.readyHandler())
 	mux.HandleFunc("/alive", server.aliveHandler())
 	mux.HandleFunc("/alwayshappy", server.alwaysHappyHandler())
-	mux.Handle("/metrics", promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{}))
+	// mux.Handle("/metrics", promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{}))
+	mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		metrics.WritePrometheus(w, true)
+	})
 	mux.Handle("/", http.RedirectHandler("/alive", http.StatusMovedPermanently))
 
 	return server, nil
