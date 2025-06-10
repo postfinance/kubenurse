@@ -15,8 +15,6 @@ import (
 
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/postfinance/kubenurse/internal/servicecheck"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -37,8 +35,6 @@ type Server struct {
 
 	ready atomic.Bool
 
-	// Neighbourhood incoming checks
-	neighbouringIncomingChecks prometheus.Gauge
 	neighboursTTLCache         TTLCache[string]
 }
 
@@ -98,21 +94,6 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	server.ready.Store(true)
 	server.neighboursTTLCache.Init(60 * time.Second)
 
-	promRegistry := prometheus.NewRegistry()
-	promRegistry.MustRegister(
-		collectors.NewGoCollector(),
-		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
-	)
-
-	server.neighbouringIncomingChecks = prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace: servicecheck.MetricsNamespace,
-			Name:      "neighbourhood_incoming_checks",
-			Help:      "Number of unique source nodes checks in the last minute for the neighbourhood checks",
-		},
-	)
-	promRegistry.MustRegister(server.neighbouringIncomingChecks)
-
 	var histogramBuckets []float64
 
 	if bucketsString := os.Getenv("KUBENURSE_HISTOGRAM_BUCKETS"); bucketsString != "" {
@@ -128,11 +109,11 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	}
 
 	if histogramBuckets == nil {
-		histogramBuckets = prometheus.DefBuckets
+		histogramBuckets = metrics.PrometheusHistogramDefaultBuckets
 	}
 
 	// setup checker
-	chk, err := servicecheck.New(c, promRegistry, server.allowUnschedulable, 1*time.Second, histogramBuckets)
+	chk, err := servicecheck.New(c, server.allowUnschedulable, 1*time.Second, histogramBuckets)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +195,7 @@ func (s *Server) Run(ctx context.Context) error {
 		defer t.Stop()
 
 		for range t.C {
-			s.neighbouringIncomingChecks.Set(
+			metrics.GetOrCreateGauge("kubenurse_neighbourhood_incoming_checks", nil).Set(
 				float64(s.neighboursTTLCache.ActiveEntries()),
 			)
 		}

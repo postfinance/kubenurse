@@ -13,7 +13,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -27,9 +26,7 @@ const (
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
-func New(cl client.Client, promRegistry *prometheus.Registry,
-	allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64,
-) (*Checker, error) {
+func New(cl client.Client, allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64) (*Checker, error) {
 	// setup http transport
 	tlsConfig, err := generateTLSConfig(os.Getenv("KUBENURSE_EXTRA_CA"))
 	if err != nil {
@@ -58,7 +55,7 @@ func New(cl client.Client, promRegistry *prometheus.Registry,
 
 	httpClient := &http.Client{
 		Timeout:   dialTimeout + time.Second,
-		Transport: withHttptrace(promRegistry, transport, durationHistogramBuckets),
+		Transport: withHttptrace(transport, durationHistogramBuckets),
 	}
 
 	return &Checker{

@@ -4,14 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/VictoriaMetrics/metrics"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,8 +38,7 @@ func TestCombined(t *testing.T) {
 	// fake client, with a dummy neighbour pod
 	fakeClient := fake.NewFakeClient(&fakeNeighbourPod)
 
-	promRegistry := prometheus.NewRegistry()
-	checker, err := New(fakeClient, promRegistry, false, 3*time.Second, prometheus.DefBuckets)
+	checker, err := New(fakeClient, false, 3*time.Second, metrics.PrometheusHistogramDefaultBuckets)
 	checker.SkipCheckAPIServerDNS = true
 	checker.SkipCheckAPIServerDirect = true
 
@@ -64,10 +59,5 @@ func TestCombined(t *testing.T) {
 
 	var bb bytes.Buffer
 	metrics.WritePrometheus(&bb, false)
-
 	fmt.Println(bb.String())
-
-	rw := httptest.NewRecorder()
-	promhttp.HandlerFor(promRegistry,promhttp.HandlerOpts{}).ServeHTTP(rw, &http.Request{})
-	fmt.Println(rw.Body.String())
 }
