@@ -17,16 +17,15 @@ import (
 )
 
 const (
-	okStr            = "ok"
-	errStr           = "error"
-	skippedStr       = "skipped"
-	MetricsNamespace = "kubenurse"
-	dialTimeout      = 5 * time.Second
+	okStr       = "ok"
+	errStr      = "error"
+	skippedStr  = "skipped"
+	dialTimeout = 5 * time.Second
 )
 
 // New configures the checker with a httpClient and a cache timeout for check
 // results. Other parameters of the Checker struct need to be configured separately.
-func New(cl client.Client, allowUnschedulable bool, cacheTTL time.Duration, durationHistogramBuckets []float64) (*Checker, error) {
+func New(cl client.Client, allowUnschedulable bool, cacheTTL time.Duration, histogramGetter func(s string) Histogram) (*Checker, error) {
 	// setup http transport
 	tlsConfig, err := generateTLSConfig(os.Getenv("KUBENURSE_EXTRA_CA"))
 	if err != nil {
@@ -55,7 +54,7 @@ func New(cl client.Client, allowUnschedulable bool, cacheTTL time.Duration, dura
 
 	httpClient := &http.Client{
 		Timeout:   dialTimeout + time.Second,
-		Transport: withHttptrace(transport, durationHistogramBuckets),
+		Transport: withHttptrace(transport, histogramGetter),
 	}
 
 	return &Checker{

@@ -1,9 +1,7 @@
 package servicecheck
 
 import (
-	"bytes"
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -38,7 +36,9 @@ func TestCombined(t *testing.T) {
 	// fake client, with a dummy neighbour pod
 	fakeClient := fake.NewFakeClient(&fakeNeighbourPod)
 
-	checker, err := New(fakeClient, false, 3*time.Second, metrics.PrometheusHistogramDefaultBuckets)
+	checker, err := New(fakeClient, false, 3*time.Second, func(s string) Histogram {
+		return metrics.GetOrCreatePrometheusHistogram(s)
+	})
 	checker.SkipCheckAPIServerDNS = true
 	checker.SkipCheckAPIServerDirect = true
 
@@ -54,10 +54,11 @@ func TestCombined(t *testing.T) {
 		checker.Run(context.Background())
 
 		r.Equal(okStr, checker.LastCheckResult[NeighbourhoodState])
-		r.Equal(errStr, checker.LastCheckResult["google"]) // test extra endpoint functionality
+		r.Equal(okStr, checker.LastCheckResult["google"])
+		r.Equal(errStr, checker.LastCheckResult["check_number_two"])
 	})
 
-	var bb bytes.Buffer
-	metrics.WritePrometheus(&bb, false)
-	fmt.Println(bb.String())
+	// var bb bytes.Buffer
+	// metrics.WritePrometheus(&bb, false)
+	// fmt.Println(bb.String())
 }

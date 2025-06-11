@@ -35,7 +35,7 @@ type Server struct {
 
 	ready atomic.Bool
 
-	neighboursTTLCache         TTLCache[string]
+	neighboursTTLCache TTLCache[string]
 }
 
 // New creates a new kubenurse server. The server can be configured with the following environment variables:
@@ -97,7 +97,7 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	var histogramBuckets []float64
 
 	if bucketsString := os.Getenv("KUBENURSE_HISTOGRAM_BUCKETS"); bucketsString != "" {
-		for _, bucketStr := range strings.Split(bucketsString, ",") {
+		for bucketStr := range strings.SplitSeq(bucketsString, ",") {
 			bucket, err := strconv.ParseFloat(bucketStr, 64)
 			if err != nil {
 				slog.Error("couldn't parse one of the custom histogram buckets", "bucket", bucket, "err", err)
@@ -106,14 +106,25 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 
 			histogramBuckets = append(histogramBuckets, bucket)
 		}
-	}
 
-	if histogramBuckets == nil {
-		histogramBuckets = metrics.PrometheusHistogramDefaultBuckets
+		err := metrics.ValidateBuckets(histogramBuckets)
+		if err != nil {
+			slog.Error("custom histogram buckets validation failed", "bucket_bounds", histogramBuckets, "err", err)
+			os.Exit(1)
+		}
 	}
 
 	// setup checker
-	chk, err := servicecheck.New(c, server.allowUnschedulable, 1*time.Second, histogramBuckets)
+	chk, err := servicecheck.New(c, server.allowUnschedulable, 1*time.Second, func(s string) servicecheck.Histogram {
+		if os.Getenv("KUBENURSE_VICTORIAMETRICS_HISTOGRAM") == "true" {
+			return metrics.GetOrCreateHistogram(s)
+		} else {
+			if histogramBuckets == nil {
+				histogramBuckets = metrics.PrometheusHistogramDefaultBuckets
+			}
+			return metrics.GetOrCreatePrometheusHistogramExt(s, histogramBuckets)
+		}
+	})
 	if err != nil {
 		return nil, err
 	}
