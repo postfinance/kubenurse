@@ -11,6 +11,7 @@ import (
 	"os"
 	"sync"
 	"sync/atomic"
+	"testing"
 	"time"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -29,8 +30,10 @@ func New(cl client.Client, allowUnschedulable bool, cacheTTL time.Duration, hist
 	// setup http transport
 	tlsConfig, err := generateTLSConfig(os.Getenv("KUBENURSE_EXTRA_CA"))
 	if err != nil {
-		slog.Error("cannot generate tlsConfig with provided KUBENURSE_EXTRA_CA. Continuing with default tlsConfig",
-			"KUBENURSE_EXTRA_CA", os.Getenv("KUBENURSE_EXTRA_CA"), "err", err)
+		if !testing.Testing() {
+			slog.Error("cannot generate tlsConfig with provided KUBENURSE_EXTRA_CA. Continuing with default tlsConfig",
+				"KUBENURSE_EXTRA_CA", os.Getenv("KUBENURSE_EXTRA_CA"), "err", err)
+		}
 
 		tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12}
 	}

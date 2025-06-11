@@ -2,6 +2,8 @@ package servicecheck
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -33,6 +35,16 @@ var fakeNeighbourPod = v1.Pod{
 func TestCombined(t *testing.T) {
 	r := require.New(t)
 
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/not-found" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
 	// fake client, with a dummy neighbour pod
 	fakeClient := fake.NewFakeClient(&fakeNeighbourPod)
 
@@ -43,8 +55,8 @@ func TestCombined(t *testing.T) {
 	checker.SkipCheckAPIServerDirect = true
 
 	checker.ExtraChecks = map[string]string{
-		"check_number_two": "http://interesting.endpoint:8080/abcd",
-		"google":           "http://google.ch/",
+		"check_not_found": server.URL + "/not-found",
+		"check_ok":        server.URL + "/ok",
 	}
 	r.NoError(err)
 	r.NotNil(checker)
@@ -54,8 +66,8 @@ func TestCombined(t *testing.T) {
 		checker.Run(context.Background())
 
 		r.Equal(okStr, checker.LastCheckResult[NeighbourhoodState])
-		r.Equal(okStr, checker.LastCheckResult["google"])
-		r.Equal(errStr, checker.LastCheckResult["check_number_two"])
+		r.Equal(okStr, checker.LastCheckResult["check_ok"])
+		r.Equal("404 Not Found", checker.LastCheckResult["check_not_found"])
 	})
 
 	// var bb bytes.Buffer
