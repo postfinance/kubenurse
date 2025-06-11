@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"log/slog"
-	"maps"
 	"net/http"
 	"net/http/httptrace"
 	"sync/atomic"
@@ -41,14 +40,11 @@ func withHttptrace(next http.RoundTripper, durHist []float64) http.RoundTripper 
 	collectMetric := func(traceEventType string, start time.Time, r *http.Request, err error) {
 		kubenurseTypeLabel := r.Context().Value(kubenurseTypeKey{}).(string)
 		errorAccounted := r.Context().Value(kubenurseErrorAccountedKey{}).(*atomic.Bool)
-		l := map[string]string{
-			"type":  kubenurseTypeLabel,
-			"event": traceEventType,
-		}
+		l := []string{"type", kubenurseTypeLabel, "event", traceEventType}
 
 		// If we get an error inside a trace, log it
 		if err != nil {
-			metrics.GetOrCreateCounter(genMetricName(errCounter, l)).Inc()
+			metrics.GetOrCreateCounter(genMetricName(errCounter, l...)).Inc()
 			errorAccounted.Store(true) // mark the error as accounted, so we don't increase the error counter twice.
 			slog.Error("request failure in httptrace", "event_type", traceEventType, "request_type", kubenurseTypeLabel, "err", err)
 
@@ -56,7 +52,7 @@ func withHttptrace(next http.RoundTripper, durHist []float64) http.RoundTripper 
 		}
 
 		metrics.GetOrCreatePrometheusHistogramExt(genMetricName(
-			hcTraceReqDurSec, l), durHist,
+			hcTraceReqDurSec, l...), durHist,
 		).UpdateDuration(start)
 	}
 
@@ -106,31 +102,31 @@ func withHttptrace(next http.RoundTripper, durHist []float64) http.RoundTripper 
 
 		start = time.Now()
 		resp, err := rt.RoundTrip(r)
-		l := addLabels("type", kubenurseRequestType, nil)
+		l := []string{"type", kubenurseRequestType}
 
 		if err == nil {
 			metrics.GetOrCreateCounter(genMetricName(
-				hcReqTotal, addLabels("code", fmt.Sprintf("%d", resp.StatusCode), l)),
+				hcReqTotal, append(l, "code", fmt.Sprintf("%d", resp.StatusCode))...),
 			).Inc()
 
 			metrics.GetOrCreatePrometheusHistogramExt(genMetricName(
-				hcReqDurSec, l), durHist,
+				hcReqDurSec, l...), durHist,
 			).UpdateDuration(start)
 
 			if resp.StatusCode != http.StatusOK {
 				eventType := fmt.Sprintf("status_code_%d", resp.StatusCode)
 
-				metrics.GetOrCreateCounter(genMetricName(errCounter, addLabels("event", eventType, l))).Inc()
+				metrics.GetOrCreateCounter(genMetricName(errCounter, append(l, "event", eventType)...)).Inc()
 				slog.Error("request failure in httptrace",
 					"event_type", eventType,
 					"request_type", kubenurseRequestType)
 			}
 		} else {
 			eventType := "round_trip_error"
-			metrics.GetOrCreateCounter(genMetricName(hcReqTotal, addLabels("code", eventType, l))).Inc()
+			metrics.GetOrCreateCounter(genMetricName(hcReqTotal, append(l, "code", eventType)...)).Inc()
 
 			if !errorAccounted.Load() {
-				metrics.GetOrCreateCounter(genMetricName(errCounter, addLabels("event", eventType, l))).Inc()
+				metrics.GetOrCreateCounter(genMetricName(errCounter, append(l, "event", eventType)...)).Inc()
 			}
 			slog.Error("request failure in httptrace",
 				"event_type", eventType,
@@ -141,26 +137,18 @@ func withHttptrace(next http.RoundTripper, durHist []float64) http.RoundTripper 
 	})
 }
 
-func addLabels(tag, value string, l map[string]string) map[string]string {
-	ret := map[string]string{}
-	maps.Copy(ret, l)
-	ret[tag] = value
-	return ret
-}
-
-func mapToLabels(m map[string]string) string {
-	if len(m) == 0 {
-		return ""
+func genMetricName(name string, kvs ...string) string {
+	n := len(kvs)
+	labels := ""
+	if n > 0 {
+		if n%2 != 0 {
+			panic("odd number or label tags, cannot construct the metric name")
+		}
+		for i := 0; i < n; i += 2 {
+			labels += fmt.Sprintf("%s=%q,", kvs[i], kvs[i+1])
+		}
+		labels = labels[:len(labels)-1]
 	}
 
-	ret := ""
-	for k, v := range m {
-		ret += fmt.Sprintf("%s=%q,", k, v)
-	}
-
-	return ret[:len(ret)-1]
-}
-
-func genMetricName(name string, m map[string]string) string {
-	return fmt.Sprintf("%s_%s{%s}", MetricsNamespace, name, mapToLabels(m))
+	return fmt.Sprintf("%s_%s{%s}", MetricsNamespace, name, labels)
 }
