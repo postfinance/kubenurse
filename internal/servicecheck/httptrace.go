@@ -37,10 +37,7 @@ func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return rt(r)
 }
 
-// This collects traces and logs errors. As promhttp.InstrumentRoundTripperTrace doesn't process
-// errors, this is custom made and inspired by prometheus/client_golang's promhttp
-//
-//nolint:funlen // needed to pack all histograms and use them directly in the httptrace wrapper
+// withHttptrace collects traces, measures durations and counts requests+errors.
 func withHttptrace(next http.RoundTripper, histogramGetter func(string) Histogram) http.RoundTripper {
 	collectMetric := func(traceEventType string, start time.Time, r *http.Request, err error) {
 		kubenurseTypeLabel := r.Context().Value(kubenurseTypeKey{}).(string)

@@ -75,6 +75,8 @@ spec:
         - name: KUBENURSE_HISTOGRAM_BUCKETS
           value: {{ .Values.histogram_buckets | quote }}
           {{- end }}
+        - name: KUBENURSE_VICTORIAMETRICS_HISTOGRAM
+          value: {{ .Values.victoriametrics_histogram | quote }}
         - name: KUBENURSE_CHECK_API_SERVER_DIRECT
           value: {{ .Values.check_api_server_direct | quote }}
         - name: KUBENURSE_CHECK_API_SERVER_DNS

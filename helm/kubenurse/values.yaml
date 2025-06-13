@@ -52,6 +52,8 @@ neighbour_limit: 10
 # KUBENURSE_HISTOGRAM_BUCKETS
 histogram_buckets: ""
 # histogram_buckets: ".0005,.001,.0025,.005,.01,.025,.05,0.1,0.25,0.5,1" # default prometheus histogram buckets divided by 10
+# KUBENURSE_VICTORIAMETRICS_HISTOGRAM
+victoriametrics_histogram: false
 # KUBENURSE_EXTRA_CA
 extra_ca: ""
 # KUBENURSE_CHECK_API_SERVER_DIRECT

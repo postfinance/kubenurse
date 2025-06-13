@@ -185,7 +185,6 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	mux.HandleFunc("/ready", server.readyHandler())
 	mux.HandleFunc("/alive", server.aliveHandler())
 	mux.HandleFunc("/alwayshappy", server.alwaysHappyHandler())
-	// mux.Handle("/metrics", promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{}))
 	mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		metrics.WritePrometheus(w, true)
 	})

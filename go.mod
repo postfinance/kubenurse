@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.2
 
 require (
-	github.com/VictoriaMetrics/metrics v0.0.0-00010101000000-000000000000
+	github.com/VictoriaMetrics/metrics v1.38.0
 	github.com/stretchr/testify v1.10.0
 	k8s.io/api v0.33.1
 	k8s.io/apimachinery v0.33.1
@@ -68,5 +68,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.6.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-
-replace github.com/VictoriaMetrics/metrics => github.com/clementnuss/metrics v1.37.1-0.20250609092909-f96d9d13f07c
