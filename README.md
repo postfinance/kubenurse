@@ -125,6 +125,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 | allow_unschedulable                    | Sets `KUBENURSE_ALLOW_UNSCHEDULABLE` environment variable                                                            | `false`                            |
 | neighbour_filter                       | Sets `KUBENURSE_NEIGHBOUR_FILTER` environment variable                                                               | `app.kubernetes.io/name=kubenurse` |
 | neighbour_limit                        | Sets `KUBENURSE_NEIGHBOUR_LIMIT` environment variable                                                                | `10`                               |
+| victoriametrics_histogram              | Sets `KUBENURSE_VICTORIAMETRICS_HISTOGRAM` environment variable                                                      | `false`                              |
 | histogram_buckets                      | Sets `KUBENURSE_HISTOGRAM_BUCKETS` environment variable                                                              |                                    |
 | extra_ca                               | Sets `KUBENURSE_EXTRA_CA` environment variable                                                                       |                                    |
 | extra_checks                           | Sets `KUBENURSE_EXTRA_CHECKS` environment variable                                                                   |                                    |
@@ -163,6 +164,7 @@ The following command can be used to install kubenurse with Helm: `helm upgrade 
 - `KUBENURSE_CHECK_NEIGHBOURHOOD`: If this is `"true"`, kubenurse will perform the check [Neighbourhood](#neighbourhood). default is "true"
 - `KUBENURSE_CHECK_INTERVAL`: the frequency to perform kubenurse checks. the string should be formatted for [time.ParseDuration](https://pkg.go.dev/time#ParseDuration). defaults to `5s`
 - `KUBENURSE_REUSE_CONNECTIONS`: whether to reuse connections or not for all checks. default is "false"
+- `KUBENURSE_VICTORIAMETRICS_HISTOGRAM`: if this is "true", kubenurse exposes VictoriaMetrics histograms (i.e. `vmrange` buckets instead of the default Prometheus `le` buckets) 
 - `KUBENURSE_HISTOGRAM_BUCKETS`: optional comma-separated list of float64, used in place of the [default prometheus histogram buckets](https://pkg.go.dev/github.com/prometheus/client_golang@v1.16.0/prometheus#DefBuckets)
 - `KUBENURSE_USE_TLS`: If this is `"true"`, enable TLS endpoint on port 8443
 - `KUBENURSE_CERT_FILE`: Certificate to use with TLS endpoint

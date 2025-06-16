@@ -13,10 +13,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/postfinance/kubenurse/internal/servicecheck"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -37,9 +35,7 @@ type Server struct {
 
 	ready atomic.Bool
 
-	// Neighbourhood incoming checks
-	neighbouringIncomingChecks prometheus.Gauge
-	neighboursTTLCache         TTLCache[string]
+	neighboursTTLCache TTLCache[string]
 }
 
 // New creates a new kubenurse server. The server can be configured with the following environment variables:
@@ -67,7 +63,6 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	if v, ok := os.LookupEnv("KUBENURSE_CHECK_INTERVAL"); ok {
 		var err error
 		checkInterval, err = time.ParseDuration(v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -99,27 +94,11 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	server.ready.Store(true)
 	server.neighboursTTLCache.Init(60 * time.Second)
 
-	promRegistry := prometheus.NewRegistry()
-	promRegistry.MustRegister(
-		collectors.NewGoCollector(),
-		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
-	)
-
-	server.neighbouringIncomingChecks = prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace: servicecheck.MetricsNamespace,
-			Name:      "neighbourhood_incoming_checks",
-			Help:      "Number of unique source nodes checks in the last minute for the neighbourhood checks",
-		},
-	)
-	promRegistry.MustRegister(server.neighbouringIncomingChecks)
-
 	var histogramBuckets []float64
 
 	if bucketsString := os.Getenv("KUBENURSE_HISTOGRAM_BUCKETS"); bucketsString != "" {
-		for _, bucketStr := range strings.Split(bucketsString, ",") {
+		for bucketStr := range strings.SplitSeq(bucketsString, ",") {
 			bucket, err := strconv.ParseFloat(bucketStr, 64)
-
 			if err != nil {
 				slog.Error("couldn't parse one of the custom histogram buckets", "bucket", bucket, "err", err)
 				os.Exit(1)
@@ -127,14 +106,25 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 
 			histogramBuckets = append(histogramBuckets, bucket)
 		}
-	}
 
-	if histogramBuckets == nil {
-		histogramBuckets = prometheus.DefBuckets
+		err := metrics.ValidateBuckets(histogramBuckets)
+		if err != nil {
+			slog.Error("custom histogram buckets validation failed", "bucket_bounds", histogramBuckets, "err", err)
+			os.Exit(1)
+		}
 	}
 
 	// setup checker
-	chk, err := servicecheck.New(c, promRegistry, server.allowUnschedulable, 1*time.Second, histogramBuckets)
+	chk, err := servicecheck.New(c, server.allowUnschedulable, 1*time.Second, func(s string) servicecheck.Histogram {
+		if os.Getenv("KUBENURSE_VICTORIAMETRICS_HISTOGRAM") == "true" {
+			return metrics.GetOrCreateHistogram(s)
+		} else {
+			if histogramBuckets == nil {
+				histogramBuckets = metrics.PrometheusHistogramDefaultBuckets
+			}
+			return metrics.GetOrCreatePrometheusHistogramExt(s, histogramBuckets)
+		}
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +133,6 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 
 	if v, ok := os.LookupEnv("KUBENURSE_SHUTDOWN_DURATION"); ok {
 		shutdownDuration, err = time.ParseDuration(v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -196,7 +185,9 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	mux.HandleFunc("/ready", server.readyHandler())
 	mux.HandleFunc("/alive", server.aliveHandler())
 	mux.HandleFunc("/alwayshappy", server.alwaysHappyHandler())
-	mux.Handle("/metrics", promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{}))
+	mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		metrics.WritePrometheus(w, true)
+	})
 	mux.Handle("/", http.RedirectHandler("/alive", http.StatusMovedPermanently))
 
 	return server, nil
@@ -214,7 +205,7 @@ func (s *Server) Run(ctx context.Context) error {
 		defer t.Stop()
 
 		for range t.C {
-			s.neighbouringIncomingChecks.Set(
+			metrics.GetOrCreateGauge("kubenurse_neighbourhood_incoming_checks", nil).Set(
 				float64(s.neighboursTTLCache.ActiveEntries()),
 			)
 		}

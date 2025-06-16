@@ -1,7 +1,6 @@
 package servicecheck
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"log/slog"
@@ -10,8 +9,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/VictoriaMetrics/metrics"
+	"github.com/postfinance/kubenurse/internal/util"
 )
 
 // unique type for context.Context to avoid collisions.
@@ -20,6 +19,17 @@ type (
 	kubenurseErrorAccountedKey struct{}
 )
 
+const (
+	hcReqTotal       = "httpclient_requests_total"
+	hcReqDurSec      = "httpclient_request_duration_seconds"
+	hcTraceReqDurSec = "httpclient_trace_request_duration_seconds"
+	errCounter       = "errors_total"
+)
+
+type Histogram interface {
+	UpdateDuration(start time.Time)
+}
+
 // RoundTripperFunc is a function which performs a round-trip check and potentially returns a response/error
 type RoundTripperFunc func(req *http.Request) (*http.Response, error)
 
@@ -27,66 +37,23 @@ func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return rt(r)
 }
 
-// This collects traces and logs errors. As promhttp.InstrumentRoundTripperTrace doesn't process
-// errors, this is custom made and inspired by prometheus/client_golang's promhttp
-//
-//nolint:funlen // needed to pack all histograms and use them directly in the httptrace wrapper
-func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHist []float64) http.RoundTripper {
-	httpclientReqTotal := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: MetricsNamespace,
-			Name:      "httpclient_requests_total",
-			Help:      "A counter for requests from the kubenurse http client.",
-		},
-		[]string{"code", "type"},
-	)
-
-	httpclientReqDuration := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: MetricsNamespace,
-			Name:      "httpclient_request_duration_seconds",
-			Help:      "A latency histogram of request latencies from the kubenurse http client.",
-			Buckets:   durHist,
-		},
-		[]string{"type"},
-	)
-
-	httpclientTraceReqDuration := prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Namespace: MetricsNamespace,
-			Name:      "httpclient_trace_request_duration_seconds",
-			Help:      "Latency histogram for requests from the kubenurse http client. Time in seconds since the start of the http request.",
-			Buckets:   durHist,
-		},
-		[]string{"event", "type"},
-	)
-
-	errorCounter := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: MetricsNamespace,
-			Name:      "errors_total",
-			Help:      "Kubenurse error counter partitioned by error type",
-		},
-		[]string{"event", "type"},
-	)
-
-	registry.MustRegister(httpclientReqTotal, httpclientReqDuration, httpclientTraceReqDuration, errorCounter)
-
+// withHttptrace collects traces, measures durations and counts requests+errors.
+func withHttptrace(next http.RoundTripper, histogramGetter func(string) Histogram) http.RoundTripper {
 	collectMetric := func(traceEventType string, start time.Time, r *http.Request, err error) {
-		td := time.Since(start).Seconds()
 		kubenurseTypeLabel := r.Context().Value(kubenurseTypeKey{}).(string)
 		errorAccounted := r.Context().Value(kubenurseErrorAccountedKey{}).(*atomic.Bool)
+		l := []string{"type", kubenurseTypeLabel, "event", traceEventType}
 
 		// If we get an error inside a trace, log it
 		if err != nil {
-			errorCounter.WithLabelValues(traceEventType, kubenurseTypeLabel).Inc()
+			metrics.GetOrCreateCounter(util.GenMetricsName(errCounter, l...)).Inc()
 			errorAccounted.Store(true) // mark the error as accounted, so we don't increase the error counter twice.
 			slog.Error("request failure in httptrace", "event_type", traceEventType, "request_type", kubenurseTypeLabel, "err", err)
 
 			return
 		}
 
-		httpclientTraceReqDuration.WithLabelValues(traceEventType, kubenurseTypeLabel).Observe(td)
+		histogramGetter(util.GenMetricsName(hcTraceReqDurSec, l...)).UpdateDuration(start)
 	}
 
 	// Return a http.RoundTripper for tracing requests
@@ -128,37 +95,36 @@ func withHttptrace(registry *prometheus.Registry, next http.RoundTripper, durHis
 		// Do request with tracing enabled
 		r = r.WithContext(httptrace.WithClientTrace(r.Context(), trace))
 
-		typeFromCtxFn := promhttp.WithLabelFromCtx("type", func(ctx context.Context) string {
-			return ctx.Value(kubenurseTypeKey{}).(string)
-		})
-
 		rt := next // variable pinning :) essential, to prevent always re-instrumenting the original variable
-		rt = promhttp.InstrumentRoundTripperCounter(httpclientReqTotal, rt, typeFromCtxFn)
-		rt = promhttp.InstrumentRoundTripperDuration(httpclientReqDuration, rt, typeFromCtxFn)
 
 		kubenurseRequestType := r.Context().Value(kubenurseTypeKey{}).(string)
 		errorAccounted := r.Context().Value(kubenurseErrorAccountedKey{}).(*atomic.Bool)
 
+		start = time.Now()
 		resp, err := rt.RoundTrip(r)
+		l := []string{"type", kubenurseRequestType}
 
 		if err == nil {
+			metrics.GetOrCreateCounter(util.GenMetricsName(
+				hcReqTotal, append(l, "code", fmt.Sprintf("%d", resp.StatusCode))...),
+			).Inc()
+
+			histogramGetter(util.GenMetricsName(hcReqDurSec, l...)).UpdateDuration(start)
+
 			if resp.StatusCode != http.StatusOK {
 				eventType := fmt.Sprintf("status_code_%d", resp.StatusCode)
 
-				errorCounter.WithLabelValues(eventType, kubenurseRequestType).Inc()
+				metrics.GetOrCreateCounter(util.GenMetricsName(errCounter, append(l, "event", eventType)...)).Inc()
 				slog.Error("request failure in httptrace",
 					"event_type", eventType,
 					"request_type", kubenurseRequestType)
 			}
 		} else {
 			eventType := "round_trip_error"
-			labels := map[string]string{
-				"code": eventType, // we reuse round_trip_error as status code to prevent introducing a new label
-				"type": kubenurseRequestType,
-			}
-			httpclientReqTotal.With(labels).Inc() // also increment the total counter, as InstrumentRoundTripperCounter only instruments successful requests
+			metrics.GetOrCreateCounter(util.GenMetricsName(hcReqTotal, append(l, "code", eventType)...)).Inc()
+
 			if !errorAccounted.Load() {
-				errorCounter.WithLabelValues(eventType, kubenurseRequestType).Inc()
+				metrics.GetOrCreateCounter(util.GenMetricsName(errCounter, append(l, "event", eventType)...)).Inc()
 			}
 			slog.Error("request failure in httptrace",
 				"event_type", eventType,
