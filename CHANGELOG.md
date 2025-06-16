@@ -1,6 +1,141 @@
-## [1.14.0] - 2024-08-05
 
-**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.13.1...1.14.0
+## [1.15.0] - 2025-06-16
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.14.6...v1.15.0
+
+### 🚀 Features
+
+- Introduce VictoriaMetrics/metrics histograms (#214) - ([b640a2b](https://github.com/postfinance/kubenurse/commit/b640a2ba58fa95dd1ef0e970fae4ee6064120100))
+
+### Build
+
+- Automatically generate CHANGELOG.md - ([7d43e8a](https://github.com/postfinance/kubenurse/commit/7d43e8a4ceb47af4c03cb8a5b5a0d402e965a1c6))
+
+
+## [1.14.6] - 2025-06-02
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.14.5...v1.14.6
+
+### 🐛 Bug Fixes
+
+- *(controller-runtime)* Remove logger error - ([49087be](https://github.com/postfinance/kubenurse/commit/49087be65bf674a74dc185ecac62f12e12d7b433))
+- *(helm)* Use %v to print the port - ([ec38a80](https://github.com/postfinance/kubenurse/commit/ec38a807e3c480ffbb681afeb070a0e33773328c))
+
+
+## [1.14.5] - 2025-06-02
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.14.4...v1.14.5
+
+### 🐛 Bug Fixes
+
+- *(helm)* Change service_url port template to %s - ([83251dc](https://github.com/postfinance/kubenurse/commit/83251dc8ac6025f5fa37b2b8aef044b5be8a20f0))
+
+### Build
+
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.20.4 to 0.21.0 - ([b64a8bd](https://github.com/postfinance/kubenurse/commit/b64a8bdb2dd05191f5438b37f171b77e966a1e33))
+- *(deps)* Bump k8s.io/client-go from 0.33.0 to 0.33.1 - ([515c081](https://github.com/postfinance/kubenurse/commit/515c081751b959b475a8845cc29157ec5628f7ed))
+- Bump to go v1.24 - ([f48166a](https://github.com/postfinance/kubenurse/commit/f48166ad6086be5d87fb1765c507a258c34ca27b))
+- Update gh-action to v1.24 - ([0a6923a](https://github.com/postfinance/kubenurse/commit/0a6923a27c211d2887ccd2a8c43d7a2b00ca29ec))
+
+
+## [1.14.4] - 2025-04-14
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.14.3...v1.14.4
+
+### 🐛 Bug Fixes
+
+- Match dialer timeout with http request timeout - ([5e64bac](https://github.com/postfinance/kubenurse/commit/5e64bacd3a42e18f46830ce2c09b2a4b780a7b8e))
+
+### Build
+
+- *(deps)* Bump github.com/prometheus/client_golang - ([df248d6](https://github.com/postfinance/kubenurse/commit/df248d6958dd0217e79dc067e70ff1d1ce084341))
+- *(deps)* Bump k8s.io/client-go from 0.32.1 to 0.32.2 - ([31e782e](https://github.com/postfinance/kubenurse/commit/31e782e943bed64144dac474aa1b12dccd21767f))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.20.1 to 0.20.2 - ([7a92bbf](https://github.com/postfinance/kubenurse/commit/7a92bbf39f44a7713a84f7538f4a3d89e8f58b14))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.20.2 to 0.20.3 - ([2e7439b](https://github.com/postfinance/kubenurse/commit/2e7439be3f90598802d39fbd9386e4e72e50b051))
+- *(deps)* Bump github.com/prometheus/client_golang - ([b7776ab](https://github.com/postfinance/kubenurse/commit/b7776ab679b9e02664a623f75dc4b42519c32474))
+- *(deps)* Bump golangci/golangci-lint-action from 6 to 7 - ([96e87d1](https://github.com/postfinance/kubenurse/commit/96e87d1befd9cef523c5dbe69b0db212f3a45099))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.20.3 to 0.20.4 - ([869eb85](https://github.com/postfinance/kubenurse/commit/869eb859ed88a9875e7f5c094f1cd0ea88636c77))
+- *(deps)* Bump k8s.io/client-go from 0.32.2 to 0.32.3 - ([af23821](https://github.com/postfinance/kubenurse/commit/af23821a09ee76772c790fb66163aca89dd31ce6))
+- Migrate linter to v2 - ([d6c3535](https://github.com/postfinance/kubenurse/commit/d6c3535d740523e35fcd85b7eed174469c364d6a))
+- Upgrade to golangci-lint v2 - ([553de54](https://github.com/postfinance/kubenurse/commit/553de546df1662ad7dca0dfd52626300688ec7e2))
+
+
+
+
+## New Contributors
+* @marsom made their first contribution in [#196](https://github.com/postfinance/kubenurse/pull/196)## [1.14.3] - 2025-02-12
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.14.2...v1.14.3
+
+### ⚙️ Miscellaneous Tasks
+
+- Add arm64 go builds and docker images - ([7cee33a](https://github.com/postfinance/kubenurse/commit/7cee33a4607b32dba096b63c047550e48a8fae8c))
+- Fix linting errors and update to go 1.23 - ([2a0767b](https://github.com/postfinance/kubenurse/commit/2a0767be7087387532bcf2ad2f97647cd49be2c0))
+
+### Build
+
+- *(deps)* Bump github.com/prometheus/client_golang - ([e69c609](https://github.com/postfinance/kubenurse/commit/e69c609885229cde02b8c5fe41188355367e9c48))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.19.0 to 0.19.3 - ([6b19121](https://github.com/postfinance/kubenurse/commit/6b19121a5a0642ed22befb285acc37087c166184))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.19.3 to 0.20.0 - ([53e466f](https://github.com/postfinance/kubenurse/commit/53e466f1003b91c4a5425ba51931432cc84b24d6))
+- *(deps)* Update golangci-lint and go in gh-action - ([9ec0c57](https://github.com/postfinance/kubenurse/commit/9ec0c57170a82ec771ec741482d3055f5a13e0ea))
+- *(deps)* Bump github.com/stretchr/testify from 1.9.0 to 1.10.0 - ([53e6e93](https://github.com/postfinance/kubenurse/commit/53e6e938bede46268b35e9e5ab91ebf33fea5c02))
+- *(deps)* Bump engineerd/setup-kind from 0.5.0 to 0.6.2 - ([c8c7762](https://github.com/postfinance/kubenurse/commit/c8c77620a03274a476a97ba0bb3617c02b378e67))
+- *(deps)* Bump k8s.io/client-go from 0.31.1 to 0.32.1 - ([607e294](https://github.com/postfinance/kubenurse/commit/607e294ad20e15621ec9c9df4e8f15c915b248ee))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.20.0 to 0.20.1 - ([30802a7](https://github.com/postfinance/kubenurse/commit/30802a7aa52d7ddde215ba5181ab12dc8d9a848f))
+- Update kind version to v0.24 - ([4a504d1](https://github.com/postfinance/kubenurse/commit/4a504d14c716495a489c99856fe71336a3e43fad))
+
+
+
+
+## New Contributors
+* @fmarani made their first contribution## [1.14.2] - 2024-10-02
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.14.1...v1.14.2
+
+### 🚀 Features
+
+- Support setting .endpoints[].relabelings in ServiceMonitor - ([d369419](https://github.com/postfinance/kubenurse/commit/d3694193c0386735920acf0fdd562b3c7a656d04))
+
+### 🐛 Bug Fixes
+
+- Don't set spec.updateStrategy.maxSurge of DaemonSet by default - ([3facb9c](https://github.com/postfinance/kubenurse/commit/3facb9ca29504fc372e52d15421d1cc2929843c8))
+
+### 📚 Documentation
+
+- Add the serviceMonitor.relabelings Helm parameter - ([2a107b0](https://github.com/postfinance/kubenurse/commit/2a107b05d9431a226f37eb6fdbf4c7ae42cd623d))
+- Add the daemonset.updateStrategy.maxUnavailable and daemonset.updateStrategy.maxSurge Helm parameters - ([143a0e1](https://github.com/postfinance/kubenurse/commit/143a0e1dbdbd89b22273b460445350eff1038f91))
+
+### Build
+
+- *(goreleaser)* Update deprecated field name - ([4a5a679](https://github.com/postfinance/kubenurse/commit/4a5a679fcc346ecbe426d706aedaa32d73d8e9c4))
+
+
+
+
+## New Contributors
+* @justin0u0 made their first contribution## [1.14.1] - 2024-09-30
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.14.0...v1.14.1
+
+### 🚀 Features
+
+- Permit specifying API server DNS name - ([545d7b6](https://github.com/postfinance/kubenurse/commit/545d7b6df8763fc99b378cb04e54ce445a5deda3))
+
+### Build
+
+- *(deps)* Bump github.com/prometheus/client_golang - ([a4fb79b](https://github.com/postfinance/kubenurse/commit/a4fb79b607b4e0793294180fe28fd3da161261d6))
+- *(deps)* Bump orhun/git-cliff-action from 3 to 4 - ([6bc186f](https://github.com/postfinance/kubenurse/commit/6bc186fbcd3a7e29367a714c14beddabf7522855))
+- *(deps)* Bump github.com/prometheus/client_golang - ([38e9083](https://github.com/postfinance/kubenurse/commit/38e90832c79c27a819709b18bec72779cc1a5e09))
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.18.4 to 0.19.0 - ([206ecd9](https://github.com/postfinance/kubenurse/commit/206ecd951d4a3d972cb4803b67b374d2d74cff94))
+- *(deps)* Bump k8s.io/client-go from 0.31.0 to 0.31.1 - ([7b42df7](https://github.com/postfinance/kubenurse/commit/7b42df71118e80cf4f6f6308bb8e6d09bb237a7f))
+- *(deps)* Bump github.com/prometheus/client_golang - ([b87a8ee](https://github.com/postfinance/kubenurse/commit/b87a8ee892983577f3a7698fb705b497e894673e))
+- *(helm)* Fix helm variable name used to disable ingress/service - ([754b407](https://github.com/postfinance/kubenurse/commit/754b407ce768dc220984b8cb8afcba2a4f1d5c11))
+- Add bin and git-cliff to gitignore - ([eec4466](https://github.com/postfinance/kubenurse/commit/eec4466d4ff73a71525cb11926d57eed4f5e2b46))
+
+
+## [1.14.0] - 2024-08-07
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.13.1...v1.14.0
 
 ### 🚀 Features
 
@@ -27,6 +162,7 @@
 - Use atomic.Bool for the ready flag - ([f64d442](https://github.com/postfinance/kubenurse/commit/f64d442fabe39f7e5c1118e26b1fa9d988d3954d))
 - Proper Context handling and simplifications - ([cafb7ae](https://github.com/postfinance/kubenurse/commit/cafb7aeb4d92b5191aa14c9eed6e57f3b1c2236e))
 - Upgrade dependencies - ([ba240e9](https://github.com/postfinance/kubenurse/commit/ba240e95b98e8755bd5b0da8a2c8b5b2262060b4))
+- Add v1.14.0 changelog - ([b369b6e](https://github.com/postfinance/kubenurse/commit/b369b6e80b8d77ba2e8410930ad32eb001d4e857))
 
 ### Build
 
@@ -35,7 +171,10 @@
 - Add goreleaser config version - ([5fc9e99](https://github.com/postfinance/kubenurse/commit/5fc9e990678d3f7bccd4f6b8fea1b0584b658800))
 
 
-## [1.13.1] - 2024-06-03
+
+
+## New Contributors
+* @karnzx made their first contribution in [#141](https://github.com/postfinance/kubenurse/pull/141)## [1.13.1] - 2024-06-03
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.13.0...v1.13.1
 
@@ -49,6 +188,10 @@
 - *(drawings)* Change request_type to request type - ([175c17c](https://github.com/postfinance/kubenurse/commit/175c17cec93f373166a4df042d34085659df67c2))
 - *(grafana)* Add updated grafana dashboard - ([2760b9f](https://github.com/postfinance/kubenurse/commit/2760b9f41ef7f2d44cec416067c67dfb4bee4df0))
 - *(readme)* Simplify documentation and improve readbility - ([983a2bc](https://github.com/postfinance/kubenurse/commit/983a2bca4fc0011ceb000c46b9f501b514865315))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog - ([154f931](https://github.com/postfinance/kubenurse/commit/154f93114a4d586581f8bffe3a816ab4008db65e))
 
 ### Build
 
@@ -323,7 +466,12 @@
 - HelmChart improvements - ([6e82de2](https://github.com/postfinance/kubenurse/commit/6e82de238d3181462b0be02843c29729277f10e2))
 
 
-## [1.7.1] - 2023-06-26
+
+
+## New Contributors
+* @clementnuss made their first contribution
+* @luanaBanana made their first contribution in [#84](https://github.com/postfinance/kubenurse/pull/84)
+* @ckittelmann made their first contribution## [1.7.1] - 2023-06-26
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/kubenurse-0.3.1...v1.7.1
 
@@ -342,7 +490,10 @@
 - Set dependabot interval to weekly - ([a9e53ae](https://github.com/postfinance/kubenurse/commit/a9e53ae3ea94342cea19f7981254d099ff704540))
 
 
-## [kubenurse-0.3.1] - 2022-12-07
+
+
+## New Contributors
+* @dependabot[bot] made their first contribution## [kubenurse-0.3.1] - 2022-12-07
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/kubenurse-0.3.0...kubenurse-0.3.1
 
@@ -386,7 +537,10 @@
 - *(helm)* Bump chart to 2.2 - ([c0c1db5](https://github.com/postfinance/kubenurse/commit/c0c1db523f6c5c9ea5049da4a825517d6227f5cb))
 
 
-## [kubenurse-0.2.1] - 2022-10-25
+
+
+## New Contributors
+* @myaser made their first contribution## [kubenurse-0.2.1] - 2022-10-25
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/kubenurse-0.2.0...kubenurse-0.2.1
 
@@ -442,7 +596,10 @@
 - Update dependencies (#43) - ([6b0761c](https://github.com/postfinance/kubenurse/commit/6b0761cadd27957043d121491a8d10aef8e430cc))
 
 
-## [1.5.2] - 2022-02-17
+
+
+## New Contributors
+* @domi2120 made their first contribution in [#42](https://github.com/postfinance/kubenurse/pull/42)## [1.5.2] - 2022-02-17
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.5.1...v1.5.2
 
@@ -451,7 +608,10 @@
 - Update go dependencies to use latest available stable versions (#36) - ([ca04845](https://github.com/postfinance/kubenurse/commit/ca048452c244730620302432d834b6739308cd9f))
 
 
-## [1.5.1] - 2022-01-21
+
+
+## New Contributors
+* @eli-halych made their first contribution in [#34](https://github.com/postfinance/kubenurse/pull/34)## [1.5.1] - 2022-01-21
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.5.0...v1.5.1
 
@@ -502,7 +662,10 @@
 - Update changelog with 1.4.1 release - ([50fb9eb](https://github.com/postfinance/kubenurse/commit/50fb9eb8d05f544ccbe374b968a37e02c69e1849))
 
 
-## [1.4.0] - 2021-05-25
+
+
+## New Contributors
+* @bramvdklinkenberg made their first contribution## [1.4.0] - 2021-05-25
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.3.4...v1.4.0
 
@@ -521,7 +684,11 @@
 - Update changelog with 1.4.0 release - ([47b6cfc](https://github.com/postfinance/kubenurse/commit/47b6cfc3a0393f40b92a0e91cb44036e94e3c8aa))
 
 
-## [1.3.4] - 2021-04-20
+
+
+## New Contributors
+* @zbindenren made their first contribution
+* @matthyx made their first contribution in [#19](https://github.com/postfinance/kubenurse/pull/19)## [1.3.4] - 2021-04-20
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.3.3...v1.3.4
 
@@ -589,7 +756,10 @@
 - Update go dependencies - ([163433c](https://github.com/postfinance/kubenurse/commit/163433c214571ebcc859b3a06e4415b179f5325d))
 
 
-## [1.0.0] - 2018-12-06
+
+
+## New Contributors
+* @ made their first contribution## [1.0.0] - 2018-12-06
 
 
 
@@ -599,3 +769,8 @@
 
 
 
+
+## New Contributors
+* @djboris9 made their first contribution
+* @ghouscht made their first contribution
+* @opensourcepf made their first contribution
