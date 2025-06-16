@@ -69,8 +69,4 @@ func TestCombined(t *testing.T) {
 		r.Equal(okStr, checker.LastCheckResult["check_ok"])
 		r.Equal("404 Not Found", checker.LastCheckResult["check_not_found"])
 	})
-
-	// var bb bytes.Buffer
-	// metrics.WritePrometheus(&bb, false)
-	// fmt.Println(bb.String())
 }
