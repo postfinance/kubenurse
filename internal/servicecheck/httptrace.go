@@ -40,20 +40,22 @@ func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 // withHttptrace collects traces, measures durations and counts requests+errors.
 func withHttptrace(next http.RoundTripper, histogramGetter func(string) Histogram) http.RoundTripper {
 	collectMetric := func(traceEventType string, start time.Time, r *http.Request, err error) {
-		kubenurseTypeLabel := r.Context().Value(kubenurseTypeKey{}).(string)
-		errorAccounted := r.Context().Value(kubenurseErrorAccountedKey{}).(*atomic.Bool)
-		l := []string{"type", kubenurseTypeLabel, "event", traceEventType}
+		go func() { // we run the following in a separate goroutine, because the ClientTrace functions are called in a blocking manner
+			kubenurseTypeLabel := r.Context().Value(kubenurseTypeKey{}).(string)
+			errorAccounted := r.Context().Value(kubenurseErrorAccountedKey{}).(*atomic.Bool)
+			l := []string{"type", kubenurseTypeLabel, "event", traceEventType}
 
-		// If we get an error inside a trace, log it
-		if err != nil {
-			metrics.GetOrCreateCounter(util.GenMetricsName(errCounter, l...)).Inc()
-			errorAccounted.Store(true) // mark the error as accounted, so we don't increase the error counter twice.
-			slog.Error("request failure in httptrace", "event_type", traceEventType, "request_type", kubenurseTypeLabel, "err", err)
+			// If we get an error inside a trace, log it
+			if err != nil {
+				metrics.GetOrCreateCounter(util.GenMetricsName(errCounter, l...)).Inc()
+				errorAccounted.Store(true) // mark the error as accounted, so we don't increase the error counter twice.
+				slog.Error("request failure in httptrace", "event_type", traceEventType, "request_type", kubenurseTypeLabel, "err", err)
 
-			return
-		}
+				return
+			}
 
-		histogramGetter(util.GenMetricsName(hcTraceReqDurSec, l...)).UpdateDuration(start)
+			histogramGetter(util.GenMetricsName(hcTraceReqDurSec, l...)).UpdateDuration(start)
+		}()
 	}
 
 	// Return a http.RoundTripper for tracing requests
