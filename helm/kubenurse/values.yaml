@@ -17,6 +17,10 @@ daemonset:
     key: node-role.kubernetes.io/control-plane
     operator: Equal
   dnsConfig: {}
+  # dnsConfig: # recommended config
+  #   options:
+  #   - name: ndots
+  #     value: "1"
   volumeMounts: []
   volumes: []
   priorityClassName: ""
