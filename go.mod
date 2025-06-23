@@ -7,9 +7,9 @@ toolchain go1.24.2
 require (
 	github.com/VictoriaMetrics/metrics v1.38.0
 	github.com/stretchr/testify v1.10.0
-	k8s.io/api v0.33.1
-	k8s.io/apimachinery v0.33.1
-	k8s.io/client-go v0.33.1
+	k8s.io/api v0.33.2
+	k8s.io/apimachinery v0.33.2
+	k8s.io/client-go v0.33.2
 	k8s.io/klog/v2 v2.130.1
 	sigs.k8s.io/controller-runtime v0.21.0
 )
