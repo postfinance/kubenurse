@@ -143,7 +143,7 @@ func (c *Checker) APIServerDirect(ctx context.Context) string {
 		return skippedStr
 	}
 
-	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceHost, c.KubernetesServicePort)
+	apiurl := fmt.Sprintf("https://%s/version", net.JoinHostPort(c.KubernetesServiceHost, c.KubernetesServicePort))
 
 	return c.doRequest(ctx, apiurl, false)
 }
@@ -154,7 +154,7 @@ func (c *Checker) APIServerDNS(ctx context.Context) string {
 		return skippedStr
 	}
 
-	apiurl := fmt.Sprintf("https://%s:%s/version", c.KubernetesServiceDNS, c.KubernetesServicePort)
+	apiurl := fmt.Sprintf("https://%s/version", net.JoinHostPort(c.KubernetesServiceDNS, c.KubernetesServicePort))
 
 	return c.doRequest(ctx, apiurl, false)
 }
@@ -190,8 +190,8 @@ func (c *Checker) measure(ctx context.Context, wg *sync.WaitGroup, res *sync.Map
 
 func podIPtoURL(podIP string, useTLS bool) string {
 	if useTLS {
-		return "https://" + podIP + ":8443/alwayshappy"
+		return "https://" + net.JoinHostPort(podIP, "8443") + "/alwayshappy"
 	}
 
-	return "http://" + podIP + ":8080/alwayshappy"
+	return "http://" + net.JoinHostPort(podIP, "8080") + "/alwayshappy"
 }
