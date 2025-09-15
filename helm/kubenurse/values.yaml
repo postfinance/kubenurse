@@ -105,3 +105,6 @@ ingress:
   tlsSecretName: ""
   # KUBENURSE_INGRESS_URL
   url: dummy-kubenurse.example.com
+
+# Array of extra K8s manifests to deploy
+extraObjects: []
