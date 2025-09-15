@@ -57,6 +57,7 @@ func TestCombined(t *testing.T) {
 	checker.ExtraChecks = map[string]string{
 		"check_not_found": server.URL + "/not-found",
 		"check_ok":        server.URL + "/ok",
+		"check_ipv6":      "https://ipv6.google.com/",
 	}
 	r.NoError(err)
 	r.NotNil(checker)
@@ -67,6 +68,7 @@ func TestCombined(t *testing.T) {
 
 		r.Equal(okStr, checker.LastCheckResult[NeighbourhoodState])
 		r.Equal(okStr, checker.LastCheckResult["check_ok"])
+		// r.Equal(okStr, checker.LastCheckResult["check_ipv6"]) // gh-action doesn't support IPv6 yet
 		r.Equal("404 Not Found", checker.LastCheckResult["check_not_found"])
 	})
 }
