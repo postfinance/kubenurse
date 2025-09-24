@@ -1,5 +1,36 @@
 
-## [1.15.0] - 2025-06-16
+## [1.15.1] - 2025-09-24
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.15.0...v1.15.1
+
+### 🚀 Features
+
+- Extra objects in helm (#219) - ([56cde01](https://github.com/postfinance/kubenurse/commit/56cde01c7289086057d6d169ac7da289a4c8c919))
+- Allow ipv6 services (#218) - ([c5aa96c](https://github.com/postfinance/kubenurse/commit/c5aa96cdee73481488fc1d2562a7c0777be23f12))
+
+### 🐛 Bug Fixes
+
+- Run collectMetrics func in a dedicated goroutine - ([a68f4a2](https://github.com/postfinance/kubenurse/commit/a68f4a2672985bb2399e3726581837edf533236d))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog - ([44f9c9d](https://github.com/postfinance/kubenurse/commit/44f9c9de8349e70016b83b1ca01ec765c523a7d0))
+
+### Build
+
+- *(ci)* Update goveralls to v0.0.12 - ([5851a2f](https://github.com/postfinance/kubenurse/commit/5851a2fa2ab7921e9b4a0b97682b66633d14ef7c))
+- *(deps)* Bump actions/setup-go from 5 to 6 (#232) - ([28c5ee4](https://github.com/postfinance/kubenurse/commit/28c5ee4fd06ca8a5dfe7d697f32b74f55cd41e0a))
+- *(deps)* Bump actions/checkout from 4 to 5 (#224) - ([a6dbd88](https://github.com/postfinance/kubenurse/commit/a6dbd888241f07ef7262ec3a7e9cd069f5b37678))
+- *(helm)* Add ndots:1 suggestion in values.yaml - ([2672af2](https://github.com/postfinance/kubenurse/commit/2672af2f18ef27aeae8b213c5a454d34640491b7))
+- Cleanup github-action and fix ci - ([2589358](https://github.com/postfinance/kubenurse/commit/258935804f6aceb7dd976fd0ef05595d6cb2dde8))
+- Update all go deps - ([ff36a41](https://github.com/postfinance/kubenurse/commit/ff36a41f90fa1de2d9f930076c74ec47810bc41d))
+
+
+
+
+## New Contributors
+* @borislitv made their first contribution in [#218](https://github.com/postfinance/kubenurse/pull/218)
+* @github-actions[bot] made their first contribution## [1.15.0] - 2025-06-16
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.14.6...v1.15.0
 
