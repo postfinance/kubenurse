@@ -27,12 +27,12 @@ spec:
         - name: KUBENURSE_INGRESS_URL
           value: https://kubenurse.example.com
         - name: KUBENURSE_SERVICE_URL
-          value: http://kubenurse.kube-system.svc.cluster.local:8080
+          value: http://kubenurse.kube-nurse.svc.cluster.local:8080
         - name: KUBENURSE_NAMESPACE
-          value: kube-system
+          value: kube-nurse
         - name: KUBENURSE_NEIGHBOUR_FILTER
           value: "app.kubernetes.io/name=kubenurse"
-        image: "postfinance/kubenurse:v1.5.1"
+        image: "postfinance/kubenurse:v1.15.0"
         ports:
         - containerPort: 8080
           protocol: TCP

@@ -1,83 +1,83 @@
+---
 name: Checks deployment of kubenurse
+description: series of health check to validate kubenurse deployment
 
 inputs:
   namespace:
     description: Namespace where the kubenurse is deployed
     required: true
-    type: string
   svc-domain:
     description: Ingress domain on which the kubenurse is running
     required: true
-    type: string
 
 runs:
   using: "composite"
   steps:
-  - shell: bash
-    run: |
-      echo "Check number of kubenurses"
-      test $(kubectl -n ${{ inputs.namespace }} get pods -l app.kubernetes.io/name=kubenurse \
-        | wc -l) -eq 4 # Test for 3 Pods + header
-  - shell: bash
-    run: |
-      echo "Check for unexpected log lines"
-      test $(kubectl -n ${{ inputs.namespace }} logs -l app.kubernetes.io/name=kubenurse \
-        | grep -v "kubenurse just started" \
-        | wc -l) -eq 0 \
-  - shell: bash
-    run: |
-      echo "Check if the kubenurse had any restarts"
-      kubectl -n ${{ inputs.namespace }} get pods -l app.kubernetes.io/name=kubenurse \
-        -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' \
-        | (! grep -v 0) # Validate for 0 restarts
-  - shell: bash
-    run: |
-      echo "Check that metrics contain kubenurse specific data"
-      curl -k -s --resolve \
-        ${{ inputs.svc-domain }}:443:127.0.0.1 \
-        https://${{ inputs.svc-domain }}:443/metrics \
-        | grep "kubenurse_httpclient_request_" > /dev/null
-  - shell: bash
-    run: |
-      echo "Check that metrics contain neighbours"
-      curl -k -s --resolve \
-        ${{ inputs.svc-domain }}:443:127.0.0.1 \
-        https://${{ inputs.svc-domain }}:443/metrics \
-        | grep "kubenurse_httpclient_request_" | grep 'type="path_' > /dev/null
-  - shell: bash
-    run: |
-      echo "Check that metrics contain no errors"
-      curl -k -s --resolve \
-        ${{ inputs.svc-domain }}:443:127.0.0.1 \
-        https://${{ inputs.svc-domain }}:443/metrics \
-        | (! grep "kubenurse_errors_total")
-  - shell: bash
-    run: |
-      echo "Check the neighbourhood state"
-      curl -k -s --resolve \
-        ${{ inputs.svc-domain }}:443:127.0.0.1 \
-        https://${{ inputs.svc-domain }}:443/alive \
-        | grep '"neighbourhood_state": "ok"' > /dev/null
-  - shell: bash
-    run: |
-      echo "Check that discovery is ok and status page includes neighbours"
-      curl -k -s --resolve \
-        ${{ inputs.svc-domain }}:443:127.0.0.1 \
-        https://${{ inputs.svc-domain }}:443/alive \
-        | grep '"neighbourhood": \[' > /dev/null # If no others are discovered, this is null
-  - shell: bash
-    run: |
-      echo "Show kubenurse status"
-      curl -k -s --resolve \
-        ${{ inputs.svc-domain }}:443:127.0.0.1 \
-        https://${{ inputs.svc-domain }}:443/alive
-    if: ${{ always() }}
-  - shell: bash
-    run: |
-      echo "Describe resources on failure"
-      kubectl -n ${{ inputs.namespace }} get pods -o wide
-      kubectl -n ${{ inputs.namespace }} logs -l app.kubernetes.io/name=kubenurse
-      kubectl -n ${{ inputs.namespace }} describe pods -l app.kubernetes.io/name=kubenurse
-      kubectl -n ${{ inputs.namespace }} describe daemonsets -l app.kubernetes.io/name=kubenurse
-      kubectl -n ${{ inputs.namespace }} get events
-    if: ${{ failure() }}
+    - shell: bash
+      run: |
+        echo "Check number of kubenurses"
+        test $(kubectl -n ${{ inputs.namespace }} get pods -l app.kubernetes.io/name=kubenurse \
+          | wc -l) -eq 4 # Test for 3 Pods + header
+    - shell: bash
+      run: |
+        echo "Check for unexpected log lines"
+        test $(kubectl -n ${{ inputs.namespace }} logs -l app.kubernetes.io/name=kubenurse \
+          | grep -v "kubenurse just started" \
+          | wc -l) -eq 0 \
+    - shell: bash
+      run: |
+        echo "Check if the kubenurse had any restarts"
+        kubectl -n ${{ inputs.namespace }} get pods -l app.kubernetes.io/name=kubenurse \
+          -o jsonpath='{range .items[*]}{.status.containerStatuses[0].restartCount}{"\n"}{end}' \
+          | (! grep -v 0) # Validate for 0 restarts
+    - shell: bash
+      run: |
+        echo "Check that metrics contain kubenurse specific data"
+        curl -k -s --resolve \
+          ${{ inputs.svc-domain }}:443:127.0.0.1 \
+          https://${{ inputs.svc-domain }}:443/metrics \
+          | grep "kubenurse_httpclient_request_" > /dev/null
+    - shell: bash
+      run: |
+        echo "Check that metrics contain neighbours"
+        curl -k -s --resolve \
+          ${{ inputs.svc-domain }}:443:127.0.0.1 \
+          https://${{ inputs.svc-domain }}:443/metrics \
+          | grep "kubenurse_httpclient_request_" | grep 'type="path_' > /dev/null
+    - shell: bash
+      run: |
+        echo "Check that metrics contain no errors"
+        curl -k -s --resolve \
+          ${{ inputs.svc-domain }}:443:127.0.0.1 \
+          https://${{ inputs.svc-domain }}:443/metrics \
+          | (! grep "kubenurse_errors_total")
+    - shell: bash
+      run: |
+        echo "Check the neighbourhood state"
+        curl -k -s --resolve \
+          ${{ inputs.svc-domain }}:443:127.0.0.1 \
+          https://${{ inputs.svc-domain }}:443/alive \
+          | grep '"neighbourhood_state": "ok"' > /dev/null
+    - shell: bash
+      run: |
+        echo "Check that discovery is ok and status page includes neighbours"
+        curl -k -s --resolve \
+          ${{ inputs.svc-domain }}:443:127.0.0.1 \
+          https://${{ inputs.svc-domain }}:443/alive \
+          | grep '"neighbourhood": \[' > /dev/null # If no others are discovered, this is null
+    - shell: bash
+      run: |
+        echo "Show kubenurse status"
+        curl -k -s --resolve \
+          ${{ inputs.svc-domain }}:443:127.0.0.1 \
+          https://${{ inputs.svc-domain }}:443/alive
+      if: ${{ always() }}
+    - shell: bash
+      run: |
+        echo "Describe resources on failure"
+        kubectl get pods -o wide --all-namespaces
+        kubectl -n ${{ inputs.namespace }} logs -l app.kubernetes.io/name=kubenurse
+        kubectl -n ${{ inputs.namespace }} describe pods -l app.kubernetes.io/name=kubenurse
+        kubectl -n ${{ inputs.namespace }} describe daemonsets -l app.kubernetes.io/name=kubenurse
+        kubectl -n ${{ inputs.namespace }} get events
+      if: ${{ failure() }}

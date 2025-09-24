@@ -28,18 +28,18 @@ jobs:
         uses: engineerd/setup-kind@v0.6.2
         with:
           config: "ci/kind-config.yaml"
-          version: "v0.24.0"
-      - name: Show cluster info and switch to kube-system
+          version: "v0.30.0"
+      - name: Show cluster info and switch to kube-nurse
         run: |
           kubectl cluster-info
           kubectl get nodes
           echo "current-context:" $(kubectl config current-context)
-          kubectl config set-context --current --namespace kube-system
+          kubectl create ns kube-nurse
+          kubectl config set-context --current --namespace kube-nurse
       - name: Deploy ingress-nginx
         timeout-minutes: 2
         run: |
-          kubectl apply -f \
-            https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+          kubectl apply -k ci/nginx/
           kubectl wait --namespace ingress-nginx \
             --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
       - name: Import image into kind
@@ -59,13 +59,13 @@ jobs:
         timeout-minutes: 2
         run: |
           sleep 15 # wait for the scheduler to create pods
-          kubectl -n kube-system wait pods -l app.kubernetes.io/name=kubenurse --for=condition=Ready
-          kubectl -n kube-system get pods -l app.kubernetes.io/name=kubenurse
+          kubectl wait pods -l app.kubernetes.io/name=kubenurse --for=condition=Ready
+          kubectl get pods -l app.kubernetes.io/name=kubenurse
           kubectl rollout restart daemonset kubenurse
           kubectl rollout status  daemonset kubenurse --timeout=1m
           sleep 60 # Wait to generate some checks etc.
       - name: Check deployment
         uses: ./.github/actions/check-deployment
         with:
-          namespace: kube-system
+          namespace: kube-nurse
           svc-domain: ingress-nginx-controller.ingress-nginx.svc.cluster.local
