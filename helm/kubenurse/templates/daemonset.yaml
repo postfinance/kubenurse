@@ -71,6 +71,10 @@ spec:
         - name: KUBENURSE_EXTRA_CA
           value: {{ .Values.extra_ca }}
           {{- end }}
+          {{- if .Values.extra_checks }}
+        - name: KUBENURSE_EXTRA_CHECKS
+          value: {{ .Values.extra_checks | quote }}
+          {{- end }}
           {{- if .Values.histogram_buckets }}
         - name: KUBENURSE_HISTOGRAM_BUCKETS
           value: {{ .Values.histogram_buckets | quote }}

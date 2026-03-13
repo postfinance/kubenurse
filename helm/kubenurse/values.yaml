@@ -60,6 +60,8 @@ histogram_buckets: ""
 victoriametrics_histogram: false
 # KUBENURSE_EXTRA_CA
 extra_ca: ""
+# KUBENURSE_EXTRA_CHECKS
+extra_checks: ""
 # KUBENURSE_CHECK_API_SERVER_DIRECT
 check_api_server_direct: true
 # KUBENURSE_CHECK_API_SERVER_DNS
