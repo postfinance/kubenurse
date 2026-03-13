@@ -1,5 +1,28 @@
 
-## [1.15.1] - 2025-09-24
+## [1.15.2] - 2026-03-13
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.15.1...v1.15.2
+
+### ⚙️ Miscellaneous Tasks
+
+- *(helm)* Allow setting KUBENURSE_EXTRA_CHECKS - ([96c80ef](https://github.com/postfinance/kubenurse/commit/96c80ef5dd89508c55e149e268498dedf708577f))
+- Update changelog - ([e4c7a0b](https://github.com/postfinance/kubenurse/commit/e4c7a0b90ddce04854271ae0cf684e458cf2c22c))
+
+### Build
+
+- *(deps)* Bump sigs.k8s.io/controller-runtime from 0.22.1 to 0.22.4 - ([97dcebb](https://github.com/postfinance/kubenurse/commit/97dcebb4f8ccf4fc837f09c2cf212b771a09626b))
+- *(deps)* Bump k8s.io/api from 0.34.1 to 0.34.2 - ([f30e505](https://github.com/postfinance/kubenurse/commit/f30e5059e793acb99d2c2e5d59eaead44e2d192a))
+- *(deps)* Bump actions/checkout from 5 to 6 - ([c31c734](https://github.com/postfinance/kubenurse/commit/c31c7344bfb2c15d5a0bea3bfde5fcee8a53ecdb))
+- *(deps)* Bump github.com/VictoriaMetrics/metrics - ([4b142e5](https://github.com/postfinance/kubenurse/commit/4b142e5afdda1c73aed976f0af9dbe064328c17f))
+- *(deps)* Bump goreleaser/goreleaser-action from 6 to 7 - ([d397081](https://github.com/postfinance/kubenurse/commit/d39708157077e09a700f8ea3d8c95a3bdc60f07f))
+- *(deps)* Bump golangci/golangci-lint-action from 8 to 9 - ([a0f0b7a](https://github.com/postfinance/kubenurse/commit/a0f0b7a2dae47ebf0c66e5f7d969b6c02c6c8bd5))
+- *(deps)* Upgrade go module dependencies - ([3b11bf0](https://github.com/postfinance/kubenurse/commit/3b11bf00b59a8ed79714174a2b7379270e7845de))
+
+
+
+
+## New Contributors
+* @sebastian-stephan made their first contribution## [1.15.1] - 2025-09-24
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.15.0...v1.15.1
 
