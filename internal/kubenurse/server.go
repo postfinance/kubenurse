@@ -55,6 +55,7 @@ type Server struct {
 // * KUBENURSE_CHECK_ME_SERVICE
 // * KUBENURSE_CHECK_NEIGHBOURHOOD
 // * KUBENURSE_CHECK_INTERVAL
+// * KUBENURSE_EXPOSE_METADATA
 func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag parsing library (e.g. ff) to reduce complexity
 	mux := http.NewServeMux()
 
@@ -93,6 +94,10 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 
 	server.ready.Store(true)
 	server.neighboursTTLCache.Init(60 * time.Second)
+
+	if os.Getenv("KUBENURSE_EXPOSE_METADATA") == "true" {
+		metrics.ExposeMetadata(true)
+	}
 
 	var histogramBuckets []float64
 
