@@ -55,15 +55,6 @@ func (c *Checker) getNeighbours(ctx context.Context, namespace, labelSelector st
 	for idx := range pods.Items {
 		pod := pods.Items[idx]
 
-		if !c.allowUnschedulable { // if we disallow unschedulable nodes, we have to check their status
-			n := v1.Node{}
-			if err := c.client.Get(ctx, types.NamespacedName{Name: pod.Spec.NodeName}, &n); err == nil {
-				if n.Spec.Unschedulable { // node unschedulable, we do not include this pod in the neighbour list
-					continue
-				}
-			}
-		}
-
 		if pod.Status.Phase != v1.PodRunning || // only query running pods (excludes pending ones)
 			pod.DeletionTimestamp != nil { // exclude terminating pods
 			continue
@@ -72,6 +63,15 @@ func (c *Checker) getNeighbours(ctx context.Context, namespace, labelSelector st
 		if pod.Name == hostname { // only query other pods, not the currently running pod
 			currentNode = pod.Spec.NodeName
 			continue
+		}
+
+		if !c.allowUnschedulable { // if we disallow unschedulable nodes, we have to check their status
+			node := v1.Node{}
+			if err := c.client.Get(ctx, types.NamespacedName{Name: pod.Spec.NodeName}, &node); err != nil || isNodeUnschedulable(&node) {
+				// Node not found, unschedulable, or lookup errored: do not include this pod in the neighbour list.
+				// This prevents querying pods whose node was deleted before the pod disappeared from the cache.
+				continue
+			}
 		}
 
 		n := Neighbour{
@@ -85,6 +85,23 @@ func (c *Checker) getNeighbours(ctx context.Context, namespace, labelSelector st
 	}
 
 	return neighbours, nil
+}
+
+// isNodeUnschedulable reports whether a node must be considered unschedulable.
+// It checks the deprecated Spec.Unschedulable field and the canonical taint
+// node.kubernetes.io/unschedulable:NoSchedule used by kubectl cordon/drain.
+func isNodeUnschedulable(n *v1.Node) bool {
+	if n.Spec.Unschedulable {
+		return true
+	}
+
+	for _, taint := range n.Spec.Taints {
+		if taint.Key == v1.TaintNodeUnschedulable && taint.Effect == v1.TaintEffectNoSchedule {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (c *Checker) filterNeighbours(nh []*Neighbour) []*Neighbour {
