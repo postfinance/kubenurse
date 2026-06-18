@@ -1,5 +1,48 @@
 
-## [1.15.2] - 2026-03-13
+## [1.15.3] - 2026-06-18
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.15.2...v1.15.3
+
+### 🚀 Features
+
+- *(helm)* Add imagePullSecrets support (#262) - ([5fbbe37](https://github.com/postfinance/kubenurse/commit/5fbbe3791448eb1f32beb63ae0e3fdc529891671))
+- Permit exposing metrics metadata - ([326016d](https://github.com/postfinance/kubenurse/commit/326016dd858db77b90cad001073a66c1a08108ac))
+
+### 🐛 Bug Fixes
+
+- *(helm)* Use /alwayshappy in startupProbe - ([d0e18ed](https://github.com/postfinance/kubenurse/commit/d0e18ed2d0c297df0967219f66ac27d04047a390))
+- *(readiness)* Return 503 when the current node is cordoned - ([3cfec5f](https://github.com/postfinance/kubenurse/commit/3cfec5fc8ca42c082514600617703923cb0ada16))
+- Prevent neighoring checks to missing nodes - ([62565bc](https://github.com/postfinance/kubenurse/commit/62565bcfbac5b63999287fd4a4c8bc8ddef4d92d))
+
+### 📚 Documentation
+
+- *(README)* Improve helm install section - ([e35f5f8](https://github.com/postfinance/kubenurse/commit/e35f5f8da4811aa867ee1d7a75b33e54e7cd860f))
+- Improve drawings - ([122bc98](https://github.com/postfinance/kubenurse/commit/122bc981db6b2169702a2bf86923a3522ee293ff))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog - ([1f33665](https://github.com/postfinance/kubenurse/commit/1f336657b68f3114ffa563fc84896117951de01b))
+- Improve ci deployment check and prevent dups lines in readiness check - ([9d461eb](https://github.com/postfinance/kubenurse/commit/9d461ebe6080f6b95d13ba722c5496142243e576))
+
+### Buid
+
+- Bump go to v1.26 in gh-actions - ([f4bd2be](https://github.com/postfinance/kubenurse/commit/f4bd2be2c242c2d371b355c2500b03e428b9d099))
+
+### Build
+
+- Dependencies upgrade - ([53279e2](https://github.com/postfinance/kubenurse/commit/53279e20fddd9d6c0b55f94047d1553bfe5bb618))
+- Simplify goreleaser and update gh actions - ([2058700](https://github.com/postfinance/kubenurse/commit/2058700d1d1ecfc19d9f00fc14ff38fbd79a5667))
+- Fix kind and pin gh-actions - ([a02d0b9](https://github.com/postfinance/kubenurse/commit/a02d0b9220da86e591c0e90df753ca372d368a48))
+- Release to ghcr.io and permit pre-releases - ([1284060](https://github.com/postfinance/kubenurse/commit/12840601a877ab71c5d3fedf8813583803fecdfe))
+- Include kubenurse version - ([d7673db](https://github.com/postfinance/kubenurse/commit/d7673db6164d2b4df3f64af92c5bf9c5ef5129dc))
+- Prevent CI on tagged version - ([6295c79](https://github.com/postfinance/kubenurse/commit/6295c79eddce201861c92e189fa6f09b491f57b8))
+
+
+
+
+## New Contributors
+* @harikaduyu made their first contribution in [#262](https://github.com/postfinance/kubenurse/pull/262)
+* @pazpuwi made their first contribution in [#264](https://github.com/postfinance/kubenurse/pull/264)## [1.15.2] - 2026-03-13
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.15.1...v1.15.2
 
@@ -618,7 +661,7 @@
 
 ## [kubenurse-0.2.0] - 2022-07-21
 
-**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.6.0-rc1...kubenurse-0.2.0
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.5.2...kubenurse-0.2.0
 
 ### 🚀 Features
 
@@ -628,15 +671,6 @@
 
 - Use current main branch naming for the helm releaser - ([4dd5ede](https://github.com/postfinance/kubenurse/commit/4dd5eded72dd83798f622da716cd28ddf4404b0c))
 
-### ⚙️ Miscellaneous Tasks
-
-- Update helm package version to 1.6.0 - ([e261007](https://github.com/postfinance/kubenurse/commit/e26100791c3e824867218b150d12b83162e115c4))
-
-
-## [1.6.0-rc1] - 2022-06-03
-
-**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.5.2...v1.6.0-rc1
-
 ### 📚 Documentation
 
 - Add example grafana dashboard (#40) - ([aa94ef8](https://github.com/postfinance/kubenurse/commit/aa94ef8e431995e6017c6bb9e3eee6ab47d1c92b))
@@ -644,10 +678,20 @@
 
 ### ⚙️ Miscellaneous Tasks
 
+- Ci/Helm updates to use the latest versions of kind and kubenurse (#37)
+
+* chore(helm): update Helm Chart to use the latest kubenurse version
+
+* chore(examples): update Daemonset to use latest kubenurse version
+
+* chore: remove old CHANGELOG file
+
+* build: update kind to k8s 1.23 - ([3eb7693](https://github.com/postfinance/kubenurse/commit/3eb769390394210460fda23f7a21e230376f07c4))
 - Split workflows and create initial CI setup with traefik (#39) - ([806e7c7](https://github.com/postfinance/kubenurse/commit/806e7c712e0869dc57c921e119054f1a67d4d62d))
 - Update golangci-lint to v1.46 (#41) - ([797f3fb](https://github.com/postfinance/kubenurse/commit/797f3fba6edd6cb5e441e1efe23b1f2bcf63e1ab))
 - Use example domains instead of assignable ones - ([94e7075](https://github.com/postfinance/kubenurse/commit/94e70751f20c4639a25fbc94b1dcf22a3c53cd01))
 - Update dependencies (#43) - ([6b0761c](https://github.com/postfinance/kubenurse/commit/6b0761cadd27957043d121491a8d10aef8e430cc))
+- Update helm package version to 1.6.0 - ([e261007](https://github.com/postfinance/kubenurse/commit/e26100791c3e824867218b150d12b83162e115c4))
 
 
 
@@ -813,7 +857,47 @@
 
 
 ## New Contributors
-* @ made their first contribution## [1.0.0] - 2018-12-06
+* @ made their first contribution## [1.2.0] - 2020-08-24
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.1.3...v1.2.0
+
+
+## [1.1.3] - 2020-02-07
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.1.2...v1.1.3
+
+### 🐛 Bug Fixes
+
+- Fix(pkg/checker) Adding Bearer Token header for API Server requests - ([d5e27dd](https://github.com/postfinance/kubenurse/commit/d5e27dd0342a90387d1296d7d2cff190a45af866))
+- Fix(pkg/checker) Moving from strings.Contains to strings.HasSuffix - ([e87827c](https://github.com/postfinance/kubenurse/commit/e87827c6d48dc04a132280bcff1d54b5edc2c839))
+- Fix(pkg/checker) Bearer Token is now a dependency to do requests on API Server - ([3a8ff99](https://github.com/postfinance/kubenurse/commit/3a8ff99a0418e351160778fec1dd2a0a9bb1f302))
+
+
+
+
+## New Contributors
+* @phspagiari made their first contribution
+* @philipsahli made their first contribution## [1.1.2] - 2019-08-26
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.1.1...v1.1.2
+
+
+## [1.1.1] - 2019-08-09
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.1.0...v1.1.1
+
+
+## [1.1.0] - 2019-08-08
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.0.1...v1.1.0
+
+
+## [1.0.1] - 2018-12-07
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.0.0...v1.0.1
+
+
+## [1.0.0] - 2018-12-06
 
 
 
