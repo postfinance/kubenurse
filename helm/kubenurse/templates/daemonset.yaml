@@ -138,7 +138,7 @@ spec:
           periodSeconds: 10
         startupProbe:
           httpGet:
-            path: /ready
+            path: /alwayshappy
             port: 8080
             scheme: HTTP
           failureThreshold: 60
