@@ -2,6 +2,8 @@
 name: deploy with helm and ingress-nginx
 on:
   push:
+    tags-ignore:
+      - v*
   pull_request:
 jobs:
   build:
@@ -45,8 +47,13 @@ jobs:
       - name: Import image into kind
         run: |
           docker images
-          docker tag postfinance/kubenurse:latest-amd64 \
-            postfinance/kubenurse:latest-ci
+          # find the locally-built amd64 image (latest for stable, tag-amd64 for prereleases)
+          SRC_IMG=$(docker images --format '{{.Repository}}:{{.Tag}}' \
+            | grep -E '^postfinance/kubenurse:' \
+            | grep -E 'amd64$' \
+            | head -n1)
+          echo "using source image: $SRC_IMG"
+          docker tag "$SRC_IMG" postfinance/kubenurse:latest-ci
           kind load docker-image postfinance/kubenurse:latest-ci
       - name: Deploy example setup
         run: |
