@@ -70,7 +70,7 @@ postprocessors = [
 # parse the commits based on https://www.conventionalcommits.org
 conventional_commits = true
 # filter out the commits that are not conventional
-filter_unconventional = true
+filter_unconventional = false
 # process each line of a commit as an individual commit
 split_commits = false
 # regex for preprocessing the commit messages
@@ -112,5 +112,9 @@ filter_commits = false
 topo_order = false
 # sort the commits inside sections by oldest/newest order
 sort_commits = "oldest"
+# ignore prerelease tags when generating the changelog
+# this ensures the changelog for a final release includes all commits
+# since the previous final release, not just since the last prerelease.
+ignore_tags = "v.*-rc.*"
 # limit the number of commits included in the changelog.
 # limit_commits = 42

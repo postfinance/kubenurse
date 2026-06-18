@@ -28,6 +28,7 @@ archives:
 dockers_v2:
   - images:
       - postfinance/kubenurse
+      - ghcr.io/postfinance/kubenurse
     tags:
       - "{{ .Tag }}"
       - "{{ if not .Prerelease }}latest{{ end }}"
@@ -35,9 +36,15 @@ dockers_v2:
 
 checksum:
   name_template: 'checksums.txt'
+
+release:
+  prerelease: auto
+
 snapshot:
   version_template: "{{ .Tag }}-next"
+
 changelog:
+  use: github
   sort: asc
   filters:
     exclude:
