@@ -67,7 +67,7 @@ func (c *Checker) getNeighbours(ctx context.Context, namespace, labelSelector st
 
 		if !c.allowUnschedulable { // if we disallow unschedulable nodes, we have to check their status
 			node := v1.Node{}
-			if err := c.client.Get(ctx, types.NamespacedName{Name: pod.Spec.NodeName}, &node); err != nil || isNodeUnschedulable(&node) {
+			if err := c.client.Get(ctx, types.NamespacedName{Name: pod.Spec.NodeName}, &node); err != nil || IsNodeUnschedulable(&node) {
 				// Node not found, unschedulable, or lookup errored: do not include this pod in the neighbour list.
 				// This prevents querying pods whose node was deleted before the pod disappeared from the cache.
 				continue
@@ -87,10 +87,10 @@ func (c *Checker) getNeighbours(ctx context.Context, namespace, labelSelector st
 	return neighbours, nil
 }
 
-// isNodeUnschedulable reports whether a node must be considered unschedulable.
+// IsNodeUnschedulable reports whether a node must be considered unschedulable.
 // It checks the deprecated Spec.Unschedulable field and the canonical taint
 // node.kubernetes.io/unschedulable:NoSchedule used by kubectl cordon/drain.
-func isNodeUnschedulable(n *v1.Node) bool {
+func IsNodeUnschedulable(n *v1.Node) bool {
 	if n.Spec.Unschedulable {
 		return true
 	}

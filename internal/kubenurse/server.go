@@ -15,6 +15,8 @@ import (
 
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/postfinance/kubenurse/internal/servicecheck"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -33,7 +35,8 @@ type Server struct {
 	// If we want to consider kubenurses on unschedulable nodes
 	allowUnschedulable bool
 
-	ready atomic.Bool
+	ready     atomic.Bool
+	nodeReady atomic.Bool
 
 	neighboursTTLCache TTLCache[string]
 }
@@ -93,6 +96,7 @@ func New(c client.Client) (*Server, error) { //nolint:funlen // TODO: use a flag
 	}
 
 	server.ready.Store(true)
+	server.nodeReady.Store(true)
 	server.neighboursTTLCache.Init(60 * time.Second)
 
 	if os.Getenv("KUBENURSE_EXPOSE_METADATA") == "true" {
@@ -303,6 +307,66 @@ func (s *Server) Shutdown() error {
 	}
 
 	return nil
+}
+
+// StartNodeReadinessWatcher watches the local node and marks the kubenurse as
+// not ready when the node is cordoned, unschedulable, or deleted. This causes
+// Kubernetes to remove the pod from Service endpoints without killing the pod,
+// avoiding error spikes when a node is decommissioned.
+func (s *Server) StartNodeReadinessWatcher(ctx context.Context, c client.Client) {
+	go func() {
+		var nodeName string
+		hostname, _ := os.Hostname()
+
+		// Find the current pod to determine the node name. Use the same label
+		// selector and namespace as the neighbouring discovery logic.
+		for nodeName == "" {
+			pods := v1.PodList{}
+			selector, _ := labels.Parse(s.checker.NeighbourFilter)
+
+			if err := c.List(ctx, &pods, &client.ListOptions{
+				LabelSelector: selector,
+				Namespace:     s.checker.KubenurseNamespace,
+			}); err == nil {
+				for i := range pods.Items {
+					if pods.Items[i].Name == hostname {
+						nodeName = pods.Items[i].Spec.NodeName
+						break
+					}
+				}
+			}
+
+			if nodeName == "" {
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(5 * time.Second):
+				}
+			}
+		}
+
+		slog.Info("watching local node for readiness", "node", nodeName)
+
+		for {
+			node := v1.Node{}
+			err := c.Get(ctx, client.ObjectKey{Name: nodeName}, &node)
+			if err != nil {
+				slog.Error("local node lookup failed, marking not ready", "node", nodeName, "err", err)
+				s.nodeReady.Store(false)
+			} else if servicecheck.IsNodeUnschedulable(&node) {
+				slog.Info("local node is unschedulable, marking not ready", "node", nodeName)
+				s.nodeReady.Store(false)
+			} else {
+				s.nodeReady.Store(true)
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(5 * time.Second):
+			}
+		}
+	}()
 }
 
 func getOrDefault(envVar, defaultVal string) string {

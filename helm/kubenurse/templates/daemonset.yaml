@@ -131,7 +131,7 @@ spec:
           timeoutSeconds: 1
         livenessProbe:
           httpGet:
-            path: /ready
+            path: /alwayshappy
             port: 8080
             scheme: HTTP
           failureThreshold: 6

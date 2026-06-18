@@ -73,6 +73,8 @@ func main() {
 		return
 	}
 
+	server.StartNodeReadinessWatcher(ctx, c)
+
 	go func() {
 		<-ctx.Done() // blocks until ctx is canceled
 

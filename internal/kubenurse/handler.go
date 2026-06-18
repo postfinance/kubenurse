@@ -10,7 +10,7 @@ import (
 
 func (s *Server) readyHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		if s.ready.Load() {
+		if s.ready.Load() && s.nodeReady.Load() {
 			w.WriteHeader(http.StatusOK)
 		} else {
 			w.WriteHeader(http.StatusServiceUnavailable)
