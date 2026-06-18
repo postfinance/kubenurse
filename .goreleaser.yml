@@ -11,40 +11,28 @@ builds:
     main: main.go
     binary: kubenurse
     id: kubenurse
-docker_manifests:
-  - name_template: postfinance/kubenurse:{{ .Tag }}
-    image_templates:
-      - postfinance/kubenurse:{{ .Tag }}-amd64
-      - postfinance/kubenurse:{{ .Tag }}-arm64v8
-  - name_template: postfinance/kubenurse:latest
-    image_templates:
-      - postfinance/kubenurse:latest-amd64
-      - postfinance/kubenurse:latest-arm64v8
-dockers:
-  - goos: linux
-    goarch: amd64
-    ids:
-      - kubenurse
-    image_templates:
-      - "postfinance/kubenurse:latest-amd64"
-      - "postfinance/kubenurse:{{ .Tag }}-amd64"
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - "--pull"
-      - "--platform=linux/amd64"
-  - goos: linux
-    goarch: arm64
-    ids:
-      - kubenurse
-    image_templates:
-      - "postfinance/kubenurse:latest-arm64v8"
-      - "postfinance/kubenurse:{{ .Tag }}-arm64v8"
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - "--pull"
-      - "--platform=linux/arm64/v8"
+
+upx:
+  - enabled: true
+    goos:
+      - linux
+    compress: best
+    lzma: true
+
+archives:
+  - formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Os }}_{{ .Arch }}
+
+dockers_v2:
+  - images:
+      - postfinance/kubenurse
+    tags:
+      - "{{ .Tag }}"
+      - "{{ if not .Prerelease }}latest{{ end }}"
+    dockerfile: Dockerfile.goreleaser
+
 checksum:
   name_template: 'checksums.txt'
 snapshot:

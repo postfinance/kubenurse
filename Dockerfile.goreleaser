@@ -1,0 +1,4 @@
+FROM cgr.dev/chainguard/static:latest
+ARG TARGETPLATFORM
+COPY ${TARGETPLATFORM}/kubenurse /usr/local/bin/kubenurse
+ENTRYPOINT ["kubenurse"]
