@@ -11,6 +11,8 @@ builds:
     main: main.go
     binary: kubenurse
     id: kubenurse
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
 
 upx:
   - enabled: true

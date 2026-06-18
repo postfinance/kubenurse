@@ -17,12 +17,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// version is set at build time by GoReleaser via ldflags.
+var version = "dev"
+
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
 	controllerruntime.SetLogger(klog.Background())
 
+	slog.Info("kubenurse starting", "version", version)
 	restConf, err := controllerruntime.GetConfig()
 	if err != nil {
 		slog.Error("error during controllerruntime.GetConfig()", "err", err)
