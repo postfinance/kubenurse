@@ -347,18 +347,35 @@ func (s *Server) StartNodeReadinessWatcher(ctx context.Context, c client.Client)
 
 		slog.Info("watching local node for readiness", "node", nodeName)
 
+		wasReady := true
+
 		for {
 			node := v1.Node{}
 			err := c.Get(ctx, client.ObjectKey{Name: nodeName}, &node)
+
+			var nowReady bool
 			if err != nil {
-				slog.Error("local node lookup failed, marking not ready", "node", nodeName, "err", err)
-				s.nodeReady.Store(false)
+				nowReady = false
 			} else if servicecheck.IsNodeUnschedulable(&node) {
-				slog.Info("local node is unschedulable, marking not ready", "node", nodeName)
-				s.nodeReady.Store(false)
+				nowReady = false
 			} else {
-				s.nodeReady.Store(true)
+				nowReady = true
 			}
+
+			if nowReady != wasReady {
+				if !nowReady {
+					if err != nil {
+						slog.Error("local node lookup failed, marking not ready", "node", nodeName, "err", err)
+					} else {
+						slog.Info("local node is unschedulable, marking not ready", "node", nodeName)
+					}
+				} else {
+					slog.Info("local node is schedulable again, marking ready", "node", nodeName)
+				}
+				wasReady = nowReady
+			}
+
+			s.nodeReady.Store(nowReady)
 
 			select {
 			case <-ctx.Done():

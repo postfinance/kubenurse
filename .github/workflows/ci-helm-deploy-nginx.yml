@@ -2,6 +2,8 @@
 name: deploy with helm and ingress-nginx
 on:
   push:
+    branches:
+      - '**'
     tags-ignore:
       - v*
   pull_request:

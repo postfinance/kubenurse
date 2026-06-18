@@ -21,9 +21,15 @@ runs:
     - shell: bash
       run: |
         echo "Check for unexpected log lines"
-        test $(kubectl -n ${{ inputs.namespace }} logs -l app.kubernetes.io/name=kubenurse \
+        UNEXPECTED=$(kubectl -n ${{ inputs.namespace }} logs -l app.kubernetes.io/name=kubenurse \
           | grep -v "kubenurse just started" \
-          | wc -l) -eq 0 \
+          | grep -v "kubenurse starting" \
+          | grep -v "watching local node for readiness" || true)
+        if [ -n "$UNEXPECTED" ]; then
+          echo "unexpected log lines:"
+          echo "$UNEXPECTED"
+          exit 1
+        fi
     - shell: bash
       run: |
         echo "Check if the kubenurse had any restarts"

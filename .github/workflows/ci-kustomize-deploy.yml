@@ -2,6 +2,8 @@
 name: deploy with kustomize
 on:
   push:
+    branches:
+      - '**'
     tags-ignore:
       - v*
   pull_request:
