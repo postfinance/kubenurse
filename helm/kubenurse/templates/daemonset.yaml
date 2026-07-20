@@ -56,7 +56,7 @@ spec:
         imagePullPolicy: {{ .Values.daemonset.containerImagePullPolicy }}
         env:
         - name: KUBENURSE_INGRESS_URL
-          value: https://{{ .Values.ingress.url }}
+          value: {{ include "kubenurse.ingress.url" . }}
         - name: KUBENURSE_SERVICE_URL
           value: {{ default (printf "http://%s.%s.svc.cluster.local:%v" $fullName .Release.Namespace .Values.service.port) .Values.service_url }}
         - name: KUBENURSE_INSECURE
