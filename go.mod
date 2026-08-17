@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/VictoriaMetrics/metrics v1.43.2
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.0
 	k8s.io/api v0.36.2
 	k8s.io/apimachinery v0.36.2
 	k8s.io/client-go v0.36.2
