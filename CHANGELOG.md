@@ -1,5 +1,32 @@
 
-## [1.15.3] - 2026-06-18
+## [1.15.4] - 2026-08-25
+
+**Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.15.3...v1.15.4
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog - ([10e5083](https://github.com/postfinance/kubenurse/commit/10e5083fad7f6666cf809527cf6da27392b8a705))
+
+### Build
+
+- *(deps)* Bump github.com/VictoriaMetrics/metrics - ([d3d67d2](https://github.com/postfinance/kubenurse/commit/d3d67d230a1e58525314f7a23a6fa6b1a539da20))
+- *(deps)* Bump actions/checkout from 6.0.3 to 7.0.0 - ([36c4202](https://github.com/postfinance/kubenurse/commit/36c42025a16d21b259ebe1ffd16dc0026907d882))
+- *(deps)* Bump golangci/golangci-lint-action from 9.2.1 to 9.3.0 - ([e58b768](https://github.com/postfinance/kubenurse/commit/e58b768b24786933d2f49d06b5818c2618f860c7))
+- *(deps)* Bump azure/setup-helm from 5.0.0 to 5.0.1 - ([136aca6](https://github.com/postfinance/kubenurse/commit/136aca625b51a324de39a49fb3227cdc6ec2b41b))
+- *(deps)* Bump goreleaser/goreleaser-action from 7.2.2 to 7.2.3 - ([4616df4](https://github.com/postfinance/kubenurse/commit/4616df490fb2bd4a17c59296ac6641d2ff62237d))
+- *(deps)* Bump github.com/stretchr/testify from 1.11.1 to 1.12.0 - ([ab5f504](https://github.com/postfinance/kubenurse/commit/ab5f50425641f511982fd1e805cb591c23d0f645))
+- *(deps)* Bump actions/setup-go from 6.4.0 to 6.5.0 - ([9f55037](https://github.com/postfinance/kubenurse/commit/9f550375c6c53c3be3001a48a5baecc6195a6993))
+- *(deps)* Bump k8s.io/client-go from 0.36.2 to 0.36.4 - ([9d59f80](https://github.com/postfinance/kubenurse/commit/9d59f8095c469c7f35aaa0dcc117a8e3d2d64e9d))
+- *(deps)* Bump k8s.io/apimachinery from 0.36.2 to 0.36.4 - ([3552ca4](https://github.com/postfinance/kubenurse/commit/3552ca41149dbea74c2427ba54e71c2d9aef205b))
+- *(deps)* Bump k8s.io/api from 0.36.2 to 0.36.4 - ([bd7da09](https://github.com/postfinance/kubenurse/commit/bd7da09d6b1d267816ba56f09332c23964efcded))
+- *(deps)* Bump actions/setup-go from 6.5.0 to 7.0.0 - ([de31d7f](https://github.com/postfinance/kubenurse/commit/de31d7f3de34f11f97abe7e9f282bbf20a552dea))
+- *(deps)* Bump github.com/stretchr/testify from 1.12.0 to 1.12.1 - ([eb3edd4](https://github.com/postfinance/kubenurse/commit/eb3edd441d76efc34695d3fb69c1944a62bc45a0))
+
+
+
+
+## New Contributors
+* @Arc676 made their first contribution in [#278](https://github.com/postfinance/kubenurse/pull/278)## [1.15.3] - 2026-06-18
 
 **Full Changelog**: https://github.com/postfinance/kubenurse/compare/v1.15.2...v1.15.3
 
