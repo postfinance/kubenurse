@@ -45,7 +45,7 @@ jobs:
           fi
           echo "range=${PREV_TAG}..${CURRENT_TAG}" >> "$GITHUB_OUTPUT"
       - name: Generate release notes
-        uses: orhun/git-cliff-action@f50e11560dce63f7c33227798f90b924471a88b5 # v4
+        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4
         id: git-cliff
         with:
           config: cliff.toml
@@ -62,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate the full changelog
         if: "!contains(github.ref_name, '-')"
-        uses: orhun/git-cliff-action@f50e11560dce63f7c33227798f90b924471a88b5 # v4
+        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4
         with:
           config: cliff.toml
         env:
