@@ -60,3 +60,26 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+
+{{/*
+Calculate ingress correct URL
+*/}}
+{{- define "kubenurse.ingress.url" -}}
+{{- if or (hasPrefix "http://" .Values.ingress.url) (hasPrefix "https://" .Values.ingress.url) -}}
+{{- .Values.ingress.url -}}
+{{- else }}
+{{- printf "https://%s" .Values.ingress.url -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Calculate ingress hostname only
+*/}}
+{{- define "kubenurse.ingress.hostname" -}}
+{{- if or (hasPrefix "http://" .Values.ingress.url) (hasPrefix "https://" .Values.ingress.url) -}}
+{{- splitList ":" (urlParse (include "kubenurse.ingress.url" .) ).host | first -}}
+{{- else }}
+{{- splitList ":" (urlParse (printf "https://%s" (include "kubenurse.ingress.url" .))).host | first -}}
+{{- end -}}
+{{- end -}}
