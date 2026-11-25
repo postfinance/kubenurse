@@ -14,7 +14,7 @@ metadata:
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
-  - host: {{ .Values.ingress.url }}
+  - host: {{ include "kubenurse.ingress.hostname" . }}
     http:
       paths:
       - backend:
@@ -26,7 +26,7 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-    - {{ .Values.ingress.url }}
+    - {{ include "kubenurse.ingress.hostname" . }}
     {{- with .Values.ingress.tlsSecretName }}
     secretName: {{ . }}
     {{- end -}}
